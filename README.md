@@ -4,7 +4,7 @@ This repo is part of **attorney.**, a modular legal support platform built for l
 
 ---
 
-## 📌 Overview
+## Overview
 
 Legal professionals face challenges managing case data, schedules, and research due to scattered tools.  
 **attorney.** solves this with:
@@ -18,7 +18,7 @@ Legal professionals face challenges managing case data, schedules, and research 
 
 ---
 
-## 🔧 About This Repo
+## About This Repo
 
 This is the **frontend module** of the attorney. ecosystem.  
 It includes user interfaces for:
@@ -32,7 +32,7 @@ It includes user interfaces for:
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # Clone the repo
