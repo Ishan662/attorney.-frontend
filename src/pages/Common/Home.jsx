@@ -6,11 +6,6 @@ import Input1 from '../../components/UI/Input1';
 import Sidebar from '../../components/layout/Sidebar';
 
 const Home = () => {
-  // Example user for the sidebar
-  const user = {
-    name: 'Nishagi Jewantha',
-    email: 'jeewanthadeherath@gmail.com',
-  };
 
   return (
     <div className="flex h-screen">
@@ -60,6 +55,33 @@ const Home = () => {
               >
                 See Prices <span className="ml-2">→</span>
               </Button1>
+            </div>
+
+            {/* Dashboard content */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+                <div className="space-y-4">
+                  <Button1 text="Get Started" className="w-full" />
+                  <Button2 text="Schedule for later" className="w-full" />
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+                <Input1
+                  name="contact"
+                  placeholder="Enter phone number or email"
+                  variant="outlined"
+                  className="mb-4"
+                />
+                <Input1
+                  name="email"
+                  label="Email Address"
+                  placeholder="Enter your email"
+                  required={true}
+                />
+              </div>
             </div>
           </div>
         </main>
