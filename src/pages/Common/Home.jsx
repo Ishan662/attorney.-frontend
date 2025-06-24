@@ -14,9 +14,6 @@ const Home = () => {
 
   return (
     <div className="flex h-screen">
-      {/* Sidebar component */}
-      <Sidebar user={user} />
-
       {/* Main content area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
