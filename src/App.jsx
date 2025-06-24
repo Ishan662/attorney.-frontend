@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 
 import Home from './pages/Common/Home';
+import Dashboard from './pages/Lawyer/Dashboard';
+
 
 
 export default function App() {
@@ -9,8 +11,8 @@ export default function App() {
     <Router>
       <div className="App">
         <Routes>
-          {/* Add your routes here */}
           <Route path="/" element={<Home />} />
+          <Route path="admin/dashboard" element={<Dashboard />} />
         </Routes>
       </div>
     </Router>
