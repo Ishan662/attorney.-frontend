@@ -1,25 +1,8 @@
-<<<<<<< HEAD
-import { useState, useEffect } from "react";
-import Sidebar from "../../components/layout/Sidebar";
-import Button1 from "../../components/UI/Button1";
-import Button2 from "../../components/UI/Button2";
-import Input1 from "../../components/UI/Input1";
-import { title } from "framer-motion/client";
-// You'll need to import chart libraries for the analytics
-// import { Chart } from "some-chart-library";
-
-const Dashboard = () => {
-
-    
-
-    const [notificationCount, setNotificationCount] = useState(3);
-=======
 import React, { useState } from "react";
 import Sidebar from "../../components/layout/Sidebar";
 
 const Dashboard = () => {
     const [sidebarExpanded, setSidebarExpanded] = useState(true);
->>>>>>> dev
 
     const user = {
         name: 'Thusitha',
@@ -118,7 +101,6 @@ const Dashboard = () => {
     const monthlyIncome = "$7,500";
 
     return (
-<<<<<<< HEAD
         <div className="flex min-h-screen bg-gray-50">
             <Sidebar user={user} />
             <div className="flex-grow p-6 overflow-y-auto">
@@ -255,24 +237,5 @@ const Dashboard = () => {
         </div>
     );
 }
-=======
-        <div className="flex">
-            <Sidebar
-                user={user}
-                defaultExpanded={sidebarExpanded}
-                onToggle={(expanded) => setSidebarExpanded(expanded)}
-            />
-            <main className={`flex-1 ${sidebarExpanded ? 'ml-64' : 'ml-20'} p-6 transition-all duration-300`}>
-                {/* Your page content */}
-                <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-                <div className="bg-white p-6 rounded-lg shadow">
-                    <p>Welcome, {user.name}!</p>
-                    {/* Add your dashboard content here */}
-                </div>
-            </main>
-        </div>
-    );
-};
->>>>>>> dev
 
 export default Dashboard;

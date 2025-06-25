@@ -11,9 +11,8 @@ const ScheduleMeeting = () => {
       <Sidebar />
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <Header />
+      <div className="flex-1 flex flex-col overflow-hidden pl-64">
+        
 
         {/* Page Title */}
         <div className="px-10 pt-8 pb-2">

@@ -47,9 +47,8 @@ const Clients = () => (
     <Sidebar />
 
     {/* Main content */}
-    <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Header */}
-      <Header />
+    <div className="flex-1 flex flex-col overflow-hidden pl-64">
+      
 
       {/* Page Title and Add Button */}
       <div className="flex items-center justify-between px-10 pt-8 pb-2">
