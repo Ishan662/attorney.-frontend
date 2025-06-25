@@ -7,6 +7,10 @@ import Timeline from './pages/Lawyer/Timeline';
 import Incomes from './pages/Lawyer/Incomes';
 import DaySummary from './pages/Lawyer/DaySummary';
 import DuePayments from './pages/Lawyer/DuePayments';
+import AddClient from './pages/Lawyer/AddNewClient';
+import Meetings from './pages/Lawyer/MeetingRequest';
+import Clients from './pages/Lawyer/Clients';
+import ScheduleMeeting from './pages/Client/ScheduleMeeting';
 
 
 export default function App() {
@@ -19,7 +23,10 @@ export default function App() {
           <Route path="lawyer/timeline" element={<Timeline />} />
           <Route path="lawyer/incomes" element={<Incomes />} />
           <Route path="lawyer/day-summary" element={<DaySummary />} />
-          <Route path="lawyer/due-payments" element={<DuePayments />} />
+          <Route path="lawyer/addnewclient" element={<AddClient />} />
+          <Route path="lawyer/meetingrequest" element={<Meetings />} />
+          <Route path="lawyer/clients" element={<Clients />} />
+          <Route path="client/schedulemeeting" element={<ScheduleMeeting />} />
         </Routes>
       </div>
     </Router>
