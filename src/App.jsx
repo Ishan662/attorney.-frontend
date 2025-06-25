@@ -4,6 +4,7 @@ import './App.css';
 import Home from './pages/Common/Home';
 import Dashboard from './pages/Lawyer/Dashboard';
 import Timeline from './pages/Lawyer/Timeline';
+import Incomes from './pages/Lawyer/Incomes';
 
 
 export default function App() {
@@ -12,8 +13,9 @@ export default function App() {
       <div className="App">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="admin/dashboard" element={<Dashboard />} />
-          <Route path="admin/timeline" element={<Timeline />} />
+          <Route path="lawyer/dashboard" element={<Dashboard />} />
+          <Route path="lawyer/timeline" element={<Timeline />} />
+          <Route path="lawyer/incomes" element={<Incomes />} />
         </Routes>
       </div>
     </Router>

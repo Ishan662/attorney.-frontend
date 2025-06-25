@@ -27,6 +27,9 @@ const Dashboard = () => {
         if (title === "Timeline") {
             navigate("/lawyer/timeline");
         }
+        else if (title === "Incomes") {
+            navigate("/lawyer/incomes");
+        }   
         // Add other navigation options as needed
     };
 

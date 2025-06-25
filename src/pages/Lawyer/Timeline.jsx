@@ -2,12 +2,21 @@ import { useState, useEffect } from "react";
 import Sidebar from "../../components/layout/Sidebar";
 import Button1 from "../../components/UI/Button1";
 import Button2 from "../../components/UI/Button2";
+import PageHeader from "../../components/layout/PageHeader";
 import Input1 from "../../components/UI/Input1";
 
 const Timeline = () => {
     const user = {
         name: 'Thusitha',
         email: 'jeewanthadeherath@gmail.com',
+    };
+
+    const [notificationCount, setNotificationCount] = useState(2);
+    
+    // Handle notification click
+    const handleNotificationClick = () => {
+        console.log('Notifications clicked from Timeline page');
+        // Notification handling specific to this page
     };
 
     // State for filters
@@ -102,7 +111,16 @@ const Timeline = () => {
         <div className="flex min-h-screen bg-gray-50">
             <Sidebar user={user} />
             <div className="flex-grow p-6 overflow-y-auto">
-                {/* Header */}
+                {/* PageHeader component */}
+                <div className="mb-8">
+                    <PageHeader 
+                        user={user} 
+                        notificationCount={notificationCount}
+                        onNotificationClick={handleNotificationClick}
+                    />
+                </div>
+                
+                {/* Timeline specific header */}
                 <div className="flex justify-between items-center mb-8">
                     <h1 className="text-2xl font-bold">Time Line</h1>
                     <div className="flex items-center gap-2">
@@ -139,8 +157,7 @@ const Timeline = () => {
                     </div>
                     <Button1 
                         text="Submit" 
-                        inverted={false}
-                        className="bg-orange-500 hover:bg-orange-600 text-white py-2" 
+                        className="text-white py-1 px-4 text-sm"
                         onClick={handleFilterSubmit}
                     />
                 </div>
@@ -148,40 +165,48 @@ const Timeline = () => {
                 {/* Timeline */}
                 <div className="mb-8">
                     <h2 className="text-xl font-medium mb-4">Case Progress Timeline</h2>
-                    <div className="relative">
-                        {/* Timeline line */}
-                        <div className="absolute left-0 right-0 h-1 bg-orange-500 top-1/2 transform -translate-y-1/2"></div>
-                        
-                        {/* Timeline events */}
-                        <div className="relative flex justify-between py-10">
-                            {filteredEvents.length > 0 ? (
-                                filteredEvents.map((event, index) => (
-                                    <div 
-                                        key={event.id} 
-                                        className="flex flex-col items-center cursor-pointer"
-                                        onClick={() => handleCaseClick(event)}
-                                    >
-                                        <div className="text-sm text-gray-600 mb-2">{formatDate(event.date)}</div>
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                        {filteredEvents.length > 0 ? (
+                            <div className="relative">
+                                {/* Timeline line - only shown when there are events */}
+                                <div className="absolute left-6 right-6 h-1 bg-orange-500 top-1/2 transform -translate-y-1/2"></div>
+                                
+                                {/* Timeline events */}
+                                <div className="relative flex justify-between py-10">
+                                    {filteredEvents.map((event, index) => (
                                         <div 
-                                            className={`w-6 h-6 rounded-full z-10 flex items-center justify-center
-                                                ${event.status === 'completed' ? 'bg-orange-500' : ''}
-                                                ${event.status === 'active' ? 'bg-orange-500' : ''}
-                                                ${event.status === 'pending' ? 'bg-gray-300' : ''}
-                                            `}
+                                            key={event.id} 
+                                            className="flex flex-col items-center cursor-pointer transition-transform transform hover:scale-105"
+                                            onClick={() => handleCaseClick(event)}
                                         >
-                                            {event.status === 'completed' && (
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                                </svg>
-                                            )}
+                                            <div className="text-sm text-gray-600 mb-2">{formatDate(event.date)}</div>
+                                            <div 
+                                                className={`w-8 h-8 rounded-full z-10 flex items-center justify-center border-2 border-white shadow-md
+                                                    ${event.status === 'completed' ? 'bg-orange-500' : ''}
+                                                    ${event.status === 'active' ? 'bg-gray-500' : ''}
+                                                    ${event.status === 'pending' ? 'bg-black-300' : ''}
+                                                `}
+                                            >
+                                                {event.status === 'completed' && (
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                    </svg>
+                                                )}
+                                            </div>
+                                            <div className="text-sm font-medium mt-2 max-w-[120px] text-center">{event.title}</div>
                                         </div>
-                                        <div className="text-sm font-medium mt-2">{event.title}</div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="w-full text-center py-4 text-gray-500">No events found for the selected month.</div>
-                            )}
-                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="w-full text-center py-16 text-gray-500">
+                                <svg className="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <p className="text-lg font-medium">No cases recorded for {months[selectedMonth].label} {selectedYear}.</p>
+                                <p className="text-sm mt-1">Try selecting a different month or year.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -204,12 +229,18 @@ const Timeline = () => {
                             </div>
                             <div>
                                 <div className="text-sm text-gray-500">Status</div>
-                                <div className="font-medium capitalize">{selectedCase.status}</div>
+                                <div className={`font-medium capitalize px-2 py-1 rounded-full inline-block text-sm
+                                    ${selectedCase.status === 'completed' ? 'bg-green-100 text-green-800' : ''}
+                                    ${selectedCase.status === 'active' ? 'bg-blue-100 text-blue-800' : ''}
+                                    ${selectedCase.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : ''}
+                                `}>
+                                    {selectedCase.status}
+                                </div>
                             </div>
                         </div>
                         <div>
-                            <div className="text-sm text-gray-500">Description</div>
-                            <div className="mt-1">{selectedCase.description}</div>
+                            <div className="text-sm text-gray-500 mb-1">Description</div>
+                            <div className="p-3 bg-gray-50 rounded-lg">{selectedCase.description}</div>
                         </div>
                     </div>
                 )}
@@ -225,7 +256,6 @@ const Timeline = () => {
                     <div className="mt-4 flex justify-end">
                         <Button1 
                             text="Save Notes"
-                            className="bg-blue-500 hover:bg-blue-600 text-white"
                         />
                     </div>
                 </div>
