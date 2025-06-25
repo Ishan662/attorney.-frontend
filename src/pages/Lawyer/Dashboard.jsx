@@ -29,7 +29,10 @@ const Dashboard = () => {
         }
         else if (title === "Incomes") {
             navigate("/lawyer/incomes");
-        }   
+        } 
+        else if (title === "Day Summary")  {
+            navigate("/lawyer/day-summary")
+        }
         // Add other navigation options as needed
     };
 
