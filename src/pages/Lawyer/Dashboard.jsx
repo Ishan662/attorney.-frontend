@@ -11,6 +11,7 @@ import Input1 from "../../components/UI/Input1";
 const Dashboard = () => {
     const navigate = useNavigate();
     const [notificationCount, setNotificationCount] = useState(3);
+    const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
     const user = {
         name: 'Thusitha',
@@ -20,6 +21,11 @@ const Dashboard = () => {
     const handleNotificationClick = () => {
         console.log('Notifications clicked');
         // Here you could navigate to notifications page or open a notification panel
+    };
+
+    // Handle sidebar toggle
+    const handleSidebarToggle = (expanded) => {
+        setSidebarExpanded(expanded);
     };
 
     // Handle card click to navigate to specific pages
@@ -42,8 +48,8 @@ const Dashboard = () => {
             title: "Due Payments", 
             value: "$2,500", 
             icon: "💰", 
-            bgColor: "bg-white-100", 
-            iconBg: "bg-balck-200",
+            bgColor: "bg-black-100", 
+            iconBg: "bg-black-200",
             textColor: "text-black-800"
         },
         { 
@@ -51,14 +57,14 @@ const Dashboard = () => {
             value: "12 Items", 
             icon: "⏱️", 
             bgColor: "bg-black-100",
-            iconBg: "bg--200", 
-            textColor: "text-white-800"
+            iconBg: "bg-black-200", 
+            textColor: "text-black-800"
         },
         { 
             title: "Incomes", 
             value: "$8,750", 
             icon: "📈", 
-            bgColor: "bg-white-100",
+            bgColor: "bg-black-100",
             iconBg: "bg-black-200", 
             textColor: "text-black-800"
         },
@@ -116,118 +122,127 @@ const Dashboard = () => {
 
     return (
         <div className="flex min-h-screen bg-gray-50">
-            <Sidebar user={user} />
-            <div className="flex-grow p-6 overflow-y-auto">
-                {/* Header */}
-                <div className="mb-8">
-                    <PageHeader 
-                        user={user} 
-                        notificationCount={notificationCount} 
-                        onNotificationClick={handleNotificationClick}
-                    />
-                </div>
+            <Sidebar 
+                user={user}
+                onToggle={handleSidebarToggle}
+            />
+            <div 
+                className="flex-grow overflow-y-auto transition-all duration-300"
+                style={{ 
+                    marginLeft: sidebarExpanded ? '16rem' : '5rem' // 16rem = 256px (w-64), 5rem = 80px (w-20)
+                }}
+            >
+                <div className="p-6">
+                    {/* Header */}
+                    <div className="mb-8">
+                        <PageHeader 
+                            user={user} 
+                            notificationCount={notificationCount} 
+                            onNotificationClick={handleNotificationClick}
+                        />
+                    </div>
 
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                    {stats.map((stat, index) => (
-                        <div 
-                            key={index} 
-                            className={`p-6 rounded-lg ${stat.bgColor} shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer`}
-                            onClick={() => handleStatCardClick(stat.title)}
-                        >
-                            <div className="flex flex-col items-center">
-                                <div className={`w-14 h-14 flex items-center justify-center text-2xl mb-3 rounded-full ${stat.iconBg}`}>
-                                    {stat.icon}
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        {stats.map((stat, index) => (
+                            <div 
+                                key={index} 
+                                className={`p-6 rounded-lg ${stat.bgColor} shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer`}
+                                onClick={() => handleStatCardClick(stat.title)}
+                            >
+                                <div className="flex flex-col items-center">
+                                    <div className={`w-14 h-14 flex items-center justify-center text-2xl mb-3 rounded-full ${stat.iconBg}`}>
+                                        {stat.icon}
+                                    </div>
+                                    <div className="text-sm text-gray-600 font-medium">{stat.title}</div>
+                                    <div className={`text-xl font-bold mt-1 ${stat.textColor}`}>{stat.value}</div>
                                 </div>
-                                <div className="text-sm text-gray-600 font-medium">{stat.title}</div>
-                                <div className={`text-xl font-bold mt-1 ${stat.textColor}`}>{stat.value}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Hearings Section */}
-                <div className="mb-8">
-                    <h2 className="text-xl font-bold mb-4 ">Hearings to attend today</h2>
-                    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                        {hearings.map((hearing, index) => (
-                            <div key={index} className="flex justify-between items-center p-4 border-b last:border-b-0">
-                                <div>
-                                    <div className="text-sm text-gray-500">Case # {hearing.id}</div>
-                                    <div>{hearing.name}</div>
-                                </div>
-                                <Button2 
-                                    text={hearing.action} 
-                                    className="text-sm py-1 px-4"
-                                />
                             </div>
                         ))}
-                        <div className="p-2">
-                            <Button1 
-                                text="Add a case"
-                            />
-                        </div>
                     </div>
-                </div>
 
-                {/* Two Column Layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                    {/* Monthly Income Section */}
-                    <div>
-                        <h2 className="text-xl font-medium mb-4">Monthly Income</h2>
-                        <div className="bg-white rounded-lg shadow-md p-4">
-                            <div className="bg-gray-100 rounded-lg h-64 flex items-center justify-center text-gray-500">
-                                Monthly Income Chart
+                    {/* Hearings Section */}
+                    <div className="mb-8">
+                        <h2 className="text-xl font-bold mb-4">Hearings to attend today</h2>
+                        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                            {hearings.map((hearing, index) => (
+                                <div key={index} className="flex justify-between items-center p-4 border-b last:border-b-0">
+                                    <div>
+                                        <div className="text-sm text-gray-500">Case # {hearing.id}</div>
+                                        <div>{hearing.name}</div>
+                                    </div>
+                                    <Button2 
+                                        text={hearing.action} 
+                                        className="text-sm py-1 px-4"
+                                    />
+                                </div>
+                            ))}
+                            <div className="p-2">
+                                <Button1 
+                                    text="Add a case"                                />
                             </div>
-                            <div className="text-2xl font-bold mt-4 text-green-700">{monthlyIncome}</div>
                         </div>
                     </div>
 
-                    {/* Meeting Requests Section */}
-                    <div>
-                        <h2 className="text-xl font-medium mb-4">Meeting Requests</h2>
-                        <div className="bg-white rounded-lg shadow-md">
-                            {meetings.map((meeting, index) => {
-                                const { formattedDate, day } = formatMeetingDate(meeting.date);
-                                return (
-                                    <div key={index} className="border-b last:border-b-0 p-4">
-                                        <div className="flex justify-between">
-                                            <div>
-                                                <div className="font-medium">{meeting.name}</div>
-                                                <div className="text-sm text-gray-500">
-                                                    {formattedDate} • {day}
-                                                    {meeting.caseId && <div>Case # {meeting.caseId}</div>}
+                    {/* Two Column Layout */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        {/* Monthly Income Section */}
+                        <div>
+                            <h2 className="text-xl font-medium mb-4">Monthly Income</h2>
+                            <div className="bg-white rounded-lg shadow-md p-4">
+                                <div className="bg-gray-100 rounded-lg h-64 flex items-center justify-center text-gray-500">
+                                    Monthly Income Chart
+                                </div>
+                                <div className="text-2xl font-bold mt-4 text-green-700">{monthlyIncome}</div>
+                            </div>
+                        </div>
+
+                        {/* Meeting Requests Section */}
+                        <div>
+                            <h2 className="text-xl font-medium mb-4">Meeting Requests</h2>
+                            <div className="bg-white rounded-lg shadow-md">
+                                {meetings.map((meeting, index) => {
+                                    const { formattedDate, day } = formatMeetingDate(meeting.date);
+                                    return (
+                                        <div key={index} className="border-b last:border-b-0 p-4">
+                                            <div className="flex justify-between">
+                                                <div>
+                                                    <div className="font-medium">{meeting.name}</div>
+                                                    <div className="text-sm text-gray-500">
+                                                        {formattedDate} • {day}
+                                                        {meeting.caseId && <div>Case # {meeting.caseId}</div>}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <span className={`
+                                                        px-3 py-1 rounded-full text-xs font-medium
+                                                        ${meeting.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : ''}
+                                                        ${meeting.status === 'Confirmed' ? 'bg-green-100 text-green-800' : ''}
+                                                        ${meeting.status === 'Rescheduled' ? 'bg-red-100 text-red-800' : ''}
+                                                    `}>
+                                                        {meeting.status}
+                                                    </span>
                                                 </div>
                                             </div>
-                                            <div>
-                                                <span className={`
-                                                    px-3 py-1 rounded-full text-xs font-medium
-                                                    ${meeting.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : ''}
-                                                    ${meeting.status === 'Confirmed' ? 'bg-green-100 text-green-800' : ''}
-                                                    ${meeting.status === 'Rescheduled' ? 'bg-red-100 text-red-800' : ''}
-                                                `}>
-                                                    {meeting.status}
-                                                </span>
-                                            </div>
+                                            {meeting.status === 'Rescheduled' && (
+                                                <div className="mt-2 flex justify-center">
+                                                    <div className="w-4 h-4 bg-red-500 rounded-full"></div>
+                                                </div>
+                                            )}
                                         </div>
-                                        {meeting.status === 'Rescheduled' && (
-                                            <div className="mt-2 flex justify-center">
-                                                <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Overall Analytics Section */}
-                <div>
-                    <h2 className="text-xl font-medium mb-4">Overall Analytics</h2>
-                    <div className="bg-white rounded-lg shadow-md p-4">
-                        <div className="bg-gray-100 rounded-lg h-64 flex items-center justify-center text-gray-500">
-                            Overall Analytics Chart
+                    {/* Overall Analytics Section */}
+                    <div>
+                        <h2 className="text-xl font-medium mb-4">Overall Analytics</h2>
+                        <div className="bg-white rounded-lg shadow-md p-4">
+                            <div className="bg-gray-100 rounded-lg h-64 flex items-center justify-center text-gray-500">
+                                Overall Analytics Chart
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -236,5 +251,4 @@ const Dashboard = () => {
     );
 }
 
-export default Dashboard;
 export default Dashboard;
