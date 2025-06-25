@@ -1,17 +1,15 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/layout/Sidebar";
 import Button1 from "../../components/UI/Button1";
 import PageHeader from "../../components/layout/PageHeader"; 
 import Button2 from "../../components/UI/Button2";
 import Input1 from "../../components/UI/Input1";
-import { title } from "framer-motion/client";
 // You'll need to import chart libraries for the analytics
 // import { Chart } from "some-chart-library";
 
 const Dashboard = () => {
-
-    
-
+    const navigate = useNavigate();
     const [notificationCount, setNotificationCount] = useState(3);
 
     const user = {
@@ -21,6 +19,15 @@ const Dashboard = () => {
 
     const handleNotificationClick = () => {
         console.log('Notifications clicked');
+        // Here you could navigate to notifications page or open a notification panel
+    };
+
+    // Handle card click to navigate to specific pages
+    const handleStatCardClick = (title) => {
+        if (title === "Timeline") {
+            navigate("/lawyer/timeline");
+        }
+        // Add other navigation options as needed
     };
 
     // Mock data for the dashboard
@@ -29,33 +36,33 @@ const Dashboard = () => {
             title: "Due Payments", 
             value: "$2,500", 
             icon: "💰", 
-            bgColor: "bg-blue-100", 
-            iconBg: "bg-blue-200",
-            textColor: "text-blue-800"
+            bgColor: "bg-white-100", 
+            iconBg: "bg-balck-200",
+            textColor: "text-black-800"
         },
         { 
             title: "Timeline", 
             value: "12 Items", 
             icon: "⏱️", 
-            bgColor: "bg-green-100",
-            iconBg: "bg-green-200", 
-            textColor: "text-green-800"
+            bgColor: "bg-black-100",
+            iconBg: "bg--200", 
+            textColor: "text-white-800"
         },
         { 
             title: "Incomes", 
             value: "$8,750", 
             icon: "📈", 
-            bgColor: "bg-purple-100",
-            iconBg: "bg-purple-200", 
-            textColor: "text-purple-800"
+            bgColor: "bg-white-100",
+            iconBg: "bg-black-200", 
+            textColor: "text-black-800"
         },
         { 
             title: "Day Summary", 
             value: "5 Activities", 
             icon: "📋", 
-            bgColor: "bg-red-100",
-            iconBg: "bg-red-200", 
-            textColor: "text-red-800"
+            bgColor: "bg-black-100",
+            iconBg: "bg-black-200", 
+            textColor: "text-black-800"
         }
     ];
 
@@ -106,40 +113,22 @@ const Dashboard = () => {
             <Sidebar user={user} />
             <div className="flex-grow p-6 overflow-y-auto">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8">
+                <div className="mb-8">
                     <PageHeader 
-                    user={user} 
-                    notificationCount={notificationCount} 
-                    onNotificationClick={handleNotificationClick}
-                />
-                        <div className="relative cursor-pointer">
-                            <svg 
-                                xmlns="http://www.w3.org/2000/svg" 
-                                className="h-6 w-6 text-gray-600 hover:text-gray-900 transition-colors" 
-                                fill="none" 
-                                viewBox="0 0 24 24" 
-                                stroke="currentColor"
-                            >
-                                <path 
-                                    strokeLinecap="round" 
-                                    strokeLinejoin="round" 
-                                    strokeWidth={2} 
-                                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" 
-                                />
-                            </svg>
-                            {notificationCount > 0 && (
-                                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
-                                    {notificationCount}
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                        user={user} 
+                        notificationCount={notificationCount} 
+                        onNotificationClick={handleNotificationClick}
+                    />
                 </div>
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     {stats.map((stat, index) => (
-                        <div key={index} className={`p-6 rounded-lg ${stat.bgColor} shadow-md hover:shadow-lg transition-shadow duration-300`}>
+                        <div 
+                            key={index} 
+                            className={`p-6 rounded-lg ${stat.bgColor} shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer`}
+                            onClick={() => handleStatCardClick(stat.title)}
+                        >
                             <div className="flex flex-col items-center">
                                 <div className={`w-14 h-14 flex items-center justify-center text-2xl mb-3 rounded-full ${stat.iconBg}`}>
                                     {stat.icon}
@@ -169,7 +158,7 @@ const Dashboard = () => {
                         ))}
                         <div className="p-2">
                             <Button1 
-                                text="Add a case"  
+                                text="Add a case"
                             />
                         </div>
                     </div>
