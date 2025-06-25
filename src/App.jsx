@@ -6,6 +6,7 @@ import Dashboard from './pages/Lawyer/Dashboard';
 import Timeline from './pages/Lawyer/Timeline';
 import Incomes from './pages/Lawyer/Incomes';
 import DaySummary from './pages/Lawyer/DaySummary';
+import DuePayments from './pages/Lawyer/DuePayments';
 
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="lawyer/timeline" element={<Timeline />} />
           <Route path="lawyer/incomes" element={<Incomes />} />
           <Route path="lawyer/day-summary" element={<DaySummary />} />
+          <Route path="lawyer/due-payments" element={<DuePayments />} />
         </Routes>
       </div>
     </Router>
