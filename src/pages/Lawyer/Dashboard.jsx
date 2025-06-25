@@ -39,6 +39,9 @@ const Dashboard = () => {
         else if (title === "Day Summary")  {
             navigate("/lawyer/day-summary")
         }
+        else if(title === "Due Payments") {
+            navigate("/lawyer/due-payments");
+        }
         // Add other navigation options as needed
     };
 
