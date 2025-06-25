@@ -82,6 +82,66 @@ const Home = () => {
                   required={true}
                 />
               </div>
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+                <Input1
+                  name="contact"
+                  placeholder="Enter phone number or email"
+                  variant="outlined"
+                  className="mb-4"
+                />
+                <Input1
+                  name="email"
+                  label="Email Address"
+                  placeholder="Enter your email"
+                  required={true}
+                />
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+                <Input1
+                  name="contact"
+                  placeholder="Enter phone number or email"
+                  variant="outlined"
+                  className="mb-4"
+                />
+                <Input1
+                  name="email"
+                  label="Email Address"
+                  placeholder="Enter your email"
+                  required={true}
+                />
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+                <Input1
+                  name="contact"
+                  placeholder="Enter phone number or email"
+                  variant="outlined"
+                  className="mb-4"
+                />
+                <Input1
+                  name="email"
+                  label="Email Address"
+                  placeholder="Enter your email"
+                  required={true}
+                />
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+                <Input1
+                  name="contact"
+                  placeholder="Enter phone number or email"
+                  variant="outlined"
+                  className="mb-4"
+                />
+                <Input1
+                  name="email"
+                  label="Email Address"
+                  placeholder="Enter your email"
+                  required={true}
+                />
+              </div>
             </div>
           </div>
         </main>
