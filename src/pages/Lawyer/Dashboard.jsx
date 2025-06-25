@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "../../components/layout/Sidebar";
 import Button1 from "../../components/UI/Button1";
+import PageHeader from "../../components/layout/PageHeader"; 
 import Button2 from "../../components/UI/Button2";
 import Input1 from "../../components/UI/Input1";
 import { title } from "framer-motion/client";
@@ -18,18 +19,9 @@ const Dashboard = () => {
         email: 'jeewanthadeherath@gmail.com',
     };
 
-    // Dynamic date handling
-    const [currentDate, setCurrentDate] = useState("");
-    
-    useEffect(() => {
-        const today = new Date();
-        const formattedDate = today.toLocaleDateString('en-US', {
-            month: '2-digit',
-            day: '2-digit',
-            year: 'numeric'
-        });
-        setCurrentDate(formattedDate);
-    }, []);
+    const handleNotificationClick = () => {
+        console.log('Notifications clicked');
+    };
 
     // Mock data for the dashboard
     const stats = [
@@ -115,9 +107,11 @@ const Dashboard = () => {
             <div className="flex-grow p-6 overflow-y-auto">
                 {/* Header */}
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-2xl font-bold">Hello {user.name}, Welcome</h1>
-                    <div className="flex items-center gap-4">
-                        <div className="text-gray-500">Today is: {currentDate}</div>
+                    <PageHeader 
+                    user={user} 
+                    notificationCount={notificationCount} 
+                    onNotificationClick={handleNotificationClick}
+                />
                         <div className="relative cursor-pointer">
                             <svg 
                                 xmlns="http://www.w3.org/2000/svg" 

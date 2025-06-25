@@ -3,7 +3,7 @@ import './App.css';
 
 import Home from './pages/Common/Home';
 import Dashboard from './pages/Lawyer/Dashboard';
-
+import Timeline from './pages/Lawyer/Timeline';
 
 
 export default function App() {
@@ -13,6 +13,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="admin/dashboard" element={<Dashboard />} />
+          <Route path="admin/timeline" element={<Timeline />} />
         </Routes>
       </div>
     </Router>
