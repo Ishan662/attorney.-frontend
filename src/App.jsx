@@ -13,6 +13,9 @@ import ScheduleMeeting from './pages/Client/ScheduleMeeting';
 import Lawyercalander from './pages/Lawyer/Lawyercalender';
 import UserSignUp from './pages/Common/UserSignUp';
 import UserLogin from './pages/Common/UserLogin';
+import CaseProfiles from './pages/Lawyer/CaseProfile';
+import CaseDetails from './pages/Lawyer/CaseDetails';
+import NewCaseProfile from './pages/Lawyer/NewCaseProfile';
 
 
 export default function App() {
@@ -34,6 +37,9 @@ export default function App() {
           <Route path="client/schedulemeeting" element={<ScheduleMeeting />} />
           <Route path="user/signup" element={<UserSignUp />} />
           <Route path="user/login" element={<UserLogin />} />
+          <Route path="lawyer/caseprofile" element={<CaseProfiles />} />
+          <Route path="lawyer/casedetails" element={<CaseDetails />} />
+          <Route path="lawyer/newcaseprofile" element={<NewCaseProfile />} />
         </Routes>
       </div>
     </Router>
