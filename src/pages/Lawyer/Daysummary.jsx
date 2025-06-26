@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Sidebar from "../../components/layout/Sidebar";
+import PageLayout from "../../components/layout/PageLayout";
 import PageHeader from "../../components/layout/PageHeader";
 import Button1 from "../../components/UI/Button1";
 import Button2 from "../../components/UI/Button2";
@@ -12,7 +12,6 @@ const DaySummary = () => {
 
     const [notificationCount, setNotificationCount] = useState(1);
     const [currentDate, setCurrentDate] = useState('');
-    const [sidebarExpanded, setSidebarExpanded] = useState(true);
     
     useEffect(() => {
         // Format date like YYYY/MM/DD
@@ -24,11 +23,6 @@ const DaySummary = () => {
     // Handle notification click
     const handleNotificationClick = () => {
         console.log('Notifications clicked from Day Summary page');
-    };
-
-    // Handle sidebar toggle
-    const handleSidebarToggle = (expanded) => {
-        setSidebarExpanded(expanded);
     };
 
     // Sample summary data
@@ -89,137 +83,126 @@ const DaySummary = () => {
     ];
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
-            <Sidebar 
-                user={user} 
-                onToggle={handleSidebarToggle}
-            />
-            <div 
-                className="flex-grow overflow-y-auto transition-all duration-300"
-                style={{ 
-                    marginLeft: sidebarExpanded ? '16rem' : '5rem'
-                }}
-            >
-                <div className="p-6">
-                    {/* PageHeader component */}
-                    <div className="mb-8">
-                        <PageHeader 
-                            user={user} 
-                            notificationCount={notificationCount}
-                            onNotificationClick={handleNotificationClick}
-                        />
-                    </div>
-                    
-                    {/* Day Summary specific header */}
-                    <div className="flex justify-between items-center mb-8">
-                        <div>
-                            <h1 className="text-2xl font-bold">Day Summary</h1>
-                            <p className="text-gray-600">Today is - {currentDate}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Button2 text="Print" className="text-sm py-1 px-4" />
-                            <Button2 text="Share" className="text-sm py-1 px-4" />
-                        </div>
-                    </div>
+        <PageLayout user={user}>
+            {/* PageHeader component */}
+            <div className="mb-8">
+                <PageHeader 
+                    user={user} 
+                    notificationCount={notificationCount}
+                    onNotificationClick={handleNotificationClick}
+                />
+            </div>
+            
+            {/* Day Summary specific header */}
+            <div className="flex justify-between items-center mb-8">
+                <div>
+                    <h1 className="text-2xl font-bold">Day Summary</h1>
+                    <p className="text-gray-600">Today is - {currentDate}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button2 text="Print" className="text-sm py-1 px-4" />
+                    <Button2 text="Share" className="text-sm py-1 px-4" />
+                </div>
+            </div>
 
-                    {/* Summary Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        {summaryCards.map((card, index) => (
-                            <div 
-                                key={index} 
-                                className="bg-black-50 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-300"
-                            >
-                                <div className="text-center">
-                                    <div className="font-medium mb-2">{card.title}</div>
-                                    <div className="text-2xl font-bold">{card.value}</div>
-                                    {card.additionalInfo && (
-                                        <div className="text-xs text-gray-600 mt-2">{card.additionalInfo}</div>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Client Categories */}
-                    <div className="bg-gray-100 rounded-lg shadow-md p-6 mb-8">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {/* Clients Reached */}
-                            <div>
-                                <h3 className="font-bold text-lg mb-3">Clients reached</h3>
-                                <div className="space-y-2">
-                                    {clientsData.reached.map((client, index) => (
-                                        <div key={`reached-${index}`} className="pl-2">
-                                            <div className="font-medium">Galle</div>
-                                            <div className="text-sm">Kamal - {client.phone}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* New Cases */}
-                            <div>
-                                <h3 className="font-bold text-lg mb-3">New Cases</h3>
-                                <div className="space-y-2">
-                                    {clientsData.newCases.map((client, index) => (
-                                        <div key={`new-${index}`} className="pl-2">
-                                            <div className="font-medium">Galle</div>
-                                            <div className="text-sm">Kamal - {client.phone}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Closed Cases */}
-                            <div>
-                                <h3 className="font-bold text-lg mb-3">Closed Cases</h3>
-                                <div className="space-y-2">
-                                    {clientsData.closedCases.map((client, index) => (
-                                        <div key={`closed-${index}`} className="pl-2">
-                                            <div className="font-medium">Galle</div>
-                                            <div className="text-sm">Kamal - {client.phone}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {summaryCards.map((card, index) => (
+                    <div 
+                        key={index} 
+                        className="bg-white rounded-lg shadow-sm p-4 hover:shadow-lg transition-shadow duration-300 border border-gray-300"
+                    >
+                        <div className="text-center">
+                            <div className="font-medium mb-2">{card.title}</div>
+                            <div className="text-2xl font-bold">{card.value}</div>
+                            {card.additionalInfo && (
+                                <div className="text-xs text-gray-600 mt-2">{card.additionalInfo}</div>
+                            )}
                         </div>
                     </div>
+                ))}
+            </div>
 
-                    {/* Unread Messages */}
-                    <div className="mb-8">
-                        <h2 className="text-xl font-bold mb-4">Unread Message</h2>
-                        <div className="space-y-4">
-                            {unreadMessages.map((message, index) => (
-                                <div key={index} className="bg-black-50 rounded-lg p-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                        <div>
-                                            <div className="text-sm text-gray-500">Location</div>
-                                            <div className="font-medium">- {message.location}</div>
-                                        </div>
-                                        <div>
-                                            <div className="text-sm text-gray-500">Client</div>
-                                            <div className="font-medium">- {message.client}</div>
-                                        </div>
-                                        <div>
-                                            <div className="text-sm text-gray-500">Description</div>
-                                            <div className="font-medium">- {message.description}</div>
-                                        </div>
-                                    </div>
+            {/* Client Categories */}
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Clients Reached */}
+                    <div>
+                        <h3 className="font-bold text-lg mb-3">Clients reached</h3>
+                        <div className="space-y-2">
+                            {clientsData.reached.map((client, index) => (
+                                <div key={`reached-${index}`} className="pl-2">
+                                    <div className="font-medium">Galle</div>
+                                    <div className="text-sm">Kamal - {client.phone}</div>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* Actions Section */}
-                    <div className="flex justify-between mt-8">
-                        <Button1
-                            text="View All Messages" 
-                            className="text-sm py-2 px-4"
-                        />
-                        
+                    {/* New Cases */}
+                    <div>
+                        <h3 className="font-bold text-lg mb-3">New Cases</h3>
+                        <div className="space-y-2">
+                            {clientsData.newCases.map((client, index) => (
+                                <div key={`new-${index}`} className="pl-2">
+                                    <div className="font-medium">Galle</div>
+                                    <div className="text-sm">Kamal - {client.phone}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Closed Cases */}
+                    <div>
+                        <h3 className="font-bold text-lg mb-3">Closed Cases</h3>
+                        <div className="space-y-2">
+                            {clientsData.closedCases.map((client, index) => (
+                                <div key={`closed-${index}`} className="pl-2">
+                                    <div className="font-medium">Galle</div>
+                                    <div className="text-sm">Kamal - {client.phone}</div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            {/* Unread Messages */}
+            <div className="mb-8">
+                <h2 className="text-xl font-bold mb-4">Unread Message</h2>
+                <div className="space-y-4">
+                    {unreadMessages.map((message, index) => (
+                        <div key={index} className="bg-white rounded-lg p-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <div>
+                                    <div className="text-sm text-gray-500">Location</div>
+                                    <div className="font-medium">- {message.location}</div>
+                                </div>
+                                <div>
+                                    <div className="text-sm text-gray-500">Client</div>
+                                    <div className="font-medium">- {message.client}</div>
+                                </div>
+                                <div>
+                                    <div className="text-sm text-gray-500">Description</div>
+                                    <div className="font-medium">- {message.description}</div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Actions Section */}
+            <div className="flex justify-between mt-8">
+                <Button1
+                    text="View All Messages" 
+                    className="text-sm py-2 px-4"
+                />
+                <Button1 
+                    text="Create New Case" 
+                />
+            </div>
+        </PageLayout>
     );
 };
 
