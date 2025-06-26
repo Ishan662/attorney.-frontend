@@ -137,7 +137,7 @@ const Dashboard = () => {
                         onClick={() => handleStatCardClick(stat.title)}
                     >
                         <div className="flex flex-col items-center">
-                            <div className={`w-14 h-14 flex items-center justify-center text-2xl mb-3 rounded-full ${stat.iconBg}`}>
+                            <div className={`w-14 h-6 flex items-center bg-white justify-center text-2xl mb-3 rounded-full ${stat.iconBg}`}>
                                 {stat.icon}
                             </div>
                             <div className="text-sm text-gray-600 font-medium">{stat.title}</div>

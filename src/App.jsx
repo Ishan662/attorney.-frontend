@@ -22,7 +22,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="admin/dashboard" element={<Dashboard />} />
           <Route path="admin/timeline" element={<Timeline />}/>
-          <Route path='laywer/lawyercalander' element={< Lawyercalander />} />
+          <Route path='lawyer/calendar' element={< Lawyercalander />} />
           <Route path="lawyer/dashboard" element={<Dashboard />} />
           <Route path="lawyer/timeline" element={<Timeline />} />
           <Route path="lawyer/incomes" element={<Incomes />} />
