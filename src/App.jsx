@@ -11,6 +11,7 @@ import AddClient from './pages/Lawyer/AddNewClient';
 import Meetings from './pages/Lawyer/MeetingRequest';
 import Clients from './pages/Lawyer/Clients';
 import ScheduleMeeting from './pages/Client/ScheduleMeeting';
+import Lawyercalander from './pages/Lawyer/Lawyercalender';
 
 
 export default function App() {
@@ -19,6 +20,9 @@ export default function App() {
       <div className="App">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="admin/dashboard" element={<Dashboard />} />
+          <Route path="admin/timeline" element={<Timeline />}/>
+          <Route path='laywer/lawyercalander' element={< Lawyercalander />} />
           <Route path="lawyer/dashboard" element={<Dashboard />} />
           <Route path="lawyer/timeline" element={<Timeline />} />
           <Route path="lawyer/incomes" element={<Incomes />} />

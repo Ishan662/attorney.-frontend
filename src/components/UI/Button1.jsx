@@ -26,7 +26,7 @@ const Button1 = ({
     ...props
 }) => {
     const buttonClasses = `
-    font-bold text-lg py-3 px-6 rounded-md transition-all duration-200
+    font-bold text-md py-2 px-4 rounded-md transition-all duration-200
     ${inverted
             ? 'bg-black text-white hover:bg-gray-800 active:bg-gray-900'
             : 'bg-white text-black hover:bg-gray-100 active:bg-gray-200'} 
