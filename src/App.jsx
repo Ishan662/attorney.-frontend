@@ -6,12 +6,14 @@ import Dashboard from './pages/Lawyer/Dashboard';
 import Timeline from './pages/Lawyer/Timeline';
 import Incomes from './pages/Lawyer/Incomes';
 import DaySummary from './pages/Lawyer/DaySummary';
-import DuePayments from './pages/Lawyer/DuePayments';
 import AddClient from './pages/Lawyer/AddNewClient';
 import Meetings from './pages/Lawyer/MeetingRequest';
 import Clients from './pages/Lawyer/Clients';
 import ScheduleMeeting from './pages/Client/ScheduleMeeting';
 import Lawyercalander from './pages/Lawyer/Lawyercalender';
+import UserSignUp from './pages/Common/UserSignUp';
+import UserLogin from './pages/Common/UserLogin';
+
 import Messages from './pages/Lawyer/AllMessages';
 
 export default function App() {
@@ -32,6 +34,8 @@ export default function App() {
           <Route path="lawyer/clients" element={<Clients />} />
           <Route path="client/schedulemeeting" element={<ScheduleMeeting />} />
           <Route path='/lawyer/messages' element={<Messages />} />
+          <Route path="user/signup" element={<UserSignUp />} />
+          <Route path="user/login" element={<UserLogin />} />
         </Routes>
       </div>
     </Router>
