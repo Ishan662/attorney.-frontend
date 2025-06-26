@@ -13,7 +13,6 @@ import ScheduleMeeting from './pages/Client/ScheduleMeeting';
 import Lawyercalander from './pages/Lawyer/Lawyercalender';
 import UserSignUp from './pages/Common/UserSignUp';
 import UserLogin from './pages/Common/UserLogin';
-
 import Messages from './pages/Lawyer/AllMessages';
 
 export default function App() {
