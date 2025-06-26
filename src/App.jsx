@@ -11,6 +11,7 @@ import AddClient from './pages/Lawyer/AddNewClient';
 import Meetings from './pages/Lawyer/MeetingRequest';
 import Clients from './pages/Lawyer/Clients';
 import ScheduleMeeting from './pages/Client/ScheduleMeeting';
+import Lawyercalander from './pages/Lawyer/Lawyercalender';
 
 
 export default function App() {

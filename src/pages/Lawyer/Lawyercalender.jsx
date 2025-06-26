@@ -3,13 +3,14 @@ import Sidebar from "../../components/layout/Sidebar";
 import Button1 from "../../components/UI/Button1";
 import { FaBriefcase, FaClock } from "react-icons/fa";
 
-const Lawyercalander = () => {
+const Lawyercalender = () => {
   const user = {
     name: "Thusitha",
     email: "jeewanthadeherath@gmail.com",
   };
 
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
   // Format date display like "21st of June, Saturday"
   const formatDateDisplay = (date) => {
@@ -109,8 +110,16 @@ const Lawyercalander = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar user={user} />
-      <div className="flex-grow p-6 overflow-y-auto">
+      <Sidebar
+        user={user}
+        onToggle={(expanded) => setSidebarExpanded(expanded)}
+      />
+      <div
+        className="flex-grow p-6 overflow-y-auto transition-all duration-300"
+        style={{
+          marginLeft: sidebarExpanded ? "16rem" : "5rem", // 16rem = 256px (w-64), 5rem = 80px (w-20)
+        }}
+      >
         <div className="flex gap-6">
           {/* Left Panel */}
           <div className="w-80 bg-white rounded-lg shadow-md p-6 flex flex-col">
@@ -233,4 +242,4 @@ const Lawyercalander = () => {
   );
 };
 
-export default Lawyercalander;
+export default Lawyercalender;
