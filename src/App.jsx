@@ -12,7 +12,7 @@ import Meetings from './pages/Lawyer/MeetingRequest';
 import Clients from './pages/Lawyer/Clients';
 import ScheduleMeeting from './pages/Client/ScheduleMeeting';
 import Lawyercalander from './pages/Lawyer/Lawyercalender';
-
+import Messages from './pages/Lawyer/AllMessages';
 
 export default function App() {
   return (
@@ -31,6 +31,7 @@ export default function App() {
           <Route path="lawyer/meetingrequest" element={<Meetings />} />
           <Route path="lawyer/clients" element={<Clients />} />
           <Route path="client/schedulemeeting" element={<ScheduleMeeting />} />
+          <Route path='/lawyer/messages' element={<Messages />} />
         </Routes>
       </div>
     </Router>
