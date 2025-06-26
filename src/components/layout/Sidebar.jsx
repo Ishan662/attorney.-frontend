@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import logo from '../../assets/images/white_logo.png';
 import miniLogo from '../../assets/images/mini_logo_white.png';
@@ -9,16 +9,23 @@ import UserProfileDropdown from './UserProfileDropdown';
  * @param {Array} menuItems - Array of menu items to display
  * @param {Object} user - User information to display at the bottom
  * @param {boolean} defaultExpanded - Whether the sidebar is expanded by default
+ * @param {Function} onToggle - Callback when sidebar is toggled
  * @param {string} className - Additional CSS classes
  */
 const Sidebar = ({
     menuItems = defaultMenuItems,
     user = null,
     defaultExpanded = true,
+    onToggle = () => { },
     className = '',
 }) => {
     const [expanded, setExpanded] = useState(defaultExpanded);
     const location = useLocation();
+
+    // Notify parent component when expanded state changes
+    useEffect(() => {
+        onToggle(expanded);
+    }, [expanded, onToggle]);
 
     // Toggle sidebar expanded state
     const toggleSidebar = () => {
@@ -26,10 +33,10 @@ const Sidebar = ({
     };
 
     return (
-        <div className="relative">
+        <div className="fixed top-0 left-0 h-screen z-40">
             <aside
                 className={`
-                    flex flex-col h-screen bg-black text-white transition-all duration-300
+                    flex flex-col h-screen bg-black text-white transition-all duration-300 shadow-lg
                     ${expanded ? 'w-64' : 'w-20'} 
                     ${className}
                 `}
@@ -46,7 +53,7 @@ const Sidebar = ({
                 </div>
 
                 {/* Menu items */}
-                <nav className="mt-5 flex-grow">
+                <nav className="mt-5 flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
                     <ul>
                         {menuItems.map((item, index) => {
                             const isActive = location.pathname === item.path;
