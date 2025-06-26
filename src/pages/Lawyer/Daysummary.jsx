@@ -198,9 +198,6 @@ const DaySummary = () => {
                     text="View All Messages" 
                     className="text-sm py-2 px-4"
                 />
-                <Button1 
-                    text="Create New Case" 
-                />
             </div>
         </PageLayout>
     );
