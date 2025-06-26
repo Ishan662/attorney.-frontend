@@ -30,7 +30,7 @@ const Input1 = ({
     ...props
 }) => {
     // Base classes for all inputs
-    const baseClasses = 'w-full text-lg py-3 px-6 rounded-full transition-all duration-200 focus:outline-none';
+    const baseClasses = 'w-full text-md py-3 px-4 rounded-full transition-all duration-200 focus:outline-none';
 
     // Variant-specific classes
     let variantClasses = '';
