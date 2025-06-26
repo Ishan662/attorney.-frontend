@@ -181,7 +181,7 @@ const Dashboard = () => {
                                 </div>
                             ))}
                             <div className="p-2">
-                                <Button1 
+                                <Button1                                
                                     text="Add a case"                                />
                             </div>
                         </div>
