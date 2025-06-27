@@ -4,6 +4,7 @@ import Header from '../../components/layout/Header';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import Input1 from '../../components/UI/Input1';
+import PageHeader from '../../components/layout/PageHeader';
 
 const AddClient = () => {
   return (
@@ -13,17 +14,16 @@ const AddClient = () => {
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col overflow-hidden pl-64">
-        
-
+        <PageHeader />
         {/* Page Title */}
         <div className="px-10 pt-8 pb-2">
-          <h1 className="text-3xl font-bold text-gray-800">Add New Client</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Add New Client</h1>
         </div>
 
         {/* Centered Form */}
         <main className="flex-1 flex items-start justify-center overflow-y-auto">
           <div className="bg-white rounded-xl shadow-lg p-10 w-full max-w-xl">
-            <h2 className="text-2xl font-semibold text-center mb-8">Enter Client Details</h2>
+            <h2 className="text-3xl font-semibold text-center mb-8">Enter Client Details</h2>
             <form>
               <div className="mb-5">
                 <label className="block text-gray-700 mb-2 font-medium">Client Name</label>
