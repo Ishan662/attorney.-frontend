@@ -1,48 +1,46 @@
 import React, { useState } from 'react';
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from 'firebase/auth';
-import { auth } from '../../../firebase'; // Make sure this path is correct
+// Import our new service functions!
+import { signupWithEmail, loginWithEmail, loginWithGoogle } from '../../services/authService'; // Adjust path
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLogin, setIsLogin] = useState(false);
+  const [isLogin, setIsLogin] = useState(true); // Default to login screen
   const [loading, setLoading] = useState(false);
 
-  const handleAuth = async () => {
+  const handleAuth = async (e) => {
+    e.preventDefault(); // Use form submission for better accessibility
     if (!email || !password) {
       setError('Please enter both email and password');
       return;
     }
-
     setLoading(true);
     setError('');
 
     try {
-      const credential = isLogin
-        ? await signInWithEmailAndPassword(auth, email, password)
-        : await createUserWithEmailAndPassword(auth, email, password);
+      const authFunction = isLogin ? loginWithEmail : signupWithEmail;
+      const user = await authFunction(email, password);
 
-      const idToken = await credential.user.getIdToken();
-
-      // Send token to Spring Boot backend
-      const res = await fetch('http://localhost:8080/api/auth/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken }),
-      });
-
-      if (res.ok) {
-        alert(isLogin ? 'Login successful!' : 'Signup successful!');
-      } else {
-        throw new Error('Failed to verify token on backend');
-      }
+      alert(`Success! Welcome, ${user.fullName}`);
+      // Redirect to the main application dashboard after successful login
+      window.location.href = '/dashboard'; 
     } catch (err) {
-      console.error(err);
+      // Firebase provides user-friendly error messages
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const user = await loginWithGoogle();
+      alert(`Success! Welcome, ${user.fullName}`);
+      window.location.href = '/dashboard';
+    } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
@@ -52,31 +50,38 @@ const SignUp = () => {
   return (
     <div style={styles.container}>
       <h2>{isLogin ? 'Login' : 'Sign Up'}</h2>
+      <form onSubmit={handleAuth}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={styles.input}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={styles.input}
+          required
+        />
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        <button type="submit" disabled={loading} style={styles.button}>
+          {loading ? 'Processing...' : isLogin ? 'Login' : 'Sign Up'}
+        </button>
+      </form>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        style={styles.input}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        style={styles.input}
-      />
+      <div style={{ margin: '10px 0', color: '#888' }}>OR</div>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      <button onClick={handleAuth} disabled={loading} style={styles.button}>
-        {loading ? 'Loading...' : isLogin ? 'Login' : 'Sign Up'}
+      <button onClick={handleGoogleAuth} disabled={loading} style={styles.googleButton}>
+        {loading ? '...' : 'Sign In with Google'}
       </button>
 
-      <p style={{ marginTop: '10px' }}>
-        {isLogin ? "Don't have an account?" : "Already have an account?"}
-        &nbsp;
+      <p style={{ marginTop: '20px' }}>
+        {isLogin ? "Don't have an account?" : 'Already have an account?'}
+         
         <span
           onClick={() => setIsLogin(!isLogin)}
           style={{ color: 'blue', cursor: 'pointer' }}
@@ -88,30 +93,18 @@ const SignUp = () => {
   );
 };
 
+// ... (your existing styles object)
 const styles = {
-  container: {
-    maxWidth: '300px',
-    margin: '50px auto',
-    padding: '20px',
-    border: '1px solid #ccc',
-    borderRadius: '8px',
-    fontFamily: 'Arial',
-    textAlign: 'center',
-  },
-  input: {
+  // ... container, input, button ...
+  googleButton: { // Added style for Google button
     width: '100%',
     padding: '10px',
-    margin: '10px 0',
-    boxSizing: 'border-box',
-  },
-  button: {
-    width: '100%',
-    padding: '10px',
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#4285F4',
     color: 'white',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
+    marginTop: '10px'
   },
 };
 

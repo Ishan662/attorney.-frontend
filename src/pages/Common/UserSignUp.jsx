@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import AuthHeader from '../../components/layout/AuthHeader';
+import { signupWithEmail, loginWithEmail, loginWithGoogle } from '../../services/authService'; // Adjust path
+
 
 const UserSignUp = () => {
     const navigate = useNavigate();
@@ -78,22 +80,36 @@ const UserSignUp = () => {
         return Object.keys(tempErrors).length === 0;
     };
 
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (validate()) {
             setIsSubmitting(true);
+            setErrors({}); // Clear previous errors
             try {
-                // Call your API to register the user
-                // const response = await registerUser(formData);
-                console.log('Form submitted successfully', formData);
+                // 1. Create the profileData object from your form's state
+                const profileData = {
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    phoneNumber: formData.phoneNumber, // This will be sent to the backend
+                };
 
-                // Redirect to dashboard or login page after successful registration
-                navigate('/login');
+                // 2. Call the updated signup service function with all the required data
+                const user = await signupWithEmail(formData.email, formData.password, profileData);
+
+                console.log('Form submitted successfully', user);
+                alert(`Welcome, ${user.firstName}! Your account has been created.`);
+
+                // 3. Redirect to the dashboard
+                navigate('/dashboard');
+
             } catch (error) {
                 console.error('Registration error:', error);
+                // Display the error message from Firebase or your backend
                 setErrors({
-                    form: 'Registration failed. Please try again.'
+                    form: error.message || 'Registration failed. Please try again.'
                 });
             } finally {
                 setIsSubmitting(false);
@@ -101,10 +117,27 @@ const UserSignUp = () => {
         }
     };
 
-    const handleGoogleSignup = () => {
-        // Implement Google OAuth sign-up
-        console.log('Google sign-up clicked');
+    // ▼▼▼ REPLACE THIS FUNCTION ▼▼▼
+    const handleGoogleSignup = async () => {
+        setIsSubmitting(true);
+        setErrors({});
+        try {
+            // Call the existing Google login service
+            const user = await loginWithGoogle();
+            console.log('Google sign-up successful', user);
+            alert(`Welcome, ${user.firstName}!`);
+            navigate('/dashboard');
+        } catch (error) {
+            console.error('Google registration error:', error);
+            setErrors({
+                form: error.message || 'Google sign-up failed. Please try again.'
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
+
+
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50  px-4 sm:px-6 lg:px-8 pt-20">
@@ -276,7 +309,7 @@ const UserSignUp = () => {
                 <div className="text-center mt-4">
                     <p className="text-sm">
                         Already have an account?{" "}
-                        <Link to="/login" className="font-medium text-black hover:text-gray-800">
+                        <Link to="/user/login" className="font-medium text-black hover:text-gray-800">
                             Log in
                         </Link>
                     </p>

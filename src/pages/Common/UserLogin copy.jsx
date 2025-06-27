@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import AuthHeader from '../../components/layout/AuthHeader';
-import { loginWithEmail, loginWithGoogle } from '../../services/authService';
 
 const UserLogin = () => {
     const navigate = useNavigate();
@@ -55,20 +54,15 @@ const UserLogin = () => {
 
         if (validate()) {
             setIsSubmitting(true);
-            setErrors({}); // Clear previous errors
             try {
-                // Call the correct service function for logging in with email
-                const user = await loginWithEmail(formData.email, formData.password);
-                
-                console.log('Login successful:', user);
-                alert(`Welcome back, ${user.firstName}!`);
+                // Call your API to log in the user
+                // const response = await loginUser(formData);
+                console.log('Login submitted successfully', formData);
 
-                // Redirect to the dashboard after successful login
+                // Redirect to dashboard after successful login
                 navigate('/dashboard');
-
             } catch (error) {
                 console.error('Login error:', error);
-                // Display a user-friendly error from Firebase or your backend
                 setErrors({
                     form: 'Invalid email or password. Please try again.'
                 });
@@ -78,26 +72,9 @@ const UserLogin = () => {
         }
     };
 
-    const handleGoogleLogin = async () => {
-        setIsSubmitting(true);
-        setErrors({});
-        try {
-            // Call the correct service function for Google login
-            const user = await loginWithGoogle();
-
-            console.log('Google login successful:', user);
-            alert(`Welcome back, ${user.firstName}!`);
-            
-            navigate('/dashboard');
-
-        } catch (error) {
-            console.error('Google login error:', error);
-            setErrors({
-                form: error.message || 'Google login failed. Please try again.'
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
+    const handleGoogleLogin = () => {
+        // Implement Google OAuth login
+        console.log('Google login clicked');
     };
 
     const handleAppleLogin = () => {
@@ -251,7 +228,7 @@ const UserLogin = () => {
                 <div className="text-center mt-4">
                     <p className="text-sm">
                         Don't have an account?{" "}
-                        <Link to="/user/signup" className="font-medium text-black hover:text-gray-800">
+                        <Link to="user/signup" className="font-medium text-black hover:text-gray-800">
                             Sign up
                         </Link>
                     </p>
