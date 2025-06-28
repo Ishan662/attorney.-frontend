@@ -16,6 +16,7 @@ import UserLogin from './pages/Common/UserLogin';
 import CaseProfiles from './pages/Lawyer/CaseProfile';
 import CaseDetails from './pages/Lawyer/CaseDetails';
 import NewCaseProfile from './pages/Lawyer/NewCaseProfile';
+import Cases from './pages/Lawyer/Cases';
 
 
 export default function App() {
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="lawyer/caseprofile" element={<CaseProfiles />} />
           <Route path="lawyer/casedetails" element={<CaseDetails />} />
           <Route path="lawyer/newcaseprofile" element={<NewCaseProfile />} />
+          <Route path="lawyer/cases" element={<Cases />} />
         </Routes>
       </div>
     </Router>
