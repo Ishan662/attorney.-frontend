@@ -4,6 +4,7 @@ import Header from '../../components/layout/Header';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import Input1 from '../../components/UI/Input1';
+import PageHeader from '../../components/layout/PageHeader';
 
 const meetingRequests = [
   {
@@ -43,17 +44,13 @@ const Meetings = () => (
 
     {/* Main content */}
     <div className="flex-1 flex flex-col overflow-hidden pl-64">
-      
-
-      {/* Page Title */}
-      <div className="px-10 pt-8 pb-2">
-        <h1 className="text-3xl font-bold text-gray-800">Client Meeting Requests</h1>
-      </div>
+      <PageHeader />
+    
 
       {/* Meeting Requests */}
       <main className="flex-1 flex items-start justify-center overflow-y-auto">
         <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-2xl mt-4">
-          <h2 className="text-xl font-semibold text-center mb-8">Incoming Client Requests</h2>
+          <h2 className="text-3xl font-semibold text-center mb-8">Incoming Client Requests</h2>
           <div className="space-y-6">
             {meetingRequests.map((req, idx) => (
               <div key={idx} className="border rounded-lg p-5 bg-gray-50">
