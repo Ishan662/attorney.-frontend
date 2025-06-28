@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 /**
  * Reusable page header component with welcome message, date and notifications
@@ -13,6 +12,36 @@ const PageHeader = ({
     onNotificationClick = () => console.log("Notification clicked")
 }) => {
     const [currentDate, setCurrentDate] = useState("");
+    const [showNotifications, setShowNotifications] = useState(false);
+    const notificationRef = useRef(null);
+    
+    // Sample notifications data
+    const notifications = [
+        {
+            id: 1,
+            message: "New message from John Doe",
+            time: "10 minutes ago",
+            read: false
+        },
+        {
+            id: 2,
+            message: "Upcoming hearing for Case #4323",
+            time: "1 hour ago",
+            read: false
+        },
+        {
+            id: 3,
+            message: "Payment received from Alice Johnson",
+            time: "3 hours ago",
+            read: true
+        },
+        {
+            id: 4,
+            message: "Document uploaded for review",
+            time: "Yesterday",
+            read: true
+        }
+    ];
     
     useEffect(() => {
         const today = new Date();
@@ -23,6 +52,32 @@ const PageHeader = ({
         });
         setCurrentDate(formattedDate);
     }, []);
+    
+    // Close notifications when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+                setShowNotifications(false);
+            }
+        }
+        
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [notificationRef]);
+    
+    // Handle notification bell click
+    const handleNotificationClick = () => {
+        setShowNotifications(!showNotifications);
+        onNotificationClick();
+    };
+    
+    // Mark all notifications as read
+    const markAllAsRead = () => {
+        console.log("Marked all notifications as read");
+        // In a real app, you would update your state/backend here
+    };
 
     return (
         <div className="flex justify-between items-center w-full">
@@ -31,7 +86,8 @@ const PageHeader = ({
                 <div className="text-gray-500">Today is: {currentDate}</div>
                 <div 
                     className="relative cursor-pointer"
-                    onClick={onNotificationClick}
+                    onClick={handleNotificationClick}
+                    ref={notificationRef}
                 >
                     <svg 
                         xmlns="http://www.w3.org/2000/svg" 
@@ -50,6 +106,52 @@ const PageHeader = ({
                     {notificationCount > 0 && (
                         <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
                             {notificationCount}
+                        </div>
+                    )}
+                    
+                    {/* Notification Dropdown */}
+                    {showNotifications && (
+                        <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg z-50 overflow-hidden">
+                            <div className="py-2 px-4 bg-gray-100 flex justify-between items-center">
+                                <h3 className="text-sm font-semibold text-gray-700">Notifications</h3>
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        markAllAsRead();
+                                    }} 
+                                    className="text-xs text-blue-600 hover:text-blue-800"
+                                >
+                                    Mark all as read
+                                </button>
+                            </div>
+                            <div className="max-h-96 overflow-y-auto">
+                                {notifications.length > 0 ? (
+                                    <div>
+                                        {notifications.map(notification => (
+                                            <div 
+                                                key={notification.id} 
+                                                className={`px-4 py-3 border-b border-gray-100 hover:bg-gray-50 ${!notification.read ? 'bg-blue-50' : ''}`}
+                                            >
+                                                <div className="flex justify-between items-start">
+                                                    <div className="flex-1">
+                                                        <p className={`text-sm ${!notification.read ? 'font-medium' : ''}`}>{notification.message}</p>
+                                                        <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                                                    </div>
+                                                    {!notification.read && (
+                                                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-1"></div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="px-4 py-6 text-center text-gray-500">
+                                        No notifications
+                                    </div>
+                                )}
+                            </div>
+                            <div className="py-2 px-4 bg-gray-100 text-center">
+                            </div>
                         </div>
                     )}
                 </div>
