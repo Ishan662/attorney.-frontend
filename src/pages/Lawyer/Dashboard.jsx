@@ -34,7 +34,7 @@ const Dashboard = () => {
             navigate("/lawyer/day-summary");
         }
         else if(title === "Due Payments") {
-            navigate("/lawyer/due-payments");
+            navigate("/lawyer/duepayments");
         }
         // Add other navigation options as needed
     };
@@ -166,6 +166,8 @@ const Dashboard = () => {
                     <div className="p-2">
                         <Button1 
                             text="Add a case"
+                            onClick={() => navigate("/lawyer/newcaseprofile")}
+
                         />
                     </div>
                 </div>

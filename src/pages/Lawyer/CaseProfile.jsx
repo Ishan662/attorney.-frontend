@@ -100,7 +100,7 @@ const CaseProfiles = () => {
               </div>
               <div className="flex gap-3">
                 <Button1 text="Close Case" />
-                <Button1 text="View Details" inverted={false} className="flex items-center">
+                <Button1 text="View Details" inverted={false} className="flex items-center" to="/lawyer/casedetails">
                   <span>View Details</span>
                   <span className="ml-2">&rarr;</span>
                 </Button1>
