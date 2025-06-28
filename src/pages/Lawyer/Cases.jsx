@@ -3,6 +3,7 @@ import { Search, ChevronDown } from 'lucide-react';
 import Sidebar from '../../components/layout/Sidebar';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
+import Input1 from '../../components/UI/Input1';
 import PageHeader from '../../components/layout/PageHeader';
 import { useNavigate } from 'react-router-dom';
 
@@ -186,19 +187,18 @@ const Cases = () => {
                         <h1 className="text-2xl font-semibold mb-2">Cases</h1>
                         <p className="text-gray-600">Manage all your cases in one place</p>
                     </div>
-                    <Button1 text="+ Add Case" inverted={false} onClick={() => navigate('/lawyer/newcaseprofile')} />
+                    <Button1 text="+ Add Case" onClick={() => navigate('/lawyer/newcaseprofile')} />
                 </div>
 
                 {/* Search Bar */}
                 <div className="mb-6">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <input
+                    <div className="relative w-64">
+                        <Input1
                             type="text"
                             placeholder="Search cases"
                             value={searchTerm}
+                            variant="outlined"
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         />
                     </div>
                 </div>
@@ -223,7 +223,7 @@ const Cases = () => {
 
                 {/* Filters */}
                 <div className="flex flex-wrap gap-4 mb-6">
-                    <span className="inline-block px-3 py-1 bg-orange-500 text-white text-sm rounded-full">
+                    <span className="inline-block px-3 py-1 bg-black text-white text-sm rounded-full">
                         Cases
                     </span>
 
@@ -256,58 +256,77 @@ const Cases = () => {
                     />
                 </div>
 
-                {/* Table */}
-                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-gray-50 border-b border-gray-200">
-                                <tr>
-                                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Case Name</th>
-                                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Case Type</th>
-                                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Case Number</th>
-                                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Court</th>
-                                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Next Hearing Date</th>
-                                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Status</th>
-                                    <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Payment Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {filteredCases.map((caseItem) => (
-                                    <tr key={caseItem.id} className="hover:bg-gray-50 cursor-pointer">
-                                        <td className="px-6 py-4">
-                                            <div className="text-sm font-medium text-gray-900">{caseItem.name}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="text-sm text-gray-600">{caseItem.type}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="text-sm text-gray-600">{caseItem.caseNumber}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="text-sm text-gray-600">{caseItem.court}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="text-sm text-gray-600">{caseItem.nextHearingDate}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={getStatusBadge(caseItem.status)}>
-                                                {caseItem.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={getPaymentStatusBadge(caseItem.paymentStatus)}>
-                                                {caseItem.paymentStatus}
-                                            </span>
-                                        </td>
+                {/* Table or Cards */}
+                {activeTab === 'Table' ? (
+                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-gray-50 border-b border-gray-200">
+                                    <tr>
+                                        <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Case Name</th>
+                                        <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Case Type</th>
+                                        <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Case Number</th>
+                                        <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Court</th>
+                                        <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Next Hearing Date</th>
+                                        <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Status</th>
+                                        <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Payment Status</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {filteredCases.map((caseItem) => (
+                                        <tr key={caseItem.id} className="hover:bg-gray-50 cursor-pointer">
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm font-medium text-gray-900">{caseItem.name}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm text-gray-600">{caseItem.type}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm text-gray-600">{caseItem.caseNumber}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm text-gray-600">{caseItem.court}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm text-gray-600">{caseItem.nextHearingDate}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={getStatusBadge(caseItem.status)}>
+                                                    {caseItem.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={getPaymentStatusBadge(caseItem.paymentStatus)}>
+                                                    {caseItem.paymentStatus}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredCases.map((caseItem) => (
+                            <div key={caseItem.id} className="bg-white rounded-lg shadow p-6">
+                                <h2 className="text-lg font-semibold mb-2">{caseItem.name}</h2>
+                                <div className="text-sm text-gray-600 mb-1">Type: {caseItem.type}</div>
+                                <div className="text-sm text-gray-600 mb-1">Case #: {caseItem.caseNumber}</div>
+                                <div className="text-sm text-gray-600 mb-1">Court: {caseItem.court}</div>
+                                <div className="text-sm text-gray-600 mb-1">Next Hearing: {caseItem.nextHearingDate}</div>
+                                <div className="mb-1">
+                                    <span className={getStatusBadge(caseItem.status)}>{caseItem.status}</span>
+                                </div>
+                                <div>
+                                    <span className={getPaymentStatusBadge(caseItem.paymentStatus)}>{caseItem.paymentStatus}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </main>
         </div>
     );
 };
-
 export default Cases;
