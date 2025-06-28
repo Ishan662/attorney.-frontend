@@ -2,6 +2,7 @@ import React from 'react';
 import Sidebar from '../../components/layout/Sidebar';
 import Header from '../../components/layout/Header';
 import Button1 from '../../components/UI/Button1';
+import PageHeader from '../../components/layout/PageHeader';
 
 const clients = [
   {
@@ -45,21 +46,17 @@ const Clients = () => (
   <div className="flex h-screen bg-gray-100">
     {/* Sidebar */}
     <Sidebar />
+    
 
     {/* Main content */}
     <div className="flex-1 flex flex-col overflow-hidden pl-64">
+      <PageHeader/>
       
-
-      {/* Page Title and Add Button */}
-      <div className="flex items-center justify-between px-10 pt-8 pb-2">
-        <h1 className="text-3xl font-bold text-gray-800">Clients in System</h1>
-        <Button1 text="+ Add New Client" className="w-60" to="/admin/addnewclient" />
-      </div>
 
       {/* Client Roster */}
       <main className="flex-1 flex items-start justify-center overflow-y-auto">
         <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-2xl mt-4 mb-8">
-          <h2 className="text-xl font-semibold text-center mb-8">Your Client Roster</h2>
+          <h2 className="text-xl font-semibold text-center mb-8">Your Clients</h2>
           <div className="space-y-4">
             {clients.map((client, idx) => (
               <div key={idx} className="bg-gray-50 rounded-lg p-5 border">
