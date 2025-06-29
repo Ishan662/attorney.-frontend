@@ -6,12 +6,17 @@ import Dashboard from './pages/Lawyer/Dashboard';
 import Timeline from './pages/Lawyer/Timeline';
 import Incomes from './pages/Lawyer/Incomes';
 import DaySummary from './pages/Lawyer/DaySummary';
-import DuePayments from './pages/Lawyer/DuePayments';
 import AddClient from './pages/Lawyer/AddNewClient';
 import Meetings from './pages/Lawyer/MeetingRequest';
 import Clients from './pages/Lawyer/Clients';
 import ScheduleMeeting from './pages/Client/ScheduleMeeting';
 import Lawyercalander from './pages/Lawyer/Lawyercalender';
+import UserSignUp from './pages/Common/UserSignUp';
+import UserLogin from './pages/Common/UserLogin';
+import CaseProfiles from './pages/Lawyer/CaseProfile';
+import CaseDetails from './pages/Lawyer/CaseDetails';
+import NewCaseProfile from './pages/Lawyer/NewCaseProfile';
+import Cases from './pages/Lawyer/Cases';
 
 
 export default function App() {
@@ -22,7 +27,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="admin/dashboard" element={<Dashboard />} />
           <Route path="admin/timeline" element={<Timeline />}/>
-          <Route path='laywer/lawyearcalander' element={< Lawyercalander />} />
+          <Route path='laywer/lawyercalander' element={< Lawyercalander />} />
           <Route path="lawyer/dashboard" element={<Dashboard />} />
           <Route path="lawyer/timeline" element={<Timeline />} />
           <Route path="lawyer/incomes" element={<Incomes />} />
@@ -31,6 +36,12 @@ export default function App() {
           <Route path="lawyer/meetingrequest" element={<Meetings />} />
           <Route path="lawyer/clients" element={<Clients />} />
           <Route path="client/schedulemeeting" element={<ScheduleMeeting />} />
+          <Route path="user/signup" element={<UserSignUp />} />
+          <Route path="user/login" element={<UserLogin />} />
+          <Route path="lawyer/caseprofile" element={<CaseProfiles />} />
+          <Route path="lawyer/casedetails" element={<CaseDetails />} />
+          <Route path="lawyer/newcaseprofile" element={<NewCaseProfile />} />
+          <Route path="lawyer/cases" element={<Cases />} />
         </Routes>
       </div>
     </Router>
