@@ -22,6 +22,7 @@ import DuePayments from './pages/Lawyer/DuePayments';
 import AdminDashboard from './pages/Admin/Dashboard';
 import AddJunior from './pages/Lawyer/AddNewJunior';
 import SystemSettings from './pages/Admin/SystemSettings';
+import PackageManagement from './pages/Admin/PackageManagement';
 
 export default function App() {
   return (
@@ -50,6 +51,7 @@ export default function App() {
           <Route path="lawyer/duepayments" element={<DuePayments />} />
           <Route path="lawyer/addnewjunior" element={<AddJunior />} />
           <Route path="admin/systemsettings" element={<SystemSettings />} />
+          <Route path="admin/packagemanagement" element={<PackageManagement />} />
         </Routes>
       </div>
     </Router>
