@@ -19,7 +19,7 @@ import CaseDetails from './pages/Lawyer/CaseDetails';
 import NewCaseProfile from './pages/Lawyer/NewCaseProfile';
 import Cases from './pages/Lawyer/Cases';
 import DuePayments from './pages/Lawyer/DuePayments';
-import AdminDashboard from './pages/Admin/Dashboard';
+import AdminDashboard from './pages/Admin/AdminDashboard';
 import AddJunior from './pages/Lawyer/AddNewJunior';
 import SystemSettings from './pages/Admin/SystemSettings';
 import PackageManagement from './pages/Admin/PackageManagement';
