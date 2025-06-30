@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Sidebar from '../../components/layout/Sidebar';
+import PageLayout from '../../components/layout/PageLayout';
 import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
@@ -35,6 +35,7 @@ const initialState = {
 
 const NewCaseProfile = () => {
   const [form, setForm] = useState(initialState);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -47,15 +48,13 @@ const NewCaseProfile = () => {
     alert('Case profile submitted!');
   };
 
-  const navigate = useNavigate();
-
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar user={user} />
-      <main className="flex-1 ml-20 md:ml-64 p-6 md:p-10">
+    <PageLayout user={user}>
+      {/* Center content with flex and max-width */}
+      <div className="flex flex-col items-center w-full">
         <h1 className="text-2xl font-semibold mb-6">Add New Case Profile</h1>
-        <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl">
-
+        
+        <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-4xl mx-auto">
           {/* Case Overview */}
           <section className="bg-white rounded-lg p-8 shadow-sm">
             <h2 className="text-xl font-semibold mb-4">New Case</h2>
@@ -67,7 +66,7 @@ const NewCaseProfile = () => {
                 onChange={handleChange}
                 placeholder="Case Name"
                 className="mt-2"
-              variant="outlined"
+                variant="outlined"
                 required
               />
               <Input1
@@ -77,7 +76,7 @@ const NewCaseProfile = () => {
                 onChange={handleChange}
                 placeholder="Type of Case"
                 className="mt-2"
-              variant="outlined"
+                variant="outlined"
                 required
               />
               <Input1
@@ -87,7 +86,7 @@ const NewCaseProfile = () => {
                 onChange={handleChange}
                 placeholder="Case Number"
                 className="mt-2"
-              variant="outlined"
+                variant="outlined"
                 required
               />
               <Input1
@@ -97,7 +96,7 @@ const NewCaseProfile = () => {
                 onChange={handleChange}
                 placeholder="Case Status"
                 className="mt-2"
-              variant="outlined"
+                variant="outlined"
                 required
               />
             </div>
@@ -124,7 +123,7 @@ const NewCaseProfile = () => {
                 onChange={handleChange}
                 placeholder="Client Name"
                 className="mt-2"
-              variant="outlined"
+                variant="outlined"
                 required
               />
               <Input1
@@ -134,7 +133,7 @@ const NewCaseProfile = () => {
                 onChange={handleChange}
                 placeholder="Opposing Party Name"
                 className="mt-2"
-              variant="outlined"
+                variant="outlined"
               />
               <Input1
                 label="Client Phone"
@@ -143,7 +142,7 @@ const NewCaseProfile = () => {
                 onChange={handleChange}
                 placeholder="Client Phone Number"
                 className="mt-2"
-              variant="outlined"
+                variant="outlined"
                 required
               />
               <Input1
@@ -153,12 +152,12 @@ const NewCaseProfile = () => {
                 onChange={handleChange}
                 placeholder="Junior Lawyer Name"
                 className="mt-2"
-              variant="outlined"
+                variant="outlined"
               />
             </div>
-             <div className="flex justify-between mt-4 gap-4">
-              <Button1 text="Add New Client" type="button" onClick={()=> navigate('/lawyer/addnewclient')} />
-              <Button1 text="Add New Juniour Lawyer" onClick={()=> navigate('/lawyer/addnewjunior')} type="button" />
+            <div className="flex justify-center mt-6 gap-6">
+              <Button1 text="Add New Client" type="button" onClick={() => navigate('/lawyer/addnewclient')} />
+              <Button1 text="Add New Junior Lawyer" onClick={() => navigate('/lawyer/addnewjunior')} type="button" />
             </div>
           </section>
 
@@ -173,7 +172,7 @@ const NewCaseProfile = () => {
                 onChange={handleChange}
                 placeholder="Agreed Fee Amount"
                 className="mt-2"
-              variant="outlined"
+                variant="outlined"
                 required
               />
               <div>
@@ -198,7 +197,7 @@ const NewCaseProfile = () => {
                 onChange={handleChange}
                 placeholder="Total Expenses Incurred"
                 className="mt-2"
-              variant="outlined"
+                variant="outlined"
               />
               <Input1
                 label="Invoiced Amount"
@@ -207,18 +206,18 @@ const NewCaseProfile = () => {
                 onChange={handleChange}
                 placeholder="Invoice Amount"
                 className="mt-2"
-              variant="outlined"
+                variant="outlined"
               />
             </div>
           </section>
 
           {/* Submit Button */}
-          <div className="flex justify-end mt-4">
-            <Button1 text="Create Case Profile" type="submit"  />
+          <div className="flex justify-center mt-6">
+            <Button1 text="Create Case Profile" type="submit" className="px-8" />
           </div>
         </form>
-      </main>
-    </div>
+      </div>
+    </PageLayout>
   );
 };
 

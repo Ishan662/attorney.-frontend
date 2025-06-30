@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import AuthHeader from '../../components/layout/AuthHeader';
+import { Navigate } from 'react-router-dom';
 
 const UserSignUp = () => {
     const navigate = useNavigate();
@@ -276,7 +277,7 @@ const UserSignUp = () => {
                 <div className="text-center mt-4">
                     <p className="text-sm">
                         Already have an account?{" "}
-                        <Link to="/login" className="font-medium text-black hover:text-gray-800">
+                        <Link to="user/login" className="font-medium text-black hover:text-gray-800">
                             Log in
                         </Link>
                     </p>
