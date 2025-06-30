@@ -19,6 +19,7 @@ import CaseDetails from './pages/Lawyer/CaseDetails';
 import NewCaseProfile from './pages/Lawyer/NewCaseProfile';
 import Cases from './pages/Lawyer/Cases';
 import DuePayments from './pages/Lawyer/DuePayments';
+import AdminDashboard from './pages/Admin/Dashboard';
 
 export default function App() {
   return (
@@ -26,7 +27,7 @@ export default function App() {
       <div className="App">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="admin/dashboard" element={<Dashboard />} />
+          <Route path="admin/dashboard" element={<AdminDashboard />} />
           <Route path="admin/timeline" element={<Timeline />}/>
           <Route path='lawyer/calendar' element={< Lawyercalander />} />
           <Route path="lawyer/dashboard" element={<Dashboard />} />

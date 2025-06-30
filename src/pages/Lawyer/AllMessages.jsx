@@ -171,15 +171,13 @@ const Messages = () => {
                     onNotificationClick={handleNotificationClick}
                 />
             </div>
-            
+
             {/* Messages specific header */}
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-2xl font-bold">All Messages</h1>
                     <p className="text-gray-600">Manage all your client communications</p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button2 onClick={handleBackToDaySummary} text="Back to Summary" className="text-sm py-1 px-4" />                </div>
             </div>
             
             {/* Filters and search */}

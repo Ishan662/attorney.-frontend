@@ -197,6 +197,7 @@ const DaySummary = () => {
                 <Button1
                     text="View All Messages" 
                     className="text-sm py-2 px-4"
+                    to = "/lawyer/messages"
                 />
             </div>
         </PageLayout>
