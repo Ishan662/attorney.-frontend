@@ -20,6 +20,8 @@ import NewCaseProfile from './pages/Lawyer/NewCaseProfile';
 import Cases from './pages/Lawyer/Cases';
 import DuePayments from './pages/Lawyer/DuePayments';
 import AdminDashboard from './pages/Admin/Dashboard';
+import AddJunior from './pages/Lawyer/AddNewJunior';
+import SystemSettings from './pages/Admin/SystemSettings';
 
 export default function App() {
   return (
@@ -46,6 +48,8 @@ export default function App() {
           <Route path="lawyer/newcaseprofile" element={<NewCaseProfile />} />
           <Route path="lawyer/cases" element={<Cases />} />
           <Route path="lawyer/duepayments" element={<DuePayments />} />
+          <Route path="lawyer/addnewjunior" element={<AddJunior />} />
+          <Route path="admin/systemsettings" element={<SystemSettings />} />
         </Routes>
       </div>
     </Router>
