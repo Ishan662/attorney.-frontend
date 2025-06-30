@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/layout/Sidebar";
 import Button1 from "../../components/UI/Button1";
 import { FaBriefcase, FaClock } from "react-icons/fa";
 
 const Lawyercalender = () => {
+  const navigate = useNavigate();
+
   const user = {
     name: "Thusitha",
     email: "jeewanthadeherath@gmail.com",
@@ -11,6 +14,7 @@ const Lawyercalender = () => {
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [viewMode, setViewMode] = useState("month");
 
   // Format date display like "21st of June, Saturday"
   const formatDateDisplay = (date) => {
@@ -108,6 +112,14 @@ const Lawyercalender = () => {
 
   const weekDays = ["S", "M", "T", "W", "T", "F", "S"];
 
+  // Navigate to scheduling form on time slot click
+  const handleTimeSlotClick = (timeSlot) => {
+    // Pass selected date and time slot as state or params if needed
+    navigate("/lawyer/schedule-meeting", {
+      state: { date: selectedDate, timeSlot },
+    });
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar
@@ -122,42 +134,22 @@ const Lawyercalender = () => {
       >
         <div className="flex gap-6">
           {/* Left Panel */}
-          <div className="w-80 bg-white rounded-lg shadow-md p-6 flex flex-col">
+          <div className="w-80 bg-white rounded-lg shadow-md p-6 flex flex-col h-screen overflow-y-auto">
+            {/* Month view with weekday headers and calendar days */}
+            <div className="text-center font-semibold mb-4">
+              {selectedDate.toLocaleDateString("en-US", {
+                month: "long",
+                year: "numeric",
+              })}
+            </div>
             <Button1 text="Add Hearing" className="mb-6" />
 
-            {/* Month and navigation */}
-            <div className="flex items-center justify-center mb-4">
-              <button
-                onClick={prevMonth}
-                className="p-1 rounded hover:bg-gray-200"
-                aria-label="Previous Month"
-              >
-                &#8249;
-              </button>
-              <div className="flex-grow text-center font-semibold">
-                {selectedDate.toLocaleDateString("en-US", {
-                  month: "long",
-                  year: "numeric",
-                })}
-              </div>
-              <button
-                onClick={nextMonth}
-                className="p-1 rounded hover:bg-gray-200"
-                aria-label="Next Month"
-              >
-                &#8250;
-              </button>
-            </div>
-
-            {/* Weekday headers */}
             <div className="grid grid-cols-7 text-center text-xs font-medium text-gray-500 mb-2">
               {weekDays.map((day, idx) => (
                 <div key={idx}>{day}</div>
               ))}
             </div>
-
-            {/* Calendar days */}
-            <div className="grid grid-cols-7 gap-1 mb-6">
+            <div className="grid grid-cols-7 gap-1 mb-6 h-[300px] overflow-y-auto">
               {generateCalendarDays().map((date, idx) =>
                 date ? (
                   <button
@@ -165,8 +157,8 @@ const Lawyercalender = () => {
                     onClick={() => setSelectedDate(date)}
                     className={`text-center py-1 rounded ${
                       date.toDateString() === selectedDate.toDateString()
-                        ? "bg-blue-600 text-white"
-                        : "hover:bg-blue-100"
+                        ? "bg-black-600 text-white"
+                        : "hover:bg-black-100"
                     }`}
                   >
                     {date.getDate()}
@@ -197,7 +189,7 @@ const Lawyercalender = () => {
             </div>
 
             {/* Free Time Slots */}
-            <div>
+            <div className="overflow-y-auto flex-grow">
               <h3 className="font-semibold mb-2">Free Time Slots</h3>
               {freeTimeSlots.map((slot, idx) => (
                 <div
@@ -218,23 +210,75 @@ const Lawyercalender = () => {
             </div>
           </div>
 
-          {/* Right Panel - Day Summary */}
-          <div className="flex-grow bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold mb-4">
-              {formatDateDisplay(selectedDate)}
-            </h2>
-            <div className="divide-y divide-gray-200">
-              {dayTimeSlots.map((slot, idx) => (
-                <div
-                  key={idx}
-                  className={`py-3 px-4 ${
-                    idx % 2 === 0 ? "bg-gray-50" : "bg-white"
-                  }`}
-                >
-                  {slot}
-                </div>
-              ))}
+          {/* Right Panel - Day Summary with dropdown */}
+          <div className="flex-grow bg-white rounded-lg shadow-md p-6 min-h-[600px]">
+            {/* Dropdown to select view mode */}
+            <div className="mb-4">
+              <select
+                value={viewMode}
+                onChange={(e) => setViewMode(e.target.value)}
+                className="border border-gray-300 rounded px-2 py-1 text-sm"
+                aria-label="Select view mode"
+              >
+                <option value="date">Date</option>
+                <option value="month">Month</option>
+              </select>
             </div>
+
+            {viewMode === "date" ? (
+              <>
+                <h2 className="text-lg font-semibold mb-4">
+                  {formatDateDisplay(selectedDate)}
+                </h2>
+                <div className="divide-y divide-gray-200">
+                  {dayTimeSlots.map((slot, idx) => (
+                    <button
+                      key={idx}
+                      className={`w-full text-left py-3 px-4 ${
+                        idx % 2 === 0 ? "bg-gray-50" : "bg-white"
+                      } hover:bg-blue-100 rounded`}
+                      onClick={() => handleTimeSlotClick(slot)}
+                    >
+                      {slot}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Month view with weekday headers and calendar days */}
+                <h2 className="text-lg font-semibold mb-4">
+                  {selectedDate.toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </h2>
+                <div className="grid grid-cols-7 text-center text-xs font-medium text-gray-500 mb-2">
+                  {weekDays.map((day, idx) => (
+                    <div key={idx}>{day}</div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7 gap-1 mb-6 h-[500px] overflow-y-auto">
+                  {generateCalendarDays().map((date, idx) =>
+                    date ? (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedDate(date)}
+                        className={`text-center py-1 rounded ${
+                          date.toDateString() === selectedDate.toDateString()
+                            ? "bg-black-600 text-white"
+                            : "hover:bg-black-100"
+                        }`}
+                      >
+                        {date.getDate()}
+                      </button>
+                    ) : (
+                      <div key={idx}></div>
+                    )
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

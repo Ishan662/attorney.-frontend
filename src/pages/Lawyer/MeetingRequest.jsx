@@ -45,7 +45,7 @@ const Meetings = () => (
     {/* Main content */}
     <div className="flex-1 flex flex-col overflow-hidden pl-64">
       <PageHeader />
-    
+
 
       {/* Meeting Requests */}
       <main className="flex-1 flex items-start justify-center overflow-y-auto">
@@ -66,7 +66,7 @@ const Meetings = () => (
                 <Input1
                   name={`meeting-link-${idx}`}
                   placeholder="Meeting Link or Location"
-                   variant="outlined"
+                  variant="outlined"
                   className="mb-4"
                 />
                 <div className="flex gap-3 justify-end">
