@@ -49,6 +49,7 @@ const SystemSettings = () => {
     const user = {
         name: 'Admin',
         email: 'admin@lawyermanagement.com',
+        role: 'admin'
     };
 
     const handleNotificationClick = () => {
