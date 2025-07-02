@@ -23,6 +23,7 @@ import AdminDashboard from './pages/Admin/AdminDashboard';
 import AddJunior from './pages/Lawyer/AddNewJunior';
 import SystemSettings from './pages/Admin/SystemSettings';
 import PackageManagement from './pages/Admin/PackageManagement';
+import NotFoundPage from './pages/Common/404';
 
 export default function App() {
   return (
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="lawyer/addnewjunior" element={<AddJunior />} />
           <Route path="admin/systemsettings" element={<SystemSettings />} />
           <Route path="admin/packagemanagement" element={<PackageManagement />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>
     </Router>
