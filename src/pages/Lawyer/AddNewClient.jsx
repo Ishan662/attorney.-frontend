@@ -83,7 +83,7 @@ const AddClient = () => {
             <div className="mb-5">
               <label className="block text-gray-700 mb-2 font-medium">Email Address</label>
               <Input1
-                type="email"
+                type="email" // this is the email
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
