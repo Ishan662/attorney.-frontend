@@ -77,8 +77,7 @@ const NotFoundPage = () => {
             <Button1
               text="Go to Dashboard" 
               onClick={() => navigate('/client/dashboard')}
-              className="px-6 py-3 bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50"
-            />
+                          />
           </div>
         </div>
       </div>      
