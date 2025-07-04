@@ -30,10 +30,7 @@ const NotFoundPage = () => {
       <div className="w-full max-w-7xl flex justify-between items-center mb-12">
         <Link to="/" className="flex items-center">
           <div className="flex items-center space-x-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-            </svg>
-            <span className="font-bold text-xl text-gray-800">Attorney Management</span>
+            <span className="font-bold text-xl text-gray-800">attorney.</span>
           </div>
         </Link>
       </div>
