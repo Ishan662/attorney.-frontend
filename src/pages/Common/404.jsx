@@ -81,20 +81,7 @@ const NotFoundPage = () => {
             />
           </div>
         </div>
-      </div>
-
-      {/* Legal scales animation at the bottom */}
-      <div className="mt-12 relative">
-        <div className="animation-scale w-32 h-12 relative mx-auto">
-          <div className="absolute top-0 left-0 w-full flex justify-center">
-            <div className="h-12 w-1 bg-blue-600"></div>
-          </div>
-          <div className="absolute top-8 w-full flex justify-between">
-            <div className="h-4 w-14 rounded-b bg-blue-600 animate-balance-left"></div>
-            <div className="h-4 w-14 rounded-b bg-blue-600 animate-balance-right"></div>
-          </div>
-        </div>
-      </div>
+      </div>      
 
       {/* Footer */}
       <div className="mt-16 text-center text-gray-600">
