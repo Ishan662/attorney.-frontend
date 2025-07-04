@@ -30,7 +30,7 @@ const NotFoundPage = () => {
       <div className="w-full max-w-7xl flex justify-between items-center mb-12">
         <Link to="/" className="flex items-center">
           <div className="flex items-center space-x-2">
-            <span className="font-bold text-xl text-gray-800">attorney.</span>
+            <span className="text-4xl font-bold text-gray-800">attorney.</span>
           </div>
         </Link>
       </div>
