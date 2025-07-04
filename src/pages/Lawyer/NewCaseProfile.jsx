@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import Sidebar from '../../components/layout/Sidebar';
+import PageLayout from '../../components/layout/PageLayout';
 import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
+import { useNavigate } from 'react-router-dom';
 
 const user = {
   name: 'Nishagi Jewantha',
@@ -34,6 +35,7 @@ const initialState = {
 
 const NewCaseProfile = () => {
   const [form, setForm] = useState(initialState);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -47,12 +49,12 @@ const NewCaseProfile = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar user={user} />
-      <main className="flex-1 ml-20 md:ml-64 p-6 md:p-10">
+    <PageLayout user={user}>
+      {/* Center content with flex and max-width */}
+      <div className="flex flex-col items-center w-full">
         <h1 className="text-2xl font-semibold mb-6">Add New Case Profile</h1>
-        <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl">
-
+        
+        <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-4xl mx-auto">
           {/* Case Overview */}
           <section className="bg-white rounded-lg p-8 shadow-sm">
             <h2 className="text-xl font-semibold mb-4">New Case</h2>
@@ -62,6 +64,9 @@ const NewCaseProfile = () => {
                 name="caseName"
                 value={form.caseName}
                 onChange={handleChange}
+                placeholder="Case Name"
+                className="mt-2"
+                variant="outlined"
                 required
               />
               <Input1
@@ -69,6 +74,9 @@ const NewCaseProfile = () => {
                 name="caseType"
                 value={form.caseType}
                 onChange={handleChange}
+                placeholder="Type of Case"
+                className="mt-2"
+                variant="outlined"
                 required
               />
               <Input1
@@ -76,6 +84,9 @@ const NewCaseProfile = () => {
                 name="caseNumber"
                 value={form.caseNumber}
                 onChange={handleChange}
+                placeholder="Case Number"
+                className="mt-2"
+                variant="outlined"
                 required
               />
               <Input1
@@ -83,6 +94,9 @@ const NewCaseProfile = () => {
                 name="status"
                 value={form.status}
                 onChange={handleChange}
+                placeholder="Case Status"
+                className="mt-2"
+                variant="outlined"
                 required
               />
             </div>
@@ -91,6 +105,7 @@ const NewCaseProfile = () => {
               name="description"
               value={form.description}
               onChange={handleChange}
+              placeholder="Brief description of the case"
               required
               className="mt-2"
               variant="outlined"
@@ -106,6 +121,9 @@ const NewCaseProfile = () => {
                 name="clientName"
                 value={form.clientName}
                 onChange={handleChange}
+                placeholder="Client Name"
+                className="mt-2"
+                variant="outlined"
                 required
               />
               <Input1
@@ -113,12 +131,18 @@ const NewCaseProfile = () => {
                 name="opposingParty"
                 value={form.opposingParty}
                 onChange={handleChange}
+                placeholder="Opposing Party Name"
+                className="mt-2"
+                variant="outlined"
               />
               <Input1
                 label="Client Phone"
                 name="clientPhone"
                 value={form.clientPhone}
                 onChange={handleChange}
+                placeholder="Client Phone Number"
+                className="mt-2"
+                variant="outlined"
                 required
               />
               <Input1
@@ -126,11 +150,14 @@ const NewCaseProfile = () => {
                 name="junior"
                 value={form.junior}
                 onChange={handleChange}
+                placeholder="Junior Lawyer Name"
+                className="mt-2"
+                variant="outlined"
               />
             </div>
-             <div className="flex justify-between mt-4 gap-4">
-              <Button1 text="Add New Client" type="button" />
-              <Button1 text="Add New Juniour Lawyer" type="button" />
+            <div className="flex justify-center mt-6 gap-6">
+              <Button1 text="Add New Client" type="button" onClick={() => navigate('/lawyer/addnewclient')} />
+              <Button1 text="Add New Junior Lawyer" onClick={() => navigate('/lawyer/addnewjunior')} type="button" />
             </div>
           </section>
 
@@ -143,6 +170,9 @@ const NewCaseProfile = () => {
                 name="agreedFee"
                 value={form.agreedFee}
                 onChange={handleChange}
+                placeholder="Agreed Fee Amount"
+                className="mt-2"
+                variant="outlined"
                 required
               />
               <div>
@@ -165,23 +195,29 @@ const NewCaseProfile = () => {
                 name="totalExpenses"
                 value={form.totalExpenses}
                 onChange={handleChange}
+                placeholder="Total Expenses Incurred"
+                className="mt-2"
+                variant="outlined"
               />
               <Input1
                 label="Invoiced Amount"
                 name="invoice"
                 value={form.invoice}
                 onChange={handleChange}
+                placeholder="Invoice Amount"
+                className="mt-2"
+                variant="outlined"
               />
             </div>
           </section>
 
           {/* Submit Button */}
-          <div className="flex justify-end mt-4">
-            <Button1 text="Create Case Profile" type="submit" inverted={false} />
+          <div className="flex justify-center mt-6">
+            <Button1 text="Create Case Profile" type="submit" className="px-8" />
           </div>
         </form>
-      </main>
-    </div>
+      </div>
+    </PageLayout>
   );
 };
 

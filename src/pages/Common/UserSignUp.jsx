@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import AuthHeader from '../../components/layout/AuthHeader';
+import { Navigate } from 'react-router-dom';
 import { signupWithEmail, loginWithEmail, loginWithGoogle } from '../../services/authService'; // Adjust path
 
 
