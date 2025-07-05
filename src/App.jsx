@@ -3,7 +3,7 @@ import './App.css';
 
 import Home from './pages/Common/Home';
 import Dashboard from './pages/Lawyer/Dashboard';
-import SignUp from './pages/Common/SignUp';
+// import SignUp from './pages/Common/SignUp';
 
 import Timeline from './pages/Lawyer/Timeline';
 import Incomes from './pages/Lawyer/Incomes';
@@ -33,7 +33,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="admin/dashboard" element={<Dashboard />} />
-          <Route path="signup" element={<SignUp />} />
+          {/* <Route path="signup" element={<SignUp />} />  */}
           <Route path="admin/timeline" element={<Timeline />}/>
           <Route path='lawyer/calendar' element={< Lawyercalander />} />
           <Route path="lawyer/dashboard" element={<Dashboard />} />

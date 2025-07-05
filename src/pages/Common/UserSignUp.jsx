@@ -4,7 +4,7 @@ import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import AuthHeader from '../../components/layout/AuthHeader';
 import { Navigate } from 'react-router-dom';
-import { signupWithEmail, loginWithEmail, loginWithGoogle } from '../../services/authService'; // Adjust path
+import { signupNewLawyer, loginWithGoogle } from '../../services/authService'; // Adjust path
 
 
 const UserSignUp = () => {
@@ -88,57 +88,48 @@ const UserSignUp = () => {
 
         if (validate()) {
             setIsSubmitting(true);
-            setErrors({}); // Clear previous errors
+            setErrors({});
             try {
-                // 1. Create the profileData object from your form's state
                 const profileData = {
                     firstName: formData.firstName,
                     lastName: formData.lastName,
-                    phoneNumber: formData.phoneNumber, // This will be sent to the backend
+                    // phoneNumber: formData.phoneNumber, // You can add this back if needed
                 };
 
-                // 2. Call the updated signup service function with all the required data
-                const user = await signupWithEmail(formData.email, formData.password, profileData);
+                // ▼▼▼ THIS IS THE ONLY CHANGE IN THIS FUNCTION ▼▼▼
+                // Call the new, specific function for registering a lawyer.
+                await signupNewLawyer(formData.email, formData.password, profileData);
+                // ▲▲▲ THIS IS THE ONLY CHANGE IN THIS FUNCTION ▲▲▲
 
-                console.log('Form submitted successfully', user);
-                alert(`Welcome, ${user.firstName}! Your account has been created.`);
-
-                // 3. Redirect to the dashboard
+                alert('Welcome! Your account has been created.');
                 navigate('/dashboard');
 
             } catch (error) {
                 console.error('Registration error:', error);
-                // Display the error message from Firebase or your backend
-                setErrors({
-                    form: error.message || 'Registration failed. Please try again.'
-                });
+                setErrors({ form: error.message || 'Registration failed. Please try again.' });
             } finally {
                 setIsSubmitting(false);
             }
         }
     };
 
-    // ▼▼▼ REPLACE THIS FUNCTION ▼▼▼
     const handleGoogleSignup = async () => {
-        setIsSubmitting(true);
-        setErrors({});
-        try {
-            // Call the existing Google login service
-            const user = await loginWithGoogle();
-            console.log('Google sign-up successful', user);
-            alert(`Welcome, ${user.firstName}!`);
-            navigate('/dashboard');
-        } catch (error) {
-            console.error('Google registration error:', error);
-            setErrors({
-                form: error.message || 'Google sign-up failed. Please try again.'
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-
+            setIsSubmitting(true);
+            setErrors({});
+            try {
+                // This function call is already correct because loginWithGoogle is in the new service
+                const user = await loginWithGoogle();
+                alert(`Welcome, ${user.user.fullName}!`); // Access data from the returned profile object
+                navigate('/dashboard');
+            } catch (error) {
+                console.error('Google registration error:', error);
+                setErrors({
+                    form: error.message || 'Google sign-up failed. Please try again.'
+                });
+            } finally {
+                setIsSubmitting(false);
+            }
+        };
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50  px-4 sm:px-6 lg:px-8 pt-20">

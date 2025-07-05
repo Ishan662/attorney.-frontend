@@ -3,17 +3,22 @@ import { Link, useNavigate } from 'react-router-dom';
 import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import AuthHeader from '../../components/layout/AuthHeader';
-import { loginWithEmail, loginWithGoogle } from '../../services/authService';
+import { Navigate } from 'react-router-dom';
+import { signupWithEmail, loginWithEmail, loginWithGoogle } from '../../services/authService'; // Adjust path
 
-const UserLogin = () => {
+
+const UserSignUp = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
         email: '',
+        phoneNumber: '',
         password: '',
+        confirmPassword: ''
     });
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -34,6 +39,16 @@ const UserLogin = () => {
     const validate = () => {
         let tempErrors = {};
 
+        // Validate first name
+        if (!formData.firstName.trim()) {
+            tempErrors.firstName = 'First name is required';
+        }
+
+        // Validate last name
+        if (!formData.lastName.trim()) {
+            tempErrors.lastName = 'Last name is required';
+        }
+
         // Validate email
         if (!formData.email) {
             tempErrors.email = 'Email is required';
@@ -41,9 +56,25 @@ const UserLogin = () => {
             tempErrors.email = 'Email address is invalid';
         }
 
+        // Validate phone number - basic validation
+        if (!formData.phoneNumber) {
+            tempErrors.phoneNumber = 'Phone number is required';
+        } else if (!/^\d{10}$/.test(formData.phoneNumber.replace(/\D/g, ''))) {
+            tempErrors.phoneNumber = 'Phone number is invalid';
+        }
+
         // Validate password
         if (!formData.password) {
             tempErrors.password = 'Password is required';
+        } else if (formData.password.length < 8) {
+            tempErrors.password = 'Password must be at least 8 characters';
+        }
+
+        // Validate confirm password
+        if (!formData.confirmPassword) {
+            tempErrors.confirmPassword = 'Please confirm your password';
+        } else if (formData.password !== formData.confirmPassword) {
+            tempErrors.confirmPassword = 'Passwords do not match';
         }
 
         setErrors(tempErrors);
@@ -51,65 +82,106 @@ const UserLogin = () => {
     };
 
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (validate()) {
             setIsSubmitting(true);
-            setErrors({});
+            setErrors({}); // Clear previous errors
             try {
-                // ▼▼▼ THIS IS THE ONLY CHANGE IN THIS FUNCTION ▼▼▼
-                // Call the correct service function for logging in with email.
-                // This function now handles fetching session data from our backend.
-                const user = await loginWithEmail(formData.email, formData.password);
-                // ▲▲▲ THIS IS THE ONLY CHANGE IN THIS FUNCTION ▲▲▲
-                
-                alert(`Welcome back, ${user.fullName}!`);
+                // 1. Create the profileData object from your form's state
+                const profileData = {
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    phoneNumber: formData.phoneNumber, // This will be sent to the backend
+                };
+
+                // 2. Call the updated signup service function with all the required data
+                const user = await signupWithEmail(formData.email, formData.password, profileData);
+
+                console.log('Form submitted successfully', user);
+                alert(`Welcome, ${user.firstName}! Your account has been created.`);
+
+                // 3. Redirect to the dashboard
                 navigate('/dashboard');
 
             } catch (error) {
-                console.error('Login error:', error);
-                setErrors({ form: 'Invalid email or password. Please try again.' });
+                console.error('Registration error:', error);
+                // Display the error message from Firebase or your backend
+                setErrors({
+                    form: error.message || 'Registration failed. Please try again.'
+                });
             } finally {
                 setIsSubmitting(false);
             }
         }
     };
 
-    // The handleGoogleLogin function does not need to change.
-    const handleGoogleLogin = async () => {
+    // ▼▼▼ REPLACE THIS FUNCTION ▼▼▼
+    const handleGoogleSignup = async () => {
         setIsSubmitting(true);
         setErrors({});
         try {
+            // Call the existing Google login service
             const user = await loginWithGoogle();
-            alert(`Welcome back, ${user.user.fullName}!`);
+            console.log('Google sign-up successful', user);
+            alert(`Welcome, ${user.firstName}!`);
             navigate('/dashboard');
         } catch (error) {
-            console.error('Google login error:', error);
-            setErrors({ form: error.message || 'Google login failed.' });
+            console.error('Google registration error:', error);
+            setErrors({
+                form: error.message || 'Google sign-up failed. Please try again.'
+            });
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleAppleLogin = () => {
-        // Implement Apple login
-        console.log('Apple login clicked');
-    };
+
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8 pt-20">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50  px-4 sm:px-6 lg:px-8 pt-20">
             <AuthHeader />
             <div className="max-w-md w-full mt-8 space-y-8">
                 <div className="text-center">
-                    <h1 className="text-3xl font-bold mb-2">Log in</h1>
+                    <h1 className="text-3xl font-bold mb-2">Sign up</h1>
                     <p className="text-gray-600">
-                        Welcome back
+                        Create your account to get started
                     </p>
                 </div>
 
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <div className="rounded-md space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <Input1
+                                type="text"
+                                name="firstName"
+                                id="firstName"
+                                value={formData.firstName}
+                                onChange={handleChange}
+                                placeholder="First name"
+                                label="First name"
+                                required={true}
+                                variant="outlined"
+                                error={errors.firstName}
+                                className="rounded-md"
+                            />
+                            <Input1
+                                type="text"
+                                name="lastName"
+                                id="lastName"
+                                value={formData.lastName}
+                                onChange={handleChange}
+                                placeholder="Last name"
+                                label="Last name"
+                                required={true}
+                                variant="outlined"
+                                error={errors.lastName}
+                                className="rounded-md"
+                            />
+                        </div>
+
                         <Input1
                             type="email"
                             name="email"
@@ -121,6 +193,20 @@ const UserLogin = () => {
                             required={true}
                             variant="outlined"
                             error={errors.email}
+                            className="rounded-md"
+                        />
+
+                        <Input1
+                            type="tel"
+                            name="phoneNumber"
+                            id="phoneNumber"
+                            value={formData.phoneNumber}
+                            onChange={handleChange}
+                            placeholder="Phone number"
+                            label="Phone number"
+                            required={true}
+                            variant="outlined"
+                            error={errors.phoneNumber}
                             className="rounded-md"
                         />
 
@@ -137,28 +223,20 @@ const UserLogin = () => {
                             error={errors.password}
                             className="rounded-md"
                         />
-                    </div>
 
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                            <input
-                                id="remember-me"
-                                name="remember-me"
-                                type="checkbox"
-                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                                checked={rememberMe}
-                                onChange={() => setRememberMe(!rememberMe)}
-                            />
-                            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                                Remember me
-                            </label>
-                        </div>
-
-                        <div className="text-sm">
-                            <Link to="/forgot-password" className="font-medium text-black hover:text-gray-800">
-                                Forgot your password?
-                            </Link>
-                        </div>
+                        <Input1
+                            type="password"
+                            name="confirmPassword"
+                            id="confirmPassword"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            placeholder="Confirm password"
+                            label="Confirm password"
+                            required={true}
+                            variant="outlined"
+                            error={errors.confirmPassword}
+                            className="rounded-md"
+                        />
                     </div>
 
                     {errors.form && (
@@ -170,7 +248,7 @@ const UserLogin = () => {
                     <div>
                         <Button1
                             type="submit"
-                            text={isSubmitting ? "Logging in..." : "Continue"}
+                            text={isSubmitting ? "Signing up..." : "Continue"}
                             className="w-full"
                             disabled={isSubmitting}
                         />
@@ -185,7 +263,7 @@ const UserLogin = () => {
                     <div className="space-y-3">
                         <button
                             type="button"
-                            onClick={handleGoogleLogin}
+                            onClick={handleGoogleSignup}
                             className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
                         >
                             <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
@@ -208,23 +286,6 @@ const UserLogin = () => {
                             </svg>
                             Continue with Google
                         </button>
-
-                        <button
-                            type="button"
-                            onClick={handleAppleLogin}
-                            className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-                        >
-                            <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M17.05 20.28c-.98.95-2.05.88-3.08.44-1.07-.46-2.07-.48-3.24 0-1.45.62-2.21.44-3.1-.44C2.18 15.89 2.85 7.03 8.68 6.56c1.84-.05 2.88.82 3.73.82.87 0 2.37-1.03 3.96-.87 3 .15 5.27 3.67 5.23 3.71-.14.12-2.46 1.44-2.43 4.31.03 3.37 2.96 4.55 2.98 4.57-.03.07-.44 1.55-1.46 3.02-.87 1.28-1.83 2.38-3.64 2.17zm-3.59-17.1c-1.97 0-3.57 1.42-3.34 3.09 1.43 0 2.74-1.38 3.34-3.09z" />
-                            </svg>
-                            Continue with Apple
-                        </button>
-                    </div>
-
-                    <div className="flex items-center my-4">
-                        <div className="flex-grow h-px bg-gray-300"></div>
-                        <div className="mx-4 text-gray-500">or</div>
-                        <div className="flex-grow h-px bg-gray-300"></div>
                     </div>
 
                     <div className="text-center">
@@ -240,11 +301,17 @@ const UserLogin = () => {
                     </div>
                 </form>
 
+                <div className="text-sm text-center mt-4">
+                    <p className="text-xs text-gray-500 mt-6">
+                        By proceeding, you consent to receiving calls, WhatsApp or SMS/RCS messages, including by automated means, from Uber and its affiliates to the number provided.
+                    </p>
+                </div>
+
                 <div className="text-center mt-4">
                     <p className="text-sm">
-                        Don't have an account?{" "}
-                        <Link to="/user/signup" className="font-medium text-black hover:text-gray-800">
-                            Sign up
+                        Already have an account?{" "}
+                        <Link to="/user/login" className="font-medium text-black hover:text-gray-800">
+                            Log in
                         </Link>
                     </p>
                 </div>
@@ -253,4 +320,4 @@ const UserLogin = () => {
     );
 };
 
-export default UserLogin;
+export default UserSignUp;
