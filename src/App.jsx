@@ -25,6 +25,8 @@ import AdminDashboard from './pages/Admin/AdminDashboard';
 import AddJunior from './pages/Lawyer/AddNewJunior';
 import SystemSettings from './pages/Admin/SystemSettings';
 import PackageManagement from './pages/Admin/PackageManagement';
+import LawyerDashboard from './pages/Lawyer/LawyerDashboard';
+import AcceptInvitationPage from './pages/Common/AcceptInvitationPage';
 
 export default function App() {
   return (
@@ -55,6 +57,12 @@ export default function App() {
           <Route path="lawyer/addnewjunior" element={<AddJunior />} />
           <Route path="admin/systemsettings" element={<SystemSettings />} />
           <Route path="admin/packagemanagement" element={<PackageManagement />} />
+
+
+          {/* testing routes */}
+          <Route path="layer/dashboard" element={<LawyerDashboard />} />
+          <Route path="accept-invitation" element={<AcceptInvitationPage />} />
+
         </Routes>
       </div>
     </Router>

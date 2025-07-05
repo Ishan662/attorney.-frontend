@@ -22,7 +22,7 @@ let currentUserProfile = null;
  * @param {object} options - The standard Fetch API options (method, body, etc.)
  * @returns {Promise<any>} The JSON response from the backend.
  */
-const authenticatedFetch = async (endpoint, options = {}) => {
+export const authenticatedFetch = async (endpoint, options = {}) => {
   const user = auth.currentUser;
   if (!user) throw new Error("Authentication Error: No user is signed in.");
 
@@ -49,6 +49,7 @@ const authenticatedFetch = async (endpoint, options = {}) => {
   }
   return null;
 };
+
 
 
 // --- USER JOURNEY FUNCTIONS ---
@@ -159,3 +160,19 @@ export const initializeAuthListener = (onLogin, onLogout) => {
     }
   });
 };
+
+// ▼▼▼ ADD THIS NEW EXPORTED FUNCTION ▼▼▼
+/**
+ * JOURNEY 6: A lawyer invites a new user.
+ * @param {object} invitationData - { email, fullName, role, caseId }
+ */
+export const sendInvitation = async (invitationData) => {
+  // This uses our authenticatedFetch helper, ensuring only a logged-in
+  // user (who we assume is a lawyer based on backend rules) can call this.
+  return await authenticatedFetch('/api/invitations', {
+    method: 'POST',
+    body: JSON.stringify(invitationData)
+  });
+};
+// ▲▲▲ ADD THIS NEW EXPORTED FUNCTION ▲▲▲
+
