@@ -81,8 +81,9 @@ const UserLogin = () => {
         setIsSubmitting(true);
         setErrors({});
         try {
-            const user = await loginWithGoogle();
-            alert(`Welcome back, ${user.user.fullName}!`);
+            // It calls the exact same function. The backend handles the difference.
+            const userDto = await loginWithGoogle(); 
+            alert(`Welcome back, ${userDto.fullName}!`);
             navigate('/dashboard');
         } catch (error) {
             console.error('Google login error:', error);

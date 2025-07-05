@@ -113,23 +113,22 @@ const UserSignUp = () => {
         }
     };
 
+    // >> In UserSignUp.jsx
     const handleGoogleSignup = async () => {
-            setIsSubmitting(true);
-            setErrors({});
-            try {
-                // This function call is already correct because loginWithGoogle is in the new service
-                const user = await loginWithGoogle();
-                alert(`Welcome, ${user.user.fullName}!`); // Access data from the returned profile object
-                navigate('/dashboard');
-            } catch (error) {
-                console.error('Google registration error:', error);
-                setErrors({
-                    form: error.message || 'Google sign-up failed. Please try again.'
-                });
-            } finally {
-                setIsSubmitting(false);
-            }
-        };
+        setIsSubmitting(true);
+        setErrors({});
+        try {
+            // This function from authService.js now correctly handles everything.
+            const userDto = await loginWithGoogle(); 
+            alert(`Welcome, ${userDto.fullName}!`);
+            navigate('/dashboard');
+        } catch (error) {
+            console.error('Google registration error:', error);
+            setErrors({ form: error.message || 'Google sign-up failed.' });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50  px-4 sm:px-6 lg:px-8 pt-20">

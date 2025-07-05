@@ -118,6 +118,7 @@ export const loginWithGoogle = async () => {
     // as a lawyer. If they do exist, it will just return their session info.
     const backendUser = await authenticatedFetch('/api/auth/google-sync', { method: 'POST' });
     currentUserProfile = backendUser;
+    console.log(backendUser);
     return backendUser;
 };
 
