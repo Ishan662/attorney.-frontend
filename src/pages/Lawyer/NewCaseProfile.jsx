@@ -53,7 +53,7 @@ const NewCaseProfile = () => {
 
   // Optional: handle notification click
   const handleNotificationClick = () => {
-    // Your logic here
+    
   };
 
   return (
