@@ -62,7 +62,7 @@ const CaseProfiles = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-white-50">
       <Sidebar
         user={user}
         onToggle={setSidebarExpanded}
