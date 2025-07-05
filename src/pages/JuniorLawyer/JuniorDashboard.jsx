@@ -10,8 +10,8 @@ const JuniorDashboard = () => {
     const [notificationCount, setNotificationCount] = useState(2);
 
     const user = {
-        name: 'Junior Lawyer',
-        email: 'juniorlawyer@example.com',
+        name: 'Sujan Darshan',
+        email: 'sujan@example.com',
     };
 
     const handleNotificationClick = () => {
