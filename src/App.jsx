@@ -23,6 +23,7 @@ import AdminDashboard from './pages/Admin/AdminDashboard';
 import AddJunior from './pages/Lawyer/AddNewJunior';
 import SystemSettings from './pages/Admin/SystemSettings';
 import PackageManagement from './pages/Admin/PackageManagement';
+import JuniorDashboard from './pages/JuniorLawyer/JuniorDashboard';
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="admin/dashboard" element={<AdminDashboard />} />
+          <Route path="junior/dashboard" element={<JuniorDashboard/>} />
           <Route path="admin/timeline" element={<Timeline />}/>
           <Route path='lawyer/calendar' element={< Lawyercalander />} />
           <Route path="lawyer/dashboard" element={<Dashboard />} />
