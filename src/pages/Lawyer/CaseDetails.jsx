@@ -64,7 +64,7 @@ const caseData = {
 const CaseDetails = () => (
   <PageLayout user={user}>
     <div className="mb-2">
-      <Button1 text="Back to Cases" to="/lawyer/cases" className="mb-4 underline" inverted={false} />
+      <Button1 text="Back to Cases" to="/lawyer/caseprofile" className="mb-4 underline" inverted={false} />
     </div>
     <h1 className="text-2xl font-semibold mb-6">Case No. {caseData.number}</h1>
 
