@@ -150,9 +150,7 @@ const JuniorHearings = () => {
                     <h1 className="text-2xl font-bold text-gray-900">Upcoming Hearings</h1>
                     <p className="text-gray-600 mt-1">Manage your scheduled court hearings</p>
                 </div>
-                <Button2 onClick={handleBackToDashboard}>
-                    ← Back to Dashboard
-                </Button2>
+                
             </div>
 
             {/* Filter Buttons */}
@@ -161,7 +159,7 @@ const JuniorHearings = () => {
                     onClick={() => setSelectedFilter("all")}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         selectedFilter === "all"
-                            ? "bg-blue-600 text-white"
+                            ? "bg-black-600 text-white"
                             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                 >
@@ -171,7 +169,7 @@ const JuniorHearings = () => {
                     onClick={() => setSelectedFilter("today")}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         selectedFilter === "today"
-                            ? "bg-blue-600 text-white"
+                            ? "bg-black-600 text-white"
                             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                 >
@@ -181,7 +179,7 @@ const JuniorHearings = () => {
                     onClick={() => setSelectedFilter("upcoming")}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         selectedFilter === "upcoming"
-                            ? "bg-blue-600 text-white"
+                            ? "bg-black-600 text-white"
                             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                 >
@@ -191,7 +189,7 @@ const JuniorHearings = () => {
                     onClick={() => setSelectedFilter("thisweek")}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         selectedFilter === "thisweek"
-                            ? "bg-blue-600 text-white"
+                            ? "bg-black-600 text-white"
                             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                 >
@@ -253,7 +251,7 @@ const JuniorHearings = () => {
                             </div>
 
                             {/* Actions */}
-                            <div className="flex gap-2 pt-4 border-t border-gray-200">
+                            {/* <div className="flex gap-2 pt-4 border-t border-gray-200">
                                 <Button1 className="text-sm px-4 py-2">
                                     View Case Details
                                 </Button1>
@@ -263,7 +261,7 @@ const JuniorHearings = () => {
                                 <button className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors">
                                     Set Reminder
                                 </button>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 ))}
