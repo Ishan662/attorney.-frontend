@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from '../../components/layout/Sidebar';
 import Header from '../../components/layout/Header';
 import Button1 from '../../components/UI/Button1';
@@ -42,36 +42,69 @@ const clients = [
   },
 ];
 
-const Clients = () => (
-  <div className="flex h-screen bg-gray-100">
-    {/* Sidebar */}
-    <Sidebar />
-    
+const user = {
+    name: 'Nishagi Jewantha',
+    email: 'jewanthadheerath@gmail.com',
+};
 
-    {/* Main content */}
-    <div className="flex-1 flex flex-col overflow-hidden pl-64">
-      <PageHeader/>
-      
 
-      {/* Client Roster */}
-      <main className="flex-1 flex items-start justify-center overflow-y-auto">
-        <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-2xl mt-4 mb-8">
-          <h2 className="text-xl font-semibold text-center mb-8">Your Clients</h2>
-          <div className="space-y-4">
-            {clients.map((client, idx) => (
-              <div key={idx} className="bg-gray-50 rounded-lg p-5 border">
-                <div className="font-bold text-gray-800">{client.name}</div>
-                <div className="text-sm text-gray-700">Phone: {client.phone}</div>
-                <div className="text-sm text-gray-700">Email: {client.email}</div>
-                <div className="text-sm text-gray-700">Case: {client.case}</div>
-                <div className="text-xs text-gray-500 mt-2">Added: {client.added}</div>
-              </div>
-            ))}
+const handleNotificationClick = () => {
+
+};
+
+
+const Clients = () => {
+
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [notificationCount, setNotificationCount] = useState(1);
+
+  return (
+    <div className="flex h-screen bg-white-50">
+      {/* Sidebar */}
+      <Sidebar
+        user={user}
+        onToggle={setSidebarExpanded}
+      />
+      <div
+        className="flex-grow overflow-y-auto transition-all duration-300"
+        style={{
+          marginLeft: sidebarExpanded ? '16rem' : '5rem'
+        }}
+      >
+
+
+        {/* Main content */}
+        <div className="p-6">
+          <div className='mb-8'>
+            <PageHeader
+              user={user}
+              notificationCount={notificationCount}
+              onNotificationClick={handleNotificationClick}
+            />
           </div>
+
+
+          {/* Client Roster */}
+          <main className="flex-1 flex items-start justify-center overflow-y-auto">
+            <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-2xl mt-4 mb-8">
+              <h2 className="text-xl font-semibold text-center mb-8">Your Clients</h2>
+              <div className="space-y-4">
+                {clients.map((client, idx) => (
+                  <div key={idx} className="bg-gray-50 rounded-lg p-5 border">
+                    <div className="font-bold text-gray-800">{client.name}</div>
+                    <div className="text-sm text-gray-700">Phone: {client.phone}</div>
+                    <div className="text-sm text-gray-700">Email: {client.email}</div>
+                    <div className="text-sm text-gray-700">Case: {client.case}</div>
+                    <div className="text-xs text-gray-500 mt-2">Added: {client.added}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </main>
         </div>
-      </main>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default Clients;

@@ -24,7 +24,7 @@ const AddJunior = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-white-50">
       {/* Sidebar */}
       <Sidebar
         user={user}
