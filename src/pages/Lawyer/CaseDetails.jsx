@@ -69,7 +69,7 @@ const CaseDetails = () => (
     <h1 className="text-2xl font-bold mb-6">Case No = {caseData.number}</h1>
 
     {/* Case Overview */}
-    <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+    <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
       <h2 className="text-xl font-semibold mb-6">Case Overview</h2>
       <div className="flex flex-col md:flex-row md:justify-between md:items-start">
         <div className="flex-1">
@@ -94,7 +94,7 @@ const CaseDetails = () => (
     </section>
 
     {/* Parties Involved */}
-    <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+    <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
       <h2 className="text-xl font-semibold mb-6">Parties Involved</h2>
       <div className="flex flex-col md:flex-row md:justify-between">
         <div className="flex-1 mb-6 md:mb-0">
@@ -113,7 +113,7 @@ const CaseDetails = () => (
     </section>
 
     {/* Financials */}
-    <section className="bg-gray-100 rounded-lg p-8 mb-6 shadow-sm">
+    <section className="bg-gray-100 rounded-lg p-8 mb-6 shadow-md">
       <h2 className="text-xl font-semibold mb-6">Financials</h2>
       <div className="flex flex-col md:flex-row md:justify-between">
         <div className="flex-1 mb-6 md:mb-0">
@@ -136,7 +136,7 @@ const CaseDetails = () => (
     </section>
 
     {/* Hearings & Key Dates */}
-    <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+    <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
       <h2 className="text-xl font-semibold mb-6">Hearings & Key Dates</h2>
       <div className="flex flex-col md:flex-row md:justify-between">
         <div className="flex-1 mb-6 md:mb-0">

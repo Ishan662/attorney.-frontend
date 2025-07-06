@@ -69,20 +69,14 @@ const NewCaseProfile = () => {
         }}
       >
         <div className="p-6">
-          <div className="mb-8">
-            <PageHeader
-              user={user}
-              notificationCount={notificationCount}
-              onNotificationClick={handleNotificationClick}
-            />
-          </div>
+          
           {/* Center content with flex and max-width */}
           <div className="flex flex-col items-center w-full">
             <h1 className="text-2xl font-semibold mb-6">Add New Case Profile</h1>
             
             <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-4xl mx-auto">
               {/* Case Overview */}
-              <section className="bg-gray-50 rounded-lg p-8 shadow-sm">
+              <section className="bg-white rounded-lg p-8 shadow-md">
                 <h2 className="text-xl font-semibold mb-4">New Case</h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   <Input1
@@ -139,7 +133,7 @@ const NewCaseProfile = () => {
               </section>
 
               {/* Parties Involved */}
-              <section className="bg-white rounded-lg p-8 shadow-sm">
+              <section className="bg-white rounded-lg p-8 shadow-md">
                 <h2 className="text-xl font-semibold mb-4">Parties Involved</h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   <Input1
@@ -188,7 +182,7 @@ const NewCaseProfile = () => {
               </section>
 
               {/* Financials */}
-              <section className="bg-gray-100 rounded-lg p-8 shadow-sm">
+              <section className="bg-white rounded-lg p-8 shadow-md">
                 <h2 className="text-xl font-semibold mb-4">Financials</h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   <Input1

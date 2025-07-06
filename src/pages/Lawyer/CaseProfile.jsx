@@ -99,7 +99,7 @@ const CaseProfiles = () => {
               {filteredCases.map(c => (
                 <div
                   key={c.id}
-                  className="bg-gray-100 rounded-lg p-5 shadow-sm border border-gray-200"
+                  className="bg-gray-100 rounded-lg p-5 shadow-md border border-gray-200"
                 >
                   <div className="font-semibold text-base mb-2">{c.title}</div>
                   <div className="text-sm text-gray-700 space-y-1 mb-4">
