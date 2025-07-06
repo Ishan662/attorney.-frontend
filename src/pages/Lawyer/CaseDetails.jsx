@@ -138,23 +138,79 @@ const CaseDetails = () => (
     {/* Hearings & Key Dates */}
     <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
       <h2 className="text-xl font-semibold mb-6">Hearings & Key Dates</h2>
-      <div className="space-y-2 mb-4">
-        {caseData.hearings.map((h, idx) => (
-          <div key={idx} className="bg-gray-100 rounded px-3 py-2 text-sm">
-            <div>
-              <span className="font-medium">{h.label}:</span> {h.date}
-              {h.location && <> ({h.location})</>}
+      <div className="flex flex-col md:flex-row md:justify-between">
+        <div className="flex-1 mb-6 md:mb-0">
+          {caseData.hearings.slice(0, Math.ceil(caseData.hearings.length / 2)).map((h, idx) => (
+            <div key={idx} className="mb-4">
+              <div className="font-semibold">{h.label}:</div>
+              <div className="mb-1">{h.date}</div>
+              {h.location && (
+                <>
+                  <div className="font-semibold">Location:</div>
+                  <div className="mb-1">{h.location}</div>
+                </>
+              )}
+              {h.status && (
+                <>
+                  <div className="font-semibold">Status:</div>
+                  <div className="mb-1">
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                      h.status === 'Completed' ? 'bg-green-100 text-green-700' : 
+                      h.status === 'Planned' ? 'bg-blue-100 text-blue-700' : 
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {h.status}
+                    </span>
+                  </div>
+                </>
+              )}
+              {h.note && (
+                <>
+                  <div className="font-semibold">Note:</div>
+                  <div>{h.note}</div>
+                </>
+              )}
             </div>
-            {h.status && (
-              <div className="text-xs text-gray-500">Status: {h.status}</div>
-            )}
-            {h.note && (
-              <div className="text-xs text-gray-500">Purpose: {h.note}</div>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
+        <div className="flex-1 md:ml-12">
+          {caseData.hearings.slice(Math.ceil(caseData.hearings.length / 2)).map((h, idx) => (
+            <div key={idx} className="mb-4">
+              <div className="font-semibold">{h.label}:</div>
+              <div className="mb-1">{h.date}</div>
+              {h.location && (
+                <>
+                  <div className="font-semibold">Location:</div>
+                  <div className="mb-1">{h.location}</div>
+                </>
+              )}
+              {h.status && (
+                <>
+                  <div className="font-semibold">Status:</div>
+                  <div className="mb-1">
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                      h.status === 'Completed' ? 'bg-green-100 text-green-700' : 
+                      h.status === 'Planned' ? 'bg-blue-100 text-blue-700' : 
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {h.status}
+                    </span>
+                  </div>
+                </>
+              )}
+              {h.note && (
+                <>
+                  <div className="font-semibold">Note:</div>
+                  <div>{h.note}</div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
-      <Button1 text="Add next Hearing Date" className="mt-2" />
+      <div className="flex justify-center mt-4">
+        <Button1 text="Add Next Hearing Date" className="mt-2" />
+      </div>
     </section>
 
     {/* Case Progress Timeline */}
