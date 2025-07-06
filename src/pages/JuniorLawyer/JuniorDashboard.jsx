@@ -31,6 +31,7 @@ const JuniorDashboard = () => {
     };
 
     // Example stats for junior lawyer
+    
     const stats = [
         {
             title: "Assigned Cases",
