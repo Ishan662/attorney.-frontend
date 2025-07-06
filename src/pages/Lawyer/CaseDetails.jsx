@@ -9,7 +9,7 @@ const user = {
 };
 
 const caseData = {
-  number: '#4323',
+  number: '2023-PR-00123',
   name: 'The Estate of Eleanor Vance',
   caseNumber: '2023-PR-00123',
   type: 'Probate',
@@ -63,10 +63,10 @@ const caseData = {
 
 const CaseDetails = () => (
   <PageLayout user={user}>
-    <div className="mb-2">
-      <Button1 text="Back to Cases" to="/lawyer/caseprofile" className="mb-4 underline" inverted={false} />
+    <div className="mb-2 flex justify-end">
+      <Button1 text="Back to Case Profile" to="/lawyer/caseprofile" className="mb-4 " />
     </div>
-    <h1 className="text-2xl font-semibold mb-6">Case No. {caseData.number}</h1>
+    <h1 className="text-2xl font-bold mb-6">Case No = {caseData.number}</h1>
 
     {/* Case Overview */}
     <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
@@ -185,7 +185,7 @@ const CaseDetails = () => (
           </li>
         ))}
       </ul>
-      <Button1 text="Add Documents" className="mt-2" inverted={false} />
+      <Button1 text="Add Documents" className="mt-2"/>
     </section>
   </PageLayout>
 );
