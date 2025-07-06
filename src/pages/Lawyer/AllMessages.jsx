@@ -171,10 +171,15 @@ const Messages = () => {
                     onNotificationClick={handleNotificationClick}
                 />
             </div>
+            
 
             {/* Messages specific header */}
             <div className="flex justify-between items-center mb-8">
+            
                 <div>
+                    <div className="mb-2">
+                        <Button1 text="Back to day summary" to="/lawyer/day-summary" className="mb-4 underline" inverted={false} />
+                    </div>
                     <h1 className="text-2xl font-bold">All Messages</h1>
                     <p className="text-gray-600">Manage all your client communications</p>
                 </div>
