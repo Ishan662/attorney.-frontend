@@ -57,7 +57,7 @@ const NewCaseProfile = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-white-50">
       <Sidebar
         user={user}
         onToggle={setSidebarExpanded}
@@ -82,7 +82,7 @@ const NewCaseProfile = () => {
             
             <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-4xl mx-auto">
               {/* Case Overview */}
-              <section className="bg-white rounded-lg p-8 shadow-sm">
+              <section className="bg-gray-50 rounded-lg p-8 shadow-sm">
                 <h2 className="text-xl font-semibold mb-4">New Case</h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   <Input1
@@ -202,7 +202,7 @@ const NewCaseProfile = () => {
                     required
                   />
                   <div>
-                    <label className="block font-semibold mb-1">Payment Status</label>
+                    <label className="block text-sm mb-1">Payment Status</label>
                     <select
                       name="paymentStatus"
                       value={form.paymentStatus}
