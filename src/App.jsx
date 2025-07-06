@@ -25,6 +25,8 @@ import SystemSettings from './pages/Admin/SystemSettings';
 import PackageManagement from './pages/Admin/PackageManagement';
 import JuniorDashboard from './pages/JuniorLawyer/JuniorDashboard';
 import AssignedCases from './pages/JuniorLawyer/AssignedCases';
+import Tasks from './pages/JuniorLawyer/Tasks';
+import JuniorMessages from './pages/JuniorLawyer/JuniorMessages';
 
 export default function App() {
   return (
@@ -56,6 +58,8 @@ export default function App() {
           <Route path="admin/systemsettings" element={<SystemSettings />} />
           <Route path="admin/packagemanagement" element={<PackageManagement />} />
           <Route path="junior/cases" element={<AssignedCases/>} />
+          <Route path="junior/tasks" element={<Tasks/>} />
+          <Route path="junior/messages" element={<JuniorMessages/>} />
         </Routes>
       </div>
     </Router>

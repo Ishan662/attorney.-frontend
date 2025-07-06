@@ -7,6 +7,7 @@ import Button2 from '../../components/UI/Button2';
 const user = {
   name: 'Nishagi Jewantha',
   email: 'jewanthadheerath@gmail.com',
+  role:'lawyer'
 };
 
 const caseData = {
