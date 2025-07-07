@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../components/layout/PageLayout";
 import PageHeader from "../../components/layout/PageHeader";
 import Button1 from "../../components/UI/Button1";
 import Button2 from "../../components/UI/Button2";
+import PageLayout from "../../components/layout/PageLayout";
 
 const JuniorDashboard = () => {
     const navigate = useNavigate();
@@ -12,6 +12,7 @@ const JuniorDashboard = () => {
     const user = {
         name: 'Sujan Darshan',
         email: 'sujan@example.com',
+        role: 'junior_lawyer'
     };
 
     const handleNotificationClick = () => {
@@ -30,6 +31,7 @@ const JuniorDashboard = () => {
     };
 
     // Example stats for junior lawyer
+
     const stats = [
         {
             title: "Assigned Cases",
@@ -41,7 +43,7 @@ const JuniorDashboard = () => {
         },
         {
             title: "Upcoming Hearings",
-            value: "3",
+            value: "1",
             icon: "⚖️",
             bgColor: "bg-white",
             iconBg: "bg-green-100",
@@ -69,8 +71,7 @@ const JuniorDashboard = () => {
 
     return (
         <PageLayout user={user}>
-            {/* Header */}
-            <div className="mb-8">
+            <div className='mb-8'>
                 <PageHeader
                     user={user}
                     notificationCount={notificationCount}
