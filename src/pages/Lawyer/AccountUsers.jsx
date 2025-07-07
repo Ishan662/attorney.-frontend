@@ -22,6 +22,7 @@ const AccountUsers = () => {
     const user = {
         name: 'Nishagi Jewantha',
         email: 'jeewanthadeherath@gmail.com',
+        role: 'lawyer'
     };
 
     // Sample junior lawyers data

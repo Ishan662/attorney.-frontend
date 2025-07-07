@@ -44,6 +44,7 @@ const DropdownFilter = ({ label, options, value, onChange }) => {
 const user = {
     name: 'Nishagi Jewantha',
     email: 'jewanthadheerath@gmail.com',
+    role: 'lawyer',
 };
 
 
