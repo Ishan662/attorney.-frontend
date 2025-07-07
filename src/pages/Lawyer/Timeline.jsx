@@ -121,10 +121,7 @@ const Timeline = () => {
             {/* Timeline specific header */}
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-2xl font-bold">Time Line</h1>
-                <div className="flex items-center gap-2">
-                    <Button2 text="Print" className="text-sm py-1 px-4" />
-                    <Button2 text="Share" className="text-sm py-1 px-4" />
-                </div>
+
             </div>
 
             {/* Filters */}

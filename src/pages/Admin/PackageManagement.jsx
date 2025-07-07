@@ -18,6 +18,7 @@ const PackageManagement = () => {
     const user = {
         name: 'Admin',
         email: 'admin@lawyermanagement.com',
+        role: 'admin'
     };
 
     // Initial packages

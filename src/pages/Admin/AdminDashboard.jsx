@@ -13,6 +13,7 @@ const AdminDashboard = () => {
     const user = {
         name: 'Admin',
         email: 'admin@lawyermanagement.com',
+        role: 'admin' 
     };
 
     // Mock data for the dashboard
