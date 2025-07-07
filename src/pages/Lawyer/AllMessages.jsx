@@ -163,14 +163,6 @@ const Messages = () => {
     
     return (
         <PageLayout user={user}>
-            {/* PageHeader component */}
-            <div className="mb-8">
-                <PageHeader 
-                    user={user} 
-                    notificationCount={notificationCount}
-                    onNotificationClick={handleNotificationClick}
-                />
-            </div>
             
 
             {/* Messages specific header */}
@@ -178,7 +170,7 @@ const Messages = () => {
             
                 <div>
                     <div className="mb-2">
-                        <Button1 text="Back to day summary" to="/lawyer/day-summary" className="mb-4 underline" inverted={false} />
+                        <Button1 text="Back" to="/lawyer/day-summary" className="mb-4 underline"  />
                     </div>
                     <h1 className="text-2xl font-bold">All Messages</h1>
                     <p className="text-gray-600">Manage all your client communications</p>

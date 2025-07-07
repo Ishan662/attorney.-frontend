@@ -13,7 +13,7 @@ const Dashboard = () => {
     const [notificationCount, setNotificationCount] = useState(3);
 
     const user = {
-        name: 'Thusitha',
+        name: 'Nishagi Jewantha',
         email: 'jeewanthadeherath@gmail.com',
     };
 

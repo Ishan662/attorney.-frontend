@@ -109,16 +109,7 @@ const NewCaseProfile = () => {
                     variant="outlined"
                     required
                   />
-                  <Input1
-                    label="Status"
-                    name="status"
-                    value={form.status}
-                    onChange={handleChange}
-                    placeholder="Case Status"
-                    className="mt-2"
-                    variant="outlined"
-                    required
-                  />
+                
                 </div>
                 <Input1
                   label="Description"
@@ -175,26 +166,24 @@ const NewCaseProfile = () => {
                     variant="outlined"
                   />
                 </div>
-                <div className="flex justify-center mt-6 gap-6">
-                  <Button1 text="Add New Client" type="button" onClick={() => navigate('/lawyer/addnewclient')} />
-                  <Button1 text="Add New Junior Lawyer" onClick={() => navigate('/lawyer/addnewjunior')} type="button" />
-                </div>
               </section>
 
               {/* Financials */}
               <section className="bg-white rounded-lg p-8 shadow-md">
                 <h2 className="text-xl font-semibold mb-4">Financials</h2>
                 <div className="grid md:grid-cols-2 gap-6">
-                  <Input1
-                    label="Agreed Fee"
-                    name="agreedFee"
-                    value={form.agreedFee}
-                    onChange={handleChange}
-                    placeholder="Agreed Fee Amount"
-                    className="mt-2"
-                    variant="outlined"
-                    required
-                  />
+                  <div>
+                    <label className="block text-sm mb-1">Agreed Fee</label>
+                    <input
+                      type="text"
+                      name="agreedFee"
+                      value={form.agreedFee}
+                      onChange={handleChange}
+                      placeholder="Agreed Fee Amount"
+                      required
+                      className="w-full text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 placeholder-gray-500 focus:border-black transition-all duration-200 focus:outline-none"
+                    />
+                  </div>
                   <div>
                     <label className="block text-sm mb-1">Payment Status</label>
                     <select
@@ -210,24 +199,6 @@ const NewCaseProfile = () => {
                       <option value="Not Paid">Not Paid</option>
                     </select>
                   </div>
-                  <Input1
-                    label="Total Expenses"
-                    name="totalExpenses"
-                    value={form.totalExpenses}
-                    onChange={handleChange}
-                    placeholder="Total Expenses Incurred"
-                    className="mt-2"
-                    variant="outlined"
-                  />
-                  <Input1
-                    label="Invoiced Amount"
-                    name="invoice"
-                    value={form.invoice}
-                    onChange={handleChange}
-                    placeholder="Invoice Amount"
-                    className="mt-2"
-                    variant="outlined"
-                  />
                 </div>
               </section>
 

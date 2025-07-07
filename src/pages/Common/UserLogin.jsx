@@ -12,7 +12,6 @@ const UserLogin = () => {
     });
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -125,19 +124,6 @@ const UserLogin = () => {
                     </div>
 
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                            <input
-                                id="remember-me"
-                                name="remember-me"
-                                type="checkbox"
-                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                                checked={rememberMe}
-                                onChange={() => setRememberMe(!rememberMe)}
-                            />
-                            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                                Remember me
-                            </label>
-                        </div>
 
                         <div className="text-sm">
                             <Link to="/forgot-password" className="font-medium text-black hover:text-gray-800">

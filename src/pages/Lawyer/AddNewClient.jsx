@@ -9,7 +9,7 @@ const AddClient = () => {
   const user = {
     name: 'Nishagi Jewantha',
     email: 'jewanthadheerath@gmail.com',
-    role: 'lawyer' // Added role for proper sidebar functionality
+    role: 'lawyer'
   };
 
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -36,13 +36,6 @@ const AddClient = () => {
       >
         {/* Main content area */}
         <div className="p-6">
-          <div className='mb-8'>
-            <PageHeader
-              user={user}
-              notificationCount={notificationCount}
-              onNotificationClick={handleNotificationClick}
-            />
-          </div>
 
           {/* Page Title */}
           <div className="flex flex-col items-center w-full">
@@ -54,11 +47,7 @@ const AddClient = () => {
             <div className="bg-white rounded-xl shadow-lg p-10 w-full max-w-xl">
               <h2 className="text-3xl font-semibold text-center mb-8">Enter Client Details</h2>
               <form
-                onSubmit={e => {
-                  e.preventDefault();
-                  
-                  navigate('/lawyer/newcaseprofile');
-                }}
+                
               >
                 <div className="mb-5">
                   <label className="block text-gray-700 mb-2 font-medium">Client Name</label>

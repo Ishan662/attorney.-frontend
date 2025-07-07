@@ -63,8 +63,8 @@ const caseData = {
 
 const CaseDetails = () => (
   <PageLayout user={user}>
-    <div className="mb-2 flex justify-end">
-      <Button1 text="Back to Case Profile" to="/lawyer/caseprofile" className="mb-4 " />
+    <div className="mb-2 flex justify">
+      <Button1 text="Back" to="/lawyer/caseprofile" className="mb-4 " />
     </div>
     <h1 className="text-2xl font-bold mb-6">Case No = {caseData.number}</h1>
 
@@ -95,7 +95,14 @@ const CaseDetails = () => (
 
     {/* Parties Involved */}
     <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
-      <h2 className="text-xl font-semibold mb-6">Parties Involved</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold">Parties Involved</h2>
+        <Button1 
+          text="Add Client" 
+          className="text-sm py-1 px-4" 
+          to = "/lawyer/addnewclient" // Path to your add client page
+        />
+      </div>
       <div className="flex flex-col md:flex-row md:justify-between">
         <div className="flex-1 mb-6 md:mb-0">
           <div className="font-semibold">Client:</div>
@@ -113,7 +120,7 @@ const CaseDetails = () => (
     </section>
 
     {/* Financials */}
-    <section className="bg-gray-100 rounded-lg p-8 mb-6 shadow-md">
+    <section className="bg-whit ed-lg p-8 mb-6 shadow-md">
       <h2 className="text-xl font-semibold mb-6">Financials</h2>
       <div className="flex flex-col md:flex-row md:justify-between">
         <div className="flex-1 mb-6 md:mb-0">
