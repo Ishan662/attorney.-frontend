@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../../components/layout/PageLayout";
-import PageHeader from "../../components/layout/PageHeader";
 import Button1 from "../../components/UI/Button1";
 import Button2 from "../../components/UI/Button2";
+import { ro } from "date-fns/locale";
 
 const Messages = () => {
     const navigate = useNavigate();
@@ -14,6 +14,7 @@ const Messages = () => {
     const user = {
         name: 'Thusitha',
         email: 'jeewanthadeherath@gmail.com',
+        role: 'lawyer'
     };
     
     // Handle notification click
