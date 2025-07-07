@@ -254,5 +254,6 @@ const CaseDetails = () => (
       </section>
     </PageLayout>
   );
+};
 
 export default CaseDetails;
