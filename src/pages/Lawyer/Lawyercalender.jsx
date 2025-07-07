@@ -298,17 +298,20 @@ const Lawyercalender = () => {
             <div className="grid grid-cols-7 gap-1 mb-6 h-[300px] overflow-y-auto">
               {generateCalendarDays().map((date, idx) =>
                 date ? (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedDate(date)}
-                    className={`text-center py-1 rounded ${
-                      date.toDateString() === selectedDate.toDateString()
-                        ? "bg-black-600 text-white"
-                        : "hover:bg-black-100"
-                    }`}
-                  >
-                    {date.getDate()}
-                  </button>
+<button
+  key={idx}
+  onClick={() => setSelectedDate(date)}
+  className={`flex flex-col items-center justify-start text-xs pt-1 rounded ${
+    date.toDateString() === selectedDate.toDateString()
+      ? "bg-black-600 text-white"
+      : "hover:bg-black-100"
+  }`}
+  style={{ height: "3rem" }}
+>
+  <div className="self-start pl-1">
+    {date.getDate()}
+  </div>
+</button>
                 ) : (
                   <div key={idx}></div>
                 )
@@ -407,17 +410,20 @@ const Lawyercalender = () => {
                 <div className="grid grid-cols-7 gap-1 mb-6 h-[500px] overflow-y-auto">
                   {generateCalendarDays().map((date, idx) =>
                     date ? (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedDate(date)}
-                        className={`text-center py-1 rounded ${
-                          date.toDateString() === selectedDate.toDateString()
-                            ? "bg-black-600 text-white"
-                            : "hover:bg-black-100"
-                        }`}
-                      >
-                        {date.getDate()}
-                      </button>
+<button
+  key={idx}
+  onClick={() => setSelectedDate(date)}
+  className={`flex flex-col items-center justify-start text-xs pt-1 rounded ${
+    date.toDateString() === selectedDate.toDateString()
+      ? "bg-black-600 text-white"
+      : "hover:bg-black-100"
+  }`}
+  style={{ height: "3rem" }}
+>
+  <div className="self-start pl-1">
+    {date.getDate()}
+  </div>
+</button>
                     ) : (
                       <div key={idx}></div>
                     )
