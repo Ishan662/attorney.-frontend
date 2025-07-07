@@ -93,7 +93,7 @@ const UserSignUp = () => {
                 const profileData = {
                     firstName: formData.firstName,
                     lastName: formData.lastName,
-                    // phoneNumber: formData.phoneNumber, // You can add this back if needed
+                    phoneNumber: formData.phoneNumber,
                 };
 
                 // ▼▼▼ THIS IS THE ONLY CHANGE IN THIS FUNCTION ▼▼▼
