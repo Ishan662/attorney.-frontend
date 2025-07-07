@@ -288,7 +288,7 @@ const Lawyercalender = () => {
                 year: "numeric",
               })}
             </div>
-            <Button1 text="Add Hearing" className="mb-6" />
+<Button1 text="Add Hearing" className="mb-6" onClick={() => { setSelectedTimeSlot(""); setShowPopup(true); }} />
 
             <div className="grid grid-cols-7 text-center text-xs font-medium text-gray-500 mb-2">
               {weekDays.map((day, idx) => (
