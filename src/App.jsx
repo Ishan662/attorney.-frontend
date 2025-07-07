@@ -25,6 +25,12 @@ import AdminDashboard from './pages/Admin/AdminDashboard';
 import AddJunior from './pages/Lawyer/AddNewJunior';
 import SystemSettings from './pages/Admin/SystemSettings';
 import PackageManagement from './pages/Admin/PackageManagement';
+import NotFoundPage from './pages/Common/404';
+import JuniorDashboard from './pages/JuniorLawyer/JuniorDashboard';
+import AssignedCases from './pages/JuniorLawyer/AssignedCases';
+import Tasks from './pages/JuniorLawyer/Tasks';
+import JuniorMessages from './pages/JuniorLawyer/JuniorMessages';
+import JuniorHearings from './pages/JuniorLawyer/JuniorHearing';
 import LawyerDashboard from './pages/Lawyer/LawyerDashboard';
 import AcceptInvitationPage from './pages/Common/AcceptInvitationPage';
 
@@ -36,6 +42,8 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="admin/dashboard" element={<Dashboard />} />
           {/* <Route path="signup" element={<SignUp />} />  */}
+          <Route path="admin/dashboard" element={<AdminDashboard />} />
+          <Route path="junior/dashboard" element={<JuniorDashboard/>} />
           <Route path="admin/timeline" element={<Timeline />}/>
           <Route path='lawyer/calendar' element={< Lawyercalander />} />
           <Route path="lawyer/dashboard" element={<Dashboard />} />
@@ -57,12 +65,14 @@ export default function App() {
           <Route path="lawyer/addnewjunior" element={<AddJunior />} />
           <Route path="admin/systemsettings" element={<SystemSettings />} />
           <Route path="admin/packagemanagement" element={<PackageManagement />} />
+          <Route path="junior/cases" element={<AssignedCases/>} />
+          <Route path="junior/tasks" element={<Tasks/>} />
+          <Route path="junior/messages" element={<JuniorMessages/>} />
+          <Route path="junior/hearings" element={<JuniorHearings/>} />
 
-
-          {/* testing routes */}
+                    {/* testing routes */}
           <Route path="layer/dashboard" element={<LawyerDashboard />} />
           <Route path="accept-invitation" element={<AcceptInvitationPage />} />
-
         </Routes>
       </div>
     </Router>

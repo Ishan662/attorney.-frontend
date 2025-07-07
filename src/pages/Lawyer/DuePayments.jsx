@@ -6,7 +6,7 @@ import Button2 from "../../components/UI/Button2";
 
 const DuePayments = () => {
     const user = {
-        name: 'Thusitha',
+        name: 'Nishagi Jewantha',
         email: 'jeewanthadeherath@gmail.com',
     };
 

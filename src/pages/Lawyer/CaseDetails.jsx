@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PageLayout from '../../components/layout/PageLayout';
+import PageHeader from '../../components/layout/PageHeader';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 
 const user = {
   name: 'Nishagi Jewantha',
   email: 'jewanthadheerath@gmail.com',
+  role:'lawyer'
 };
 
 const caseData = {
@@ -63,13 +65,13 @@ const caseData = {
 
 const CaseDetails = () => (
   <PageLayout user={user}>
-    <div className="mb-2 flex justify-end">
-      <Button1 text="Back to Case Profile" to="/lawyer/caseprofile" className="mb-4 " />
+    <div className="mb-2 flex justify">
+      <Button1 text="Back" to="/lawyer/caseprofile" className="mb-4 " />
     </div>
     <h1 className="text-2xl font-bold mb-6">Case No = {caseData.number}</h1>
 
     {/* Case Overview */}
-    <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+    <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
       <h2 className="text-xl font-semibold mb-6">Case Overview</h2>
       <div className="flex flex-col md:flex-row md:justify-between md:items-start">
         <div className="flex-1">
@@ -94,8 +96,15 @@ const CaseDetails = () => (
     </section>
 
     {/* Parties Involved */}
-    <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
-      <h2 className="text-xl font-semibold mb-6">Parties Involved</h2>
+    <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold">Parties Involved</h2>
+        <Button1 
+          text="Add Client" 
+          className="text-sm py-1 px-4" 
+          to = "/lawyer/addnewclient" // Path to your add client page
+        />
+      </div>
       <div className="flex flex-col md:flex-row md:justify-between">
         <div className="flex-1 mb-6 md:mb-0">
           <div className="font-semibold">Client:</div>
@@ -113,7 +122,7 @@ const CaseDetails = () => (
     </section>
 
     {/* Financials */}
-    <section className="bg-gray-100 rounded-lg p-8 mb-6 shadow-sm">
+    <section className="bg-whit ed-lg p-8 mb-6 shadow-md">
       <h2 className="text-xl font-semibold mb-6">Financials</h2>
       <div className="flex flex-col md:flex-row md:justify-between">
         <div className="flex-1 mb-6 md:mb-0">
@@ -136,58 +145,115 @@ const CaseDetails = () => (
     </section>
 
     {/* Hearings & Key Dates */}
-    <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+    <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
       <h2 className="text-xl font-semibold mb-6">Hearings & Key Dates</h2>
-      <div className="space-y-2 mb-4">
-        {caseData.hearings.map((h, idx) => (
-          <div key={idx} className="bg-gray-100 rounded px-3 py-2 text-sm">
-            <div>
-              <span className="font-medium">{h.label}:</span> {h.date}
-              {h.location && <> ({h.location})</>}
+      <div className="flex flex-col md:flex-row md:justify-between">
+        <div className="flex-1 mb-6 md:mb-0">
+          {caseData.hearings.slice(0, Math.ceil(caseData.hearings.length / 2)).map((h, idx) => (
+            <div key={idx} className="mb-4">
+              <div className="font-semibold">{h.label}:</div>
+              <div className="mb-1">{h.date}</div>
+              {h.location && (
+                <>
+                  <div className="font-semibold">Location:</div>
+                  <div className="mb-1">{h.location}</div>
+                </>
+              )}
+              {h.status && (
+                <>
+                  <div className="font-semibold">Status:</div>
+                  <div className="mb-1">
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                      h.status === 'Completed' ? 'bg-green-100 text-green-700' : 
+                      h.status === 'Planned' ? 'bg-blue-100 text-blue-700' : 
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {h.status}
+                    </span>
+                  </div>
+                </>
+              )}
+              {h.note && (
+                <>
+                  <div className="font-semibold">Note:</div>
+                  <div>{h.note}</div>
+                </>
+              )}
             </div>
-            {h.status && (
-              <div className="text-xs text-gray-500">Status: {h.status}</div>
-            )}
-            {h.note && (
-              <div className="text-xs text-gray-500">Purpose: {h.note}</div>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
+        <div className="flex-1 md:ml-12">
+          {caseData.hearings.slice(Math.ceil(caseData.hearings.length / 2)).map((h, idx) => (
+            <div key={idx} className="mb-4">
+              <div className="font-semibold">{h.label}:</div>
+              <div className="mb-1">{h.date}</div>
+              {h.location && (
+                <>
+                  <div className="font-semibold">Location:</div>
+                  <div className="mb-1">{h.location}</div>
+                </>
+              )}
+              {h.status && (
+                <>
+                  <div className="font-semibold">Status:</div>
+                  <div className="mb-1">
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                      h.status === 'Completed' ? 'bg-green-100 text-green-700' : 
+                      h.status === 'Planned' ? 'bg-blue-100 text-blue-700' : 
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {h.status}
+                    </span>
+                  </div>
+                </>
+              )}
+              {h.note && (
+                <>
+                  <div className="font-semibold">Note:</div>
+                  <div>{h.note}</div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
-      <Button1 text="Add next Hearing Date" className="mt-2" />
+      <div className="flex justify-center mt-4">
+        <Button1 text="Add Next Hearing Date" className="mt-2" />
+      </div>
     </section>
 
-    {/* Case Progress Timeline */}
-    <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
-      <h2 className="text-xl font-semibold mb-6 text-center">Case Progress Timeline</h2>
-      <div className="flex items-center justify-between">
-        {caseData.timeline.map((t, idx) => (
-          <React.Fragment key={idx}>
-            <div className="flex flex-col items-center">
-              <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold">{idx + 1}</div>
-              <div className="text-xs mt-2 text-gray-700 text-center">{t.date}<br />{t.label}</div>
-            </div>
-            {idx < caseData.timeline.length - 1 && (
-              <div className="flex-1 h-1 bg-orange-200 mx-2" />
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-    </section>
+      {/* Case Progress Timeline */}
+      <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+        <h2 className="text-xl font-semibold mb-6 text-center">Case Progress Timeline</h2>
+        <div className="flex items-center justify-between">
+          {caseData.timeline.map((t, idx) => (
+            <React.Fragment key={idx}>
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold">{idx + 1}</div>
+                <div className="text-xs mt-2 text-gray-700 text-center">{t.date}<br />{t.label}</div>
+              </div>
+              {idx < caseData.timeline.length - 1 && (
+                <div className="flex-1 h-1 bg-orange-200 mx-2" />
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      </section>
 
-    {/* Documents */}
-    <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
-      <h2 className="text-xl font-semibold mb-6">Documents</h2>
-      <ul className="list-disc pl-6 mb-4 text-blue-700">
-        {caseData.documents.map((doc, idx) => (
-          <li key={idx}>
-            <a href={doc.url} className="hover:underline" target="_blank" rel="noopener noreferrer">{doc.name}</a>
-          </li>
-        ))}
-      </ul>
-      <Button1 text="Add Documents" className="mt-2"/>
-    </section>
-  </PageLayout>
-);
+      {/* Documents */}
+      <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+        <h2 className="text-xl font-semibold mb-6">Documents</h2>
+        <ul className="list-disc pl-6 mb-4 text-blue-700">
+          {caseData.documents.map((doc, idx) => (
+            <li key={idx}>
+              <a href={doc.url} className="hover:underline" target="_blank" rel="noopener noreferrer">{doc.name}</a>
+            </li>
+          ))}
+        </ul>
+        <Button1 text="Add Documents" className="mt-2" />
+      </section>
+    </PageLayout>
+  );
+};
 
 export default CaseDetails;
