@@ -25,6 +25,10 @@ import SystemSettings from './pages/Admin/SystemSettings';
 import PackageManagement from './pages/Admin/PackageManagement';
 import NotFoundPage from './pages/Common/404';
 import JuniorDashboard from './pages/JuniorLawyer/JuniorDashboard';
+import AssignedCases from './pages/JuniorLawyer/AssignedCases';
+import Tasks from './pages/JuniorLawyer/Tasks';
+import JuniorMessages from './pages/JuniorLawyer/JuniorMessages';
+import JuniorHearings from './pages/JuniorLawyer/JuniorHearing';
 
 export default function App() {
   return (
@@ -55,7 +59,10 @@ export default function App() {
           <Route path="lawyer/addnewjunior" element={<AddJunior />} />
           <Route path="admin/systemsettings" element={<SystemSettings />} />
           <Route path="admin/packagemanagement" element={<PackageManagement />} />
-          <Route path="*" element={<NotFoundPage />} />
+          <Route path="junior/cases" element={<AssignedCases/>} />
+          <Route path="junior/tasks" element={<Tasks/>} />
+          <Route path="junior/messages" element={<JuniorMessages/>} />
+          <Route path="junior/hearings" element={<JuniorHearings/>} />
         </Routes>
       </div>
     </Router>

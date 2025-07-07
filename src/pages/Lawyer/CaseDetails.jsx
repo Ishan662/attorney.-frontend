@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PageLayout from '../../components/layout/PageLayout';
+import PageHeader from '../../components/layout/PageHeader';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 
 const user = {
   name: 'Nishagi Jewantha',
   email: 'jewanthadheerath@gmail.com',
+  role:'lawyer'
 };
 
 const caseData = {
@@ -220,37 +222,38 @@ const CaseDetails = () => (
       </div>
     </section>
 
-    {/* Case Progress Timeline */}
-    <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
-      <h2 className="text-xl font-semibold mb-6 text-center">Case Progress Timeline</h2>
-      <div className="flex items-center justify-between">
-        {caseData.timeline.map((t, idx) => (
-          <React.Fragment key={idx}>
-            <div className="flex flex-col items-center">
-              <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold">{idx + 1}</div>
-              <div className="text-xs mt-2 text-gray-700 text-center">{t.date}<br />{t.label}</div>
-            </div>
-            {idx < caseData.timeline.length - 1 && (
-              <div className="flex-1 h-1 bg-orange-200 mx-2" />
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-    </section>
+      {/* Case Progress Timeline */}
+      <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+        <h2 className="text-xl font-semibold mb-6 text-center">Case Progress Timeline</h2>
+        <div className="flex items-center justify-between">
+          {caseData.timeline.map((t, idx) => (
+            <React.Fragment key={idx}>
+              <div className="flex flex-col items-center">
+                <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold">{idx + 1}</div>
+                <div className="text-xs mt-2 text-gray-700 text-center">{t.date}<br />{t.label}</div>
+              </div>
+              {idx < caseData.timeline.length - 1 && (
+                <div className="flex-1 h-1 bg-orange-200 mx-2" />
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      </section>
 
-    {/* Documents */}
-    <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
-      <h2 className="text-xl font-semibold mb-6">Documents</h2>
-      <ul className="list-disc pl-6 mb-4 text-blue-700">
-        {caseData.documents.map((doc, idx) => (
-          <li key={idx}>
-            <a href={doc.url} className="hover:underline" target="_blank" rel="noopener noreferrer">{doc.name}</a>
-          </li>
-        ))}
-      </ul>
-      <Button1 text="Add Documents" className="mt-2"/>
-    </section>
-  </PageLayout>
-);
+      {/* Documents */}
+      <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+        <h2 className="text-xl font-semibold mb-6">Documents</h2>
+        <ul className="list-disc pl-6 mb-4 text-blue-700">
+          {caseData.documents.map((doc, idx) => (
+            <li key={idx}>
+              <a href={doc.url} className="hover:underline" target="_blank" rel="noopener noreferrer">{doc.name}</a>
+            </li>
+          ))}
+        </ul>
+        <Button1 text="Add Documents" className="mt-2" />
+      </section>
+    </PageLayout>
+  );
+};
 
 export default CaseDetails;
