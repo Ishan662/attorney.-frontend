@@ -6,7 +6,7 @@ import Button2 from "../../components/UI/Button2";
 
 const DuePayments = () => {
     const user = {
-        name: 'Thusitha',
+        name: 'Nishagi Jewantha',
         email: 'jeewanthadeherath@gmail.com',
     };
 
@@ -193,11 +193,6 @@ const DuePayments = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex justify-end gap-2">
-                                                    <Button2 
-                                                        text="Details" 
-                                                        className="text-xs py-1 px-2"
-                                                        onClick={() => handlePaymentAction(payment.id, 'view')}
-                                                    />
                                                     <Button1 
                                                         text="Mark Paid" 
                                                         className=" text-white text-xs py-1 px-2"

@@ -1,15 +1,17 @@
-import React from 'react';
-import Sidebar from '../../components/layout/Sidebar';
+import React, { useState } from 'react';
+import PageLayout from '../../components/layout/PageLayout';
+import PageHeader from '../../components/layout/PageHeader';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 
 const user = {
   name: 'Nishagi Jewantha',
   email: 'jewanthadheerath@gmail.com',
+  role:'lawyer'
 };
 
 const caseData = {
-  number: '#4323',
+  number: '2023-PR-00123',
   name: 'The Estate of Eleanor Vance',
   caseNumber: '2023-PR-00123',
   type: 'Probate',
@@ -62,102 +64,163 @@ const caseData = {
 };
 
 const CaseDetails = () => (
-  <div className="flex min-h-screen bg-gray-50">
-    <Sidebar user={user} />
-    <main className="flex-1 ml-20 md:ml-64 p-6 md:p-10">
-      <div className="mb-2">
-        <a href="#" className="text-sm text-gray-500 hover:underline">&lt; go back</a>
+  <PageLayout user={user}>
+    <div className="mb-2 flex justify">
+      <Button1 text="Back" to="/lawyer/caseprofile" className="mb-4 " />
+    </div>
+    <h1 className="text-2xl font-bold mb-6">Case No = {caseData.number}</h1>
+
+    {/* Case Overview */}
+    <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
+      <h2 className="text-xl font-semibold mb-6">Case Overview</h2>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-start">
+        <div className="flex-1">
+          <div className="font-semibold">Case Name:</div>
+          <div className="mb-2">{caseData.name}</div>
+          <div className="font-semibold">Case Number:</div>
+          <div className="mb-2">{caseData.caseNumber}</div>
+          <div className="font-semibold">Description:</div>
+          <div>{caseData.description}</div>
+        </div>
+        <div className="flex-1 md:ml-12 mt-8 md:mt-0">
+          <div className="font-semibold">Case Type:</div>
+          <div className="mb-2">{caseData.type}</div>
+          <div className="font-semibold">Status:</div>
+          <div>
+            <span className="inline-block px-4 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-sm">
+              {caseData.status}
+            </span>
+          </div>
+        </div>
       </div>
-      <h1 className="text-2xl font-semibold mb-6">Case No. {caseData.number}</h1>
+    </section>
 
-      {/* Case Overview */}
-      <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
-        <h2 className="text-xl font-semibold mb-6">Case Overview</h2>
-        <div className="flex flex-col md:flex-row md:justify-between md:items-start">
-          <div className="flex-1">
-            <div className="font-semibold">Case Name:</div>
-            <div className="mb-2">{caseData.name}</div>
-            <div className="font-semibold">Case Number:</div>
-            <div className="mb-2">{caseData.caseNumber}</div>
-            <div className="font-semibold">Description:</div>
-            <div>{caseData.description}</div>
-          </div>
-          <div className="flex-1 md:ml-12 mt-8 md:mt-0">
-            <div className="font-semibold">Case Type:</div>
-            <div className="mb-2">{caseData.type}</div>
-            <div className="font-semibold">Status:</div>
-            <div>
-              <span className="inline-block px-4 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-sm">
-                {caseData.status}
-              </span>
-            </div>
-          </div>
+    {/* Parties Involved */}
+    <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold">Parties Involved</h2>
+        <Button1 
+          text="Add Client" 
+          className="text-sm py-1 px-4" 
+          to = "/lawyer/addnewclient" // Path to your add client page
+        />
+      </div>
+      <div className="flex flex-col md:flex-row md:justify-between">
+        <div className="flex-1 mb-6 md:mb-0">
+          <div className="font-semibold">Client:</div>
+          <div className="mb-2">{caseData.client.name}</div>
+          <div className="font-semibold">Client Phone:</div>
+          <div>{caseData.client.phone}</div>
         </div>
-      </section>
-
-      {/* Parties Involved */}
-      <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
-        <h2 className="text-xl font-semibold mb-6">Parties Involved</h2>
-        <div className="flex flex-col md:flex-row md:justify-between">
-          <div className="flex-1 mb-6 md:mb-0">
-            <div className="font-semibold">Client:</div>
-            <div className="mb-2">{caseData.client.name}</div>
-            <div className="font-semibold">Client Phone:</div>
-            <div>{caseData.client.phone}</div>
-          </div>
-          <div className="flex-1 md:ml-12">
-            <div className="font-semibold">Opposing Party:</div>
-            <div className="mb-2">{caseData.opposingParty}</div>
-            <div className="font-semibold">Junior Associated:</div>
-            <div>{caseData.junior}</div>
-          </div>
+        <div className="flex-1 md:ml-12">
+          <div className="font-semibold">Opposing Party:</div>
+          <div className="mb-2">{caseData.opposingParty}</div>
+          <div className="font-semibold">Junior Associated:</div>
+          <div>{caseData.junior}</div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      {/* Financials */}
-      <section className="bg-gray-100 rounded-lg p-8 mb-6 shadow-sm">
-        <h2 className="text-xl font-semibold mb-6">Financials</h2>
-        <div className="flex flex-col md:flex-row md:justify-between">
-          <div className="flex-1 mb-6 md:mb-0">
-            <div className="font-semibold">Agreed Fee:</div>
-            <div className="mb-2">{caseData.financials.agreedFee}</div>
-            <div className="font-semibold">Total Expenses:</div>
-            <div>{caseData.financials.totalExpenses}</div>
-          </div>
-          <div className="flex-1 md:ml-12">
-            <div className="font-semibold">Payment Status:</div>
-            <div className="mb-2">
-              <span className="inline-block px-4 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-sm">
-                {caseData.financials.paymentStatus}
-              </span>
-            </div>
-            <div className="font-semibold">Invoiced Amount:</div>
-            <div>{caseData.financials.invoice}</div>
-          </div>
+    {/* Financials */}
+    <section className="bg-whit ed-lg p-8 mb-6 shadow-md">
+      <h2 className="text-xl font-semibold mb-6">Financials</h2>
+      <div className="flex flex-col md:flex-row md:justify-between">
+        <div className="flex-1 mb-6 md:mb-0">
+          <div className="font-semibold">Agreed Fee:</div>
+          <div className="mb-2">{caseData.financials.agreedFee}</div>
+          <div className="font-semibold">Total Expenses:</div>
+          <div>{caseData.financials.totalExpenses}</div>
         </div>
-      </section>
+        <div className="flex-1 md:ml-12">
+          <div className="font-semibold">Payment Status:</div>
+          <div className="mb-2">
+            <span className="inline-block px-4 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-sm">
+              {caseData.financials.paymentStatus}
+            </span>
+          </div>
+          <div className="font-semibold">Invoiced Amount:</div>
+          <div>{caseData.financials.invoice}</div>
+        </div>
+      </div>
+    </section>
 
-      {/* Hearings & Key Dates */}
-      <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
-        <h2 className="text-xl font-semibold mb-6">Hearings & Key Dates</h2>
-        <div className="space-y-2 mb-4">
-          {caseData.hearings.map((h, idx) => (
-            <div key={idx} className="bg-gray-100 rounded px-3 py-2 text-sm">
-              <div>
-                <span className="font-medium">{h.label}:</span> {h.date}
-                {h.location && <> ({h.location})</>}
-              </div>
+    {/* Hearings & Key Dates */}
+    <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
+      <h2 className="text-xl font-semibold mb-6">Hearings & Key Dates</h2>
+      <div className="flex flex-col md:flex-row md:justify-between">
+        <div className="flex-1 mb-6 md:mb-0">
+          {caseData.hearings.slice(0, Math.ceil(caseData.hearings.length / 2)).map((h, idx) => (
+            <div key={idx} className="mb-4">
+              <div className="font-semibold">{h.label}:</div>
+              <div className="mb-1">{h.date}</div>
+              {h.location && (
+                <>
+                  <div className="font-semibold">Location:</div>
+                  <div className="mb-1">{h.location}</div>
+                </>
+              )}
               {h.status && (
-                <div className="text-xs text-gray-500">Status: {h.status}</div>
+                <>
+                  <div className="font-semibold">Status:</div>
+                  <div className="mb-1">
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                      h.status === 'Completed' ? 'bg-green-100 text-green-700' : 
+                      h.status === 'Planned' ? 'bg-blue-100 text-blue-700' : 
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {h.status}
+                    </span>
+                  </div>
+                </>
               )}
               {h.note && (
-                <div className="text-xs text-gray-500">Purpose: {h.note}</div>
+                <>
+                  <div className="font-semibold">Note:</div>
+                  <div>{h.note}</div>
+                </>
               )}
             </div>
           ))}
         </div>
-        <Button1 text="Add next Hearing Date" className="mt-2" />
-      </section>
+        <div className="flex-1 md:ml-12">
+          {caseData.hearings.slice(Math.ceil(caseData.hearings.length / 2)).map((h, idx) => (
+            <div key={idx} className="mb-4">
+              <div className="font-semibold">{h.label}:</div>
+              <div className="mb-1">{h.date}</div>
+              {h.location && (
+                <>
+                  <div className="font-semibold">Location:</div>
+                  <div className="mb-1">{h.location}</div>
+                </>
+              )}
+              {h.status && (
+                <>
+                  <div className="font-semibold">Status:</div>
+                  <div className="mb-1">
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                      h.status === 'Completed' ? 'bg-green-100 text-green-700' : 
+                      h.status === 'Planned' ? 'bg-blue-100 text-blue-700' : 
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {h.status}
+                    </span>
+                  </div>
+                </>
+              )}
+              {h.note && (
+                <>
+                  <div className="font-semibold">Note:</div>
+                  <div>{h.note}</div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="flex justify-center mt-4">
+        <Button1 text="Add Next Hearing Date" className="mt-2" />
+      </div>
+    </section>
 
       {/* Case Progress Timeline */}
       <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
@@ -187,10 +250,10 @@ const CaseDetails = () => (
             </li>
           ))}
         </ul>
-        <Button1 text="Add Documents" className="mt-2" inverted={false} />
+        <Button1 text="Add Documents" className="mt-2" />
       </section>
-    </main>
-  </div>
-);
+    </PageLayout>
+  );
+};
 
 export default CaseDetails;

@@ -13,7 +13,7 @@ const Dashboard = () => {
     const [notificationCount, setNotificationCount] = useState(3);
 
     const user = {
-        name: 'Thusitha',
+        name: 'Nishagi Jewantha',
         email: 'jeewanthadeherath@gmail.com',
     };
 
@@ -34,7 +34,7 @@ const Dashboard = () => {
             navigate("/lawyer/day-summary");
         }
         else if(title === "Due Payments") {
-            navigate("/lawyer/due-payments");
+            navigate("/lawyer/duepayments");
         }
         // Add other navigation options as needed
     };
@@ -137,7 +137,7 @@ const Dashboard = () => {
                         onClick={() => handleStatCardClick(stat.title)}
                     >
                         <div className="flex flex-col items-center">
-                            <div className={`w-14 h-14 flex items-center justify-center text-2xl mb-3 rounded-full ${stat.iconBg}`}>
+                            <div className={`w-14 h-6 flex items-center bg-white justify-center text-2xl mb-3 rounded-full ${stat.iconBg}`}>
                                 {stat.icon}
                             </div>
                             <div className="text-sm text-gray-600 font-medium">{stat.title}</div>
@@ -166,6 +166,8 @@ const Dashboard = () => {
                     <div className="p-2">
                         <Button1 
                             text="Add a case"
+                            onClick={() => navigate("/lawyer/newcaseprofile")}
+
                         />
                     </div>
                 </div>

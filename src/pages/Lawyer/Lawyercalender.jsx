@@ -315,24 +315,24 @@ const Lawyercalender = () => {
               )}
             </div>
 
-            {/* Hearings */}
-            <div className="mb-6">
-              <h3 className="font-semibold mb-2">Hearings</h3>
-              {hearings.map((hearing, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-3 mb-2 text-gray-700"
-                >
-                  <div className="p-2 bg-gray-200 rounded">
-                    <FaBriefcase />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">{hearing.time}</div>
-                    <div className="text-xs text-gray-500">{hearing.location}</div>
-                  </div>
+          {/* Hearings */}
+          <div className="mb-6">
+            <h3 className="font-semibold mb-2">Hearings</h3>
+            {hearings.map((hearing, idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-3 mb-2 text-gray-700"
+              >
+                <div className="p-2 bg-gray-200 rounded">
+                  <FaBriefcase />
                 </div>
-              ))}
-            </div>
+                <div>
+                  <div className="text-sm font-medium">{hearing.time}</div>
+                  <div className="text-xs text-gray-500">{hearing.location}</div>
+                </div>
+              </div>
+            ))}
+          </div>
 
             {/* Free Time Slots */}
             <div className="overflow-y-auto flex-grow">

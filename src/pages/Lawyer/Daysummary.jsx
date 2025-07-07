@@ -73,12 +73,12 @@ const DaySummary = () => {
         {
             location: "Galle",
             client: "Kumara",
-            description: "hjafdsajk jsfrajfaj kjsfdafjk jksafdsfd fsdajkfdsak"
+            description: "i want to request a meeting with you to discuss my case"
         },
         {
             location: "Galle",
             client: "Kumara",
-            description: "hjafdsajk jsfrajfaj kjsfdafjk jksafdsfd fsdajkfdsak"
+            description: "how the progress of my case is going?"
         }
     ];
 
@@ -99,21 +99,17 @@ const DaySummary = () => {
                     <h1 className="text-2xl font-bold">Day Summary</h1>
                     <p className="text-gray-600">Today is - {currentDate}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button2 text="Print" className="text-sm py-1 px-4" />
-                    <Button2 text="Share" className="text-sm py-1 px-4" />
-                </div>
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8" >
                 {summaryCards.map((card, index) => (
                     <div 
                         key={index} 
                         className="bg-white rounded-lg shadow-sm p-4 hover:shadow-lg transition-shadow duration-300 border border-gray-300"
                     >
                         <div className="text-center">
-                            <div className="font-medium mb-2">{card.title}</div>
+                            <div className="font-black text-xl mb-2">{card.title}</div>
                             <div className="text-2xl font-bold">{card.value}</div>
                             {card.additionalInfo && (
                                 <div className="text-xs text-gray-600 mt-2">{card.additionalInfo}</div>
@@ -124,11 +120,11 @@ const DaySummary = () => {
             </div>
 
             {/* Client Categories */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {/* Clients Reached */}
                     <div>
-                        <h3 className="font-bold text-lg mb-3">Clients reached</h3>
+                        <h3 className="font-black text-lg mb-3">Clients reached</h3>
                         <div className="space-y-2">
                             {clientsData.reached.map((client, index) => (
                                 <div key={`reached-${index}`} className="pl-2">
@@ -141,7 +137,7 @@ const DaySummary = () => {
 
                     {/* New Cases */}
                     <div>
-                        <h3 className="font-bold text-lg mb-3">New Cases</h3>
+                        <h3 className="font-black text-lg mb-3">New Cases</h3>
                         <div className="space-y-2">
                             {clientsData.newCases.map((client, index) => (
                                 <div key={`new-${index}`} className="pl-2">
@@ -154,7 +150,7 @@ const DaySummary = () => {
 
                     {/* Closed Cases */}
                     <div>
-                        <h3 className="font-bold text-lg mb-3">Closed Cases</h3>
+                        <h3 className="font-black text-lg mb-3">Closed Cases</h3>
                         <div className="space-y-2">
                             {clientsData.closedCases.map((client, index) => (
                                 <div key={`closed-${index}`} className="pl-2">
@@ -169,7 +165,7 @@ const DaySummary = () => {
 
             {/* Unread Messages */}
             <div className="mb-8">
-                <h2 className="text-xl font-bold mb-4">Unread Message</h2>
+                <h2 className="text-xl font-black mb-4">Unread Message</h2>
                 <div className="space-y-4">
                     {unreadMessages.map((message, index) => (
                         <div key={index} className="bg-white rounded-lg p-4">
@@ -197,9 +193,7 @@ const DaySummary = () => {
                 <Button1
                     text="View All Messages" 
                     className="text-sm py-2 px-4"
-                />
-                <Button1 
-                    text="Create New Case" 
+                    to = "/lawyer/messages"
                 />
             </div>
         </PageLayout>
