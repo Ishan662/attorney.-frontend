@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/layout/Sidebar";
 import Button1 from "../../components/UI/Button1";
+import Input1 from "../../components/UI/Input1";
 import { FaBriefcase, FaClock } from "react-icons/fa";
 
 const Lawyercalender = () => {
-  const navigate = useNavigate();
-
   const user = {
     name: "Thusitha",
     email: "jeewanthadeherath@gmail.com",
@@ -15,6 +13,18 @@ const Lawyercalender = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [viewMode, setViewMode] = useState("month");
+
+  // Popup state
+  const [showPopup, setShowPopup] = useState(false);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
+
+  // Form state for popup
+  const [title, setTitle] = useState("");
+  const [location, setLocation] = useState("");
+  const [guests, setGuests] = useState("");
+  const [specialNote, setSpecialNote] = useState("");
+  const [googleMeetEnabled, setGoogleMeetEnabled] = useState(false);
+  const [googleMeetLink, setGoogleMeetLink] = useState("");
 
   // Format date display like "21st of June, Saturday"
   const formatDateDisplay = (date) => {
@@ -112,13 +122,149 @@ const Lawyercalender = () => {
 
   const weekDays = ["S", "M", "T", "W", "T", "F", "S"];
 
-  // Navigate to scheduling form on time slot click
+  // Open popup on time slot click
   const handleTimeSlotClick = (timeSlot) => {
-    // Pass selected date and time slot as state or params if needed
-    navigate("/lawyer/schedule-meeting", {
-      state: { date: selectedDate, timeSlot },
-    });
+    setSelectedTimeSlot(timeSlot);
+    setShowPopup(true);
   };
+
+  // Handle popup form save
+  const handleSave = (e) => {
+    e.preventDefault();
+    // Implement save logic here
+    alert(
+      `Meeting saved!\nDate: ${formatDateDisplay(
+        selectedDate
+      )}\nTime: ${selectedTimeSlot}\nTitle: ${title}\nLocation: ${location}\nGuests: ${guests}\nNote: ${specialNote}\nGoogle Meet: ${
+        googleMeetEnabled ? googleMeetLink : "Not added"
+      }`
+    );
+    // Reset form and close popup
+    setTitle("");
+    setLocation("");
+    setGuests("");
+    setSpecialNote("");
+    setGoogleMeetEnabled(false);
+    setGoogleMeetLink("");
+    setShowPopup(false);
+  };
+
+  // Popup component
+  const Popup = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+      <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full relative">
+        <button
+          className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+          onClick={() => setShowPopup(false)}
+          aria-label="Close popup"
+        >
+          &#x2715;
+        </button>
+        <h2 className="text-2xl font-semibold mb-6">Hearings / Meetings</h2>
+        <form onSubmit={handleSave}>
+          <div className="mb-4">
+            <label className="block mb-1 font-medium" htmlFor="title">
+              Title
+            </label>
+            <Input1
+              id="title"
+              type="text"
+              placeholder="type title here"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block mb-1 font-medium" htmlFor="location1">
+              Location
+            </label>
+            <Input1
+              id="location1"
+              type="text"
+              placeholder="Enter location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block mb-1 font-medium" htmlFor="guests">
+              Add Guests
+            </label>
+            <Input1
+              id="guests"
+              type="text"
+              placeholder="type guest emails here"
+              value={guests}
+              onChange={(e) => setGuests(e.target.value)}
+            />
+          </div>
+
+          <div className="mb-4 flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              id="googleMeet"
+              checked={googleMeetEnabled}
+              onChange={(e) => {
+                setGoogleMeetEnabled(e.target.checked);
+                if (e.target.checked) {
+                  // Generate a dummy Google Meet link (in real app, integrate with API)
+                  const link = `https://meet.google.com/${Math.random()
+                    .toString(36)
+                    .substring(2, 11)}`;
+                  setGoogleMeetLink(link);
+                } else {
+                  setGoogleMeetLink("");
+                }
+              }}
+              className="cursor-pointer"
+            />
+            <label
+              htmlFor="googleMeet"
+              className="text-blue-600 underline text-sm cursor-pointer"
+            >
+              Add Google Meet video conferencing
+            </label>
+          </div>
+          {googleMeetEnabled && (
+            <div className="mb-4">
+              <label className="block mb-1 font-medium" htmlFor="googleMeetLink">
+                Google Meet Link
+              </label>
+              <a
+                href={googleMeetLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline break-all"
+                id="googleMeetLink"
+              >
+                {googleMeetLink}
+              </a>
+            </div>
+          )}
+
+          <div className="mb-4">
+            <label className="block mb-1 font-medium" htmlFor="specialNote">
+              Special note
+            </label>
+            <textarea
+              id="specialNote"
+              rows={4}
+              className="w-full border border-gray-300 rounded px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Add any special notes here"
+              value={specialNote}
+              onChange={(e) => setSpecialNote(e.target.value)}
+            />
+          </div>
+
+          <Button1 type="submit" text="Save" className="w-full" />
+        </form>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -142,7 +288,7 @@ const Lawyercalender = () => {
                 year: "numeric",
               })}
             </div>
-            <Button1 text="Add Hearing" className="mb-6" />
+<Button1 text="Add Hearing" className="mb-6" onClick={() => { setSelectedTimeSlot(""); setShowPopup(true); }} />
 
             <div className="grid grid-cols-7 text-center text-xs font-medium text-gray-500 mb-2">
               {weekDays.map((day, idx) => (
@@ -282,6 +428,7 @@ const Lawyercalender = () => {
           </div>
         </div>
       </div>
+      {showPopup && <Popup />}
     </div>
   );
 };
