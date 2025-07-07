@@ -29,6 +29,7 @@ import AssignedCases from './pages/JuniorLawyer/AssignedCases';
 import Tasks from './pages/JuniorLawyer/Tasks';
 import JuniorMessages from './pages/JuniorLawyer/JuniorMessages';
 import JuniorHearings from './pages/JuniorLawyer/JuniorHearing';
+import AccountUsers from './pages/Lawyer/AccountUsers';
 
 export default function App() {
   return (
@@ -63,6 +64,8 @@ export default function App() {
           <Route path="junior/tasks" element={<Tasks/>} />
           <Route path="junior/messages" element={<JuniorMessages/>} />
           <Route path="junior/hearings" element={<JuniorHearings/>} />
+          <Route path="lawyer/accountusers" element={<AccountUsers />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>
     </Router>
