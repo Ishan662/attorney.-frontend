@@ -1,24 +1,22 @@
 import React, { useState } from 'react';
 import Sidebar from '../../components/layout/Sidebar';
-import Header from '../../components/layout/Header';
 import Button1 from '../../components/UI/Button1';
-import Button2 from '../../components/UI/Button2';
 import Input1 from '../../components/UI/Input1';
 import PageHeader from '../../components/layout/PageHeader';
 import { useNavigate } from 'react-router-dom';
 
 const AddClient = () => {
-
   const user = {
     name: 'Nishagi Jewantha',
     email: 'jewanthadheerath@gmail.com',
+    role: 'lawyer'
   };
 
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [notificationCount, setNotificationCount] = useState(1);
 
   const handleNotificationClick = () => {
-
+    // Notification click handler
   };
 
   const navigate = useNavigate();
@@ -36,16 +34,8 @@ const AddClient = () => {
           marginLeft: sidebarExpanded ? '16rem' : '5rem'
         }}
       >
-
         {/* Main content area */}
         <div className="p-6">
-          <div className='mb-8'>
-            <PageHeader
-              user={user}
-              notificationCount={notificationCount}
-              onNotificationClick={handleNotificationClick}
-            />
-          </div>
 
           {/* Page Title */}
           <div className="flex flex-col items-center w-full">
@@ -57,11 +47,7 @@ const AddClient = () => {
             <div className="bg-white rounded-xl shadow-lg p-10 w-full max-w-xl">
               <h2 className="text-3xl font-semibold text-center mb-8">Enter Client Details</h2>
               <form
-                onSubmit={e => {
-                  e.preventDefault();
-                  
-                  navigate('/lawyer/newcaseprofile');
-                }}
+                
               >
                 <div className="mb-5">
                   <label className="block text-gray-700 mb-2 font-medium">Client Name</label>
@@ -101,7 +87,6 @@ const AddClient = () => {
                 <Button1
                   type="submit"
                   className="mt-2"
-                  
                 >
                   Save New Client
                 </Button1>

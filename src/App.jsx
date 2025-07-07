@@ -23,6 +23,7 @@ import AdminDashboard from './pages/Admin/AdminDashboard';
 import AddJunior from './pages/Lawyer/AddNewJunior';
 import SystemSettings from './pages/Admin/SystemSettings';
 import PackageManagement from './pages/Admin/PackageManagement';
+import NotFoundPage from './pages/Common/404';
 import JuniorDashboard from './pages/JuniorLawyer/JuniorDashboard';
 import AssignedCases from './pages/JuniorLawyer/AssignedCases';
 import Tasks from './pages/JuniorLawyer/Tasks';
