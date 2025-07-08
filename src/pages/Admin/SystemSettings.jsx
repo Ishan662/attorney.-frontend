@@ -158,13 +158,6 @@ const SystemSettings = () => {
                     <h1 className="text-2xl font-bold">System Settings</h1>
                     <p className="text-gray-600">Configure and manage system preferences</p>
                 </div>
-                <div>
-                    <Button2 
-                        text="Back to Dashboard" 
-                        onClick={() => navigate("/admin/dashboard")}
-                        className="py-2 px-4"
-                    />
-                </div>
             </div>
 
             {/* Settings Layout with Sidebar */}
@@ -211,49 +204,7 @@ const SystemSettings = () => {
                                     onChange={handleInputChange}
                                 />
                                 
-                                <div>
-                                    <label className="block font-medium mb-1">Timezone</label>
-                                    <select
-                                        name="timezone"
-                                        value={formData.timezone}
-                                        onChange={handleInputChange}
-                                        className="w-full text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 placeholder-gray-500 focus:border-black transition-all duration-200 focus:outline-none"
-                                    >
-                                        <option value="Asia/Colombo">Asia/Colombo (GMT+5:30)</option>
-                                        <option value="America/New_York">America/New_York (GMT-5:00)</option>
-                                        <option value="Europe/London">Europe/London (GMT+0:00)</option>
-                                        <option value="Asia/Singapore">Asia/Singapore (GMT+8:00)</option>
-                                    </select>
-                                </div>
                                 
-                                <div>
-                                    <label className="block font-medium mb-1">Date Format</label>
-                                    <select
-                                        name="dateFormat"
-                                        value={formData.dateFormat}
-                                        onChange={handleInputChange}
-                                        className="w-full text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 placeholder-gray-500 focus:border-black transition-all duration-200 focus:outline-none"
-                                    >
-                                        <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                                        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label className="block font-medium mb-1">Default Currency</label>
-                                    <select
-                                        name="currency"
-                                        value={formData.currency}
-                                        onChange={handleInputChange}
-                                        className="w-full text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 placeholder-gray-500 focus:border-black transition-all duration-200 focus:outline-none"
-                                    >
-                                        <option value="USD">USD - US Dollar</option>
-                                        <option value="LKR">LKR - Sri Lankan Rupee</option>
-                                        <option value="EUR">EUR - Euro</option>
-                                        <option value="GBP">GBP - British Pound</option>
-                                    </select>
-                                </div>
                             </div>
                             
                             <div className="mt-8 flex justify-end">
