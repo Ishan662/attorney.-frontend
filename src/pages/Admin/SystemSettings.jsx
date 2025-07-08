@@ -252,47 +252,7 @@ const SystemSettings = () => {
                                 </div>
                             </div>
                             
-                            <div className="mb-8">
-                                <div className="bg-gray-50 rounded-lg p-4">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div>
-                                            <h3 className="font-medium">Auto-approve new users</h3>
-                                            <p className="text-sm text-gray-500">Automatically approve new user registrations without admin review</p>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <label className="inline-flex relative items-center cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    name="autoApproveUsers"
-                                                    checked={formData.autoApproveUsers}
-                                                    onChange={handleInputChange}
-                                                    className="sr-only peer"
-                                                />
-                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <h3 className="font-medium">Allow self-registration</h3>
-                                            <p className="text-sm text-gray-500">Allow users to create their own accounts</p>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <label className="inline-flex relative items-center cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    name="allowSelfRegistration"
-                                                    checked={formData.allowSelfRegistration}
-                                                    onChange={handleInputChange}
-                                                    className="sr-only peer"
-                                                />
-                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            
                             
                             <div className="mt-8 flex justify-end">
                                 <Button1
