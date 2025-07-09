@@ -98,7 +98,6 @@ const SystemSettings = () => {
         { id: 'users', label: 'User Management', icon: 'people' },
         { id: 'notifications', label: 'Notification Settings', icon: 'notifications' },
         { id: 'security', label: 'Security & Privacy', icon: 'shield' },
-        { id: 'maintenance', label: 'System Maintenance', icon: 'build' },
     ];
 
     // SVG icons for the settings sidebar
