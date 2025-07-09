@@ -338,6 +338,7 @@ const SystemSettings = () => {
                                             </div>
                                         </div>
                                         
+
                                         
                                         <div className="flex items-center justify-between">
                                             <div>
@@ -376,21 +377,7 @@ const SystemSettings = () => {
                         <div>
                             <h2 className="text-lg font-semibold mb-6">Security & Privacy</h2>
                             
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                                <div>
-                                    <label className="block font-medium mb-1">Two-Factor Authentication</label>
-                                    <select
-                                        name="twoFactorAuth"
-                                        value={formData.twoFactorAuth}
-                                        onChange={handleInputChange}
-                                        className="w-full text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 placeholder-gray-500 focus:border-black transition-all duration-200 focus:outline-none"
-                                    >
-                                        <option value="disabled">Disabled</option>
-                                        <option value="optional">Optional for Users</option>
-                                        <option value="required">Required for All Users</option>
-                                        <option value="admin_only">Required for Admins Only</option>
-                                    </select>
-                                </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"> 
                                 
                                 <div>
                                     <label className="block font-medium mb-1">Session Timeout (minutes)</label>
@@ -405,32 +392,7 @@ const SystemSettings = () => {
                                     />
                                 </div>
                                 
-                                <div>
-                                    <label className="block font-medium mb-1">Maximum Failed Login Attempts</label>
-                                    <input
-                                        type="number"
-                                        name="maxLoginAttempts"
-                                        value={formData.maxLoginAttempts}
-                                        onChange={handleInputChange}
-                                        min="3"
-                                        max="10"
-                                        className="w-full text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 placeholder-gray-500 focus:border-black transition-all duration-200 focus:outline-none"
-                                    />
-                                </div>
-                                
-                                <div>
-                                    <label className="block font-medium mb-1">Password Expiry (days)</label>
-                                    <input
-                                        type="number"
-                                        name="passwordExpiryDays"
-                                        value={formData.passwordExpiryDays}
-                                        onChange={handleInputChange}
-                                        min="0"
-                                        max="365"
-                                        className="w-full text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 placeholder-gray-500 focus:border-black transition-all duration-200 focus:outline-none"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">Set to 0 for no expiry</p>
-                                </div>
+
                             </div>
                             
                             <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-4 mb-8">
