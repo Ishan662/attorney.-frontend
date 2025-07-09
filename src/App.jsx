@@ -30,6 +30,7 @@ import Tasks from './pages/JuniorLawyer/Tasks';
 import JuniorMessages from './pages/JuniorLawyer/JuniorMessages';
 import JuniorHearings from './pages/JuniorLawyer/JuniorHearing';
 import AccountUsers from './pages/Lawyer/AccountUsers';
+import UserManagement from './pages/Admin/UserManagement';
 
 export default function App() {
   return (
@@ -66,6 +67,7 @@ export default function App() {
           <Route path="junior/hearings" element={<JuniorHearings/>} />
           <Route path="lawyer/accountusers" element={<AccountUsers />} />
           <Route path="*" element={<NotFoundPage />} />
+          <Route path="admin/usermanagement" element={<UserManagement />} />
         </Routes>
       </div>
     </Router>

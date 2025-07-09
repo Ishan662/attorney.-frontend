@@ -219,11 +219,7 @@ const UserManagement = () => {
                     <h1 className="text-2xl font-bold">User Management</h1>
                     <p className="text-gray-600">Manage all users in the system</p>
                 </div>
-                <Button1
-                    text="System Settings"
-                    onClick={() => navigate('/admin/systemsettings')}
-                    className="px-4"
-                />
+
             </div>
 
             {/* Tab Navigation */}
