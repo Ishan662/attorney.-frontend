@@ -32,6 +32,7 @@ import JuniorHearings from './pages/JuniorLawyer/JuniorHearing';
 import AccountUsers from './pages/Lawyer/AccountUsers';
 import UserManagement from './pages/Admin/UserManagement';
 import ViewMessages from './pages/Admin/ViewMessages';
+import AdminAnalytics from './pages/Admin/ViewAnalytics';
 
 export default function App() {
   return (
@@ -70,6 +71,7 @@ export default function App() {
           <Route path="*" element={<NotFoundPage />} />
           <Route path="admin/usermanagement" element={<UserManagement />} />
           <Route path="admin/viewmessages" element={<ViewMessages />} />
+          <Route path="admin/viewanalytics" element={<AdminAnalytics />} />
         </Routes>
       </div>
     </Router>
