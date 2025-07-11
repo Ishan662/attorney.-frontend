@@ -306,11 +306,6 @@ const PackageManagement = () => {
                     <p className="text-gray-600">Manage subscription packages and feature access</p>
                 </div>
                 <div className="flex space-x-3">
-                    <Button2 
-                        text="Back to Dashboard" 
-                        onClick={() => navigate("/admin/dashboard")}
-                        className="py-2 px-4"
-                    />
                     <Button1 
                         text="Add Package" 
                         onClick={openAddModal}
