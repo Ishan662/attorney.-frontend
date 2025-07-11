@@ -6,6 +6,7 @@ import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title } from 'chart.js';
 import { Pie, Line, Bar } from 'react-chartjs-2';
+import ReportGenerator from './GenarateReport';
 
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title);
@@ -15,6 +16,8 @@ const AdminAnalytics = () => {
     const [notificationCount, setNotificationCount] = useState(3);
     const [timeRange, setTimeRange] = useState('month'); // 'week', 'month', 'year'
     const [chartType, setChartType] = useState('users'); // 'users', 'cases', 'revenue'
+    const [showReportGenerator, setShowReportGenerator] = useState(false);
+
 
     // Admin user data
     const user = {
@@ -199,7 +202,7 @@ const AdminAnalytics = () => {
                 </div>
                 <Button1 
                     text="Generate Report" 
-                    onClick={() => console.log('Generate report')}
+                    onClick={() => setShowReportGenerator(true)}
                     className="px-4"
                 />
             </div>
@@ -641,6 +644,13 @@ const AdminAnalytics = () => {
                     className="px-4 py-2"
                 />
             </div>
+            <ReportGenerator
+                isOpen={showReportGenerator}
+                onClose={() => setShowReportGenerator(false)}
+                analyticsData={analyticsData}
+                chartType={chartType}
+                timeRange={timeRange}
+            />
         </PageLayout>
     );
 };
