@@ -33,6 +33,7 @@ import AccountUsers from './pages/Lawyer/AccountUsers';
 import UserManagement from './pages/Admin/UserManagement';
 import ViewMessages from './pages/Admin/ViewMessages';
 import AdminAnalytics from './pages/Admin/ViewAnalytics';
+import ClientDashboard from './pages/Client/Clientdashboard';
 
 export default function App() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="admin/dashboard" element={<AdminDashboard />} />
           <Route path="junior/dashboard" element={<JuniorDashboard/>} />
+          <Route path="client/dashboard" element={<ClientDashboard />} />
           <Route path="admin/timeline" element={<Timeline />}/>
           <Route path='lawyer/calendar' element={< Lawyercalander />} />
           <Route path="lawyer/dashboard" element={<Dashboard />} />
