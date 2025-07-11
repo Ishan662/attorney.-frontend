@@ -100,7 +100,7 @@ const SystemSettings = () => {
         { id: 'security', label: 'Security & Privacy', icon: 'shield' },
     ];
 
-    // SVG icons for the settings sidebar
+    // SVG icons for the settings sidebar.
     const getIcon = (iconName) => {
         switch(iconName) {
             case 'settings':
