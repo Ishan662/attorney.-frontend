@@ -16,6 +16,8 @@ const AdminAnalytics = () => {
     const [notificationCount, setNotificationCount] = useState(3);
     const [timeRange, setTimeRange] = useState('month'); // 'week', 'month', 'year'
     const [chartType, setChartType] = useState('users'); // 'users', 'cases', 'revenue'
+    const [showReportGenerator, setShowReportGenerator] = useState(false);
+
 
     // Admin user data
     const user = {
@@ -200,7 +202,7 @@ const AdminAnalytics = () => {
                 </div>
                 <Button1 
                     text="Generate Report" 
-                    onClick={() => console.log('Generate report')}
+                    onClick={() => setShowReportGenerator(true)}
                     className="px-4"
                 />
             </div>
@@ -642,6 +644,13 @@ const AdminAnalytics = () => {
                     className="px-4 py-2"
                 />
             </div>
+            <ReportGenerator
+                isOpen={showReportGenerator}
+                onClose={() => setShowReportGenerator(false)}
+                analyticsData={analyticsData}
+                chartType={chartType}
+                timeRange={timeRange}
+            />
         </PageLayout>
     );
 };
