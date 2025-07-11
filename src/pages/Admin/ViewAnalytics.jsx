@@ -6,6 +6,7 @@ import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title } from 'chart.js';
 import { Pie, Line, Bar } from 'react-chartjs-2';
+import ReportGenerator from './GenarateReport';
 
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title);
