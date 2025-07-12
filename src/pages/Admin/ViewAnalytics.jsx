@@ -627,10 +627,7 @@ const AdminAnalytics = () => {
             </div>
 
             {/* Export and Download Buttons */}
-            <div className="flex justify-end space-x-4 mb-8">
 
-
-            </div>
             <ReportGenerator
                 isOpen={showReportGenerator}
                 onClose={() => setShowReportGenerator(false)}
