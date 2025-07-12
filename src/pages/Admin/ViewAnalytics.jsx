@@ -630,9 +630,6 @@ const AdminAnalytics = () => {
             <div className="flex justify-end space-x-4 mb-8">
 
                 <Button2
-                    text="Download CSV"
-                />
-                <Button2
                     text="Print Report"
                     onClick={() => console.log('Print Report')}
                     className="px-4 py-2"
