@@ -5,8 +5,6 @@ import PageHeader from "../../components/layout/PageHeader";
 import Button1 from "../../components/UI/Button1";
 import Button2 from "../../components/UI/Button2";
 import Input1 from "../../components/UI/Input1";
-// You'll need to import chart libraries for the analytics
-// import { Chart } from "some-chart-library";
 
 const Dashboard = () => {
     const navigate = useNavigate();
