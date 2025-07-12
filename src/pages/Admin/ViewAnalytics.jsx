@@ -628,9 +628,7 @@ const AdminAnalytics = () => {
 
             {/* Export and Download Buttons */}
             <div className="flex justify-end space-x-4 mb-8">
-                <Button2
-                    text="Export as PDF"
-                />
+
                 <Button2
                     text="Download CSV"
                     onClick={() => console.log('Download CSV')}
