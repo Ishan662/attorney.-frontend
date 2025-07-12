@@ -629,10 +629,7 @@ const AdminAnalytics = () => {
             {/* Export and Download Buttons */}
             <div className="flex justify-end space-x-4 mb-8">
 
-                <Button2
-                    text="Print Report"
-                                        className="px-4 py-2"
-                />
+
             </div>
             <ReportGenerator
                 isOpen={showReportGenerator}
