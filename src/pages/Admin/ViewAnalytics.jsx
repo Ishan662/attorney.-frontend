@@ -631,7 +631,6 @@ const AdminAnalytics = () => {
 
                 <Button2
                     text="Download CSV"
-                    onClick={() => console.log('Download CSV')}
                     className="px-4 py-2"
                 />
                 <Button2
