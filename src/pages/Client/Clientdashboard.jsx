@@ -10,8 +10,8 @@ const ClientDashboard = () => {
     const [notificationCount, setNotificationCount] = useState(2);
 
     const user = {
-        name: 'Client User',
-        email: 'client@example.com',
+        name: 'Nethsilu Marasinghe',
+        email: 'kasuntharamarasinghe.com',
     };
 
     const handleNotificationClick = () => {
