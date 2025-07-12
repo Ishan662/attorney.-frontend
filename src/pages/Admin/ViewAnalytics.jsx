@@ -631,8 +631,7 @@ const AdminAnalytics = () => {
 
                 <Button2
                     text="Print Report"
-                    onClick={() => console.log('Print Report')}
-                    className="px-4 py-2"
+                                        className="px-4 py-2"
                 />
             </div>
             <ReportGenerator
