@@ -626,7 +626,6 @@ const AdminAnalytics = () => {
                 </div>
             </div>
 
-            {/* Export and Download Buttons */}
 
             <ReportGenerator
                 isOpen={showReportGenerator}
