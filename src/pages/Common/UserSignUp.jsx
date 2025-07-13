@@ -87,7 +87,7 @@ const UserSignUp = () => {
             try {
                 // Call your API to register the user
                 // const response = await registerUser(formData);
-                console.log('Form submitted successfully', formData);
+                // console.log('Form submitted successfully', formData);
 
                 // Redirect to dashboard or login page after successful registration
                 navigate('/login');
@@ -104,7 +104,7 @@ const UserSignUp = () => {
 
     const handleGoogleSignup = () => {
         // Implement Google OAuth sign-up
-        console.log('Google sign-up clicked');
+        // console.log('Google sign-up clicked');
     };
 
     return (
