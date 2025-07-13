@@ -90,7 +90,7 @@ const UserSignUp = () => {
                 // console.log('Form submitted successfully', formData);
 
                 // Redirect to dashboard or login page after successful registration
-                navigate('/login');
+                navigate('/user/otp');
             } catch (error) {
                 console.error('Registration error:', error);
                 setErrors({
