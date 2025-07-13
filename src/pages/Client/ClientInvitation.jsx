@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import Input1 from '../../components/UI/Input1';
 import logo from '../../assets/images/black_logo.png';
+import AuthHeader from '../../components/layout/AuthHeader';
 
 const ClientInvitation = () => {
     const navigate = useNavigate();
     const { inviteToken } = useParams();
+    const location = useLocation();
+    const isPreview = location.search.includes('preview=true');
     
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -21,7 +24,8 @@ const ClientInvitation = () => {
         confirmPassword: '',
         agreeToTerms: false
     });
-    const [formErrors, setFormErrors] = useState({});
+    const [errors, setErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Simulate fetching invitation data
     useEffect(() => {
@@ -40,7 +44,7 @@ const ClientInvitation = () => {
                             invitedBy: 'James Wilson',
                             inviterRole: 'Senior Lawyer',
                             inviterEmail: 'james.wilson@legalpractice.com',
-                            userType: 'client', // or 'junior_lawyer'
+                            userType: isPreview && location.search.includes('type=junior') ? 'junior_lawyer' : 'client',
                             userEmail: 'client@example.com',
                             inviteCode: 'INV-8572',
                             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
@@ -66,15 +70,16 @@ const ClientInvitation = () => {
             }
         };
 
-        if (inviteToken) {
+        // Always load mock data for preview mode, otherwise require token
+        if (isPreview || inviteToken) {
             fetchInviteData();
         } else {
             setError('Invalid invitation link');
             setIsLoading(false);
         }
-    }, [inviteToken]);
+    }, [inviteToken, isPreview, location.search]);
 
-    const handleInputChange = (e) => {
+    const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData({
             ...formData,
@@ -82,73 +87,69 @@ const ClientInvitation = () => {
         });
 
         // Clear error when user corrects input
-        if (formErrors[name]) {
-            setFormErrors({
-                ...formErrors,
+        if (errors[name]) {
+            setErrors({
+                ...errors,
                 [name]: ''
             });
         }
     };
 
-    const validateForm = () => {
-        const errors = {};
+    const validate = () => {
+        const tempErrors = {};
         const phoneRegex = /^\+?[0-9]{10,15}$/;
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
 
         if (!formData.phone) {
-            errors.phone = 'Phone number is required';
+            tempErrors.phone = 'Phone number is required';
         } else if (!phoneRegex.test(formData.phone)) {
-            errors.phone = 'Please enter a valid phone number';
+            tempErrors.phone = 'Please enter a valid phone number';
         }
 
         if (!formData.inviteCode) {
-            errors.inviteCode = 'Invitation code is required';
-        } else if (formData.inviteCode !== inviteData?.inviteCode) {
-            errors.inviteCode = 'Invalid invitation code';
+            tempErrors.inviteCode = 'Invitation code is required';
+        } else if (formData.inviteCode !== inviteData?.inviteCode && !isPreview) {
+            tempErrors.inviteCode = 'Invalid invitation code';
         }
 
         if (!formData.password) {
-            errors.password = 'Password is required';
+            tempErrors.password = 'Password is required';
         } else if (!passwordRegex.test(formData.password)) {
-            errors.password = 'Password must be at least 8 characters with uppercase, lowercase, and numbers';
+            tempErrors.password = 'Password must be at least 8 characters with uppercase, lowercase, and numbers';
         }
 
         if (formData.password !== formData.confirmPassword) {
-            errors.confirmPassword = 'Passwords do not match';
+            tempErrors.confirmPassword = 'Passwords do not match';
         }
 
         if (!formData.agreeToTerms) {
-            errors.agreeToTerms = 'You must agree to the terms and conditions';
+            tempErrors.agreeToTerms = 'You must agree to the terms and conditions';
         }
 
-        return errors;
+        setErrors(tempErrors);
+        return Object.keys(tempErrors).length === 0;
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        const errors = validateForm();
-        
-        if (Object.keys(errors).length > 0) {
-            setFormErrors(errors);
-            return;
+        if (validate()) {
+            setIsSubmitting(true);
+            
+            // Simulate API call with timeout
+            setTimeout(() => {
+                // Mock successful signup
+                toast.success("Account created successfully! You're now part of the case.");
+                setIsSubmitting(false);
+                
+                // Redirect to appropriate dashboard
+                const redirectPath = inviteData.userType === 'client' 
+                    ? '/client/dashboard' 
+                    : '/junior/dashboard';
+                
+                navigate(redirectPath);
+            }, 1500);
         }
-
-        setIsLoading(true);
-        
-        // Simulate API call with timeout
-        setTimeout(() => {
-            // Mock successful signup
-            toast.success("Account created successfully! You're now part of the case.");
-            setIsLoading(false);
-            
-            // Redirect to appropriate dashboard
-            const redirectPath = inviteData.userType === 'client' 
-                ? '/client/dashboard' 
-                : '/junior/dashboard';
-            
-            navigate(redirectPath);
-        }, 1500);
     };
 
     if (isLoading) {
@@ -162,7 +163,7 @@ const ClientInvitation = () => {
         );
     }
 
-    if (error) {
+    if (error && !isPreview) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
                 <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
@@ -170,186 +171,172 @@ const ClientInvitation = () => {
                         <img src={logo} alt="Attorney Management System" className="h-16 mx-auto mb-6" />
                         <h1 className="text-2xl font-bold text-red-600 mb-2">Invitation Error</h1>
                         <p className="text-gray-600 mb-6">{error}</p>
-                        <Button2 
-                            text="Go to Homepage" 
-                            onClick={() => navigate('/')} 
-                            className="w-full"
-                        />
+                        <div className="space-y-3">
+                            <Button2 
+                                text="Go to Homepage" 
+                                onClick={() => navigate('/')} 
+                                className="w-full"
+                            />
+                            <Button2
+                                text="View Demo Page" 
+                                onClick={() => navigate('/invitation/demo?preview=true')} 
+                                className="w-full"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
         );
     }
 
-    const userTypeLabel = inviteData.userType === 'client' ? 'Client' : 'Junior Lawyer';
+    const userTypeLabel = inviteData?.userType === 'client' ? 'Client' : 'Junior Lawyer';
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md mx-auto">
-                {/* Logo and Header */}
-                <div className="text-center mb-8">
-                    <img src={logo} alt="Attorney Management System" className="h-16 mx-auto" />
-                    <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-                        {userTypeLabel} Invitation
-                    </h2>
-                    <p className="mt-2 text-sm text-gray-600">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8 pt-10">
+            <AuthHeader />
+            
+            <div className="max-w-md w-full mt-8 space-y-8">
+                <div className="text-center">
+                    <h1 className="text-3xl font-bold mb-2">{userTypeLabel} Invitation</h1>
+                    <p className="text-gray-600">
                         Complete your account setup to join the case
                     </p>
                 </div>
 
-                {/* Invitation Card */}
-                <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-                    <div className="bg-blue-600 p-4 text-white">
-                        <h3 className="font-bold text-lg">You've Been Invited!</h3>
+                {/* Case Information Card */}
+                <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                    <div className="flex items-center mb-4">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-semibold">Case Information</h2>
+                            <p className="text-sm text-gray-500">{inviteData?.caseName}</p>
+                        </div>
                     </div>
-                    <div className="p-6">
-                        <div className="mb-6">
-                            <p className="text-sm text-gray-600">Case Reference</p>
-                            <p className="font-medium">{inviteData.caseId}</p>
-                        </div>
-                        <div className="mb-6">
-                            <p className="text-sm text-gray-600">Case Name</p>
-                            <p className="font-medium">{inviteData.caseName}</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4 mb-6">
+                    
+                    <div className="border-t border-gray-200 pt-4 mt-4">
+                        <div className="grid grid-cols-2 gap-4 mb-2">
                             <div>
-                                <p className="text-sm text-gray-600">Invited As</p>
-                                <p className="font-medium">{userTypeLabel}</p>
+                                <p className="text-xs text-gray-500">Case ID</p>
+                                <p className="font-medium">{inviteData?.caseId}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-600">Expires On</p>
-                                <p className="font-medium">{new Date(inviteData.expiresAt).toLocaleDateString()}</p>
+                                <p className="text-xs text-gray-500">Invited By</p>
+                                <p className="font-medium">{inviteData?.invitedBy}</p>
                             </div>
                         </div>
-                        <div className="mb-4">
-                            <p className="text-sm text-gray-600">Invited By</p>
-                            <p className="font-medium">{inviteData.invitedBy}</p>
-                            <p className="text-sm text-gray-500">{inviteData.inviterRole} • {inviteData.inviterEmail}</p>
-                        </div>
-                        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                            <div className="flex items-start">
-                                <div className="flex-shrink-0">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div className="ml-3">
-                                    <p className="text-sm text-yellow-800">
-                                        Use the invitation code <span className="font-bold">{inviteData.inviteCode}</span> to complete your registration.
-                                    </p>
-                                </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-xs text-gray-500">Invitation Code</p>
+                                <p className="font-medium text-blue-600">{inviteData?.inviteCode}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-500">Expires On</p>
+                                <p className="font-medium">
+                                    {inviteData?.expiresAt ? new Date(inviteData.expiresAt).toLocaleDateString() : '-'}
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Registration Form */}
-                <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div className="p-6">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">Complete Your Account Setup</h3>
+                <form className="space-y-6" onSubmit={handleSubmit}>
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                        <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
                         
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Email Address
-                                </label>
-                                <Input1
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    variant="outlined"
-                                    value={formData.email}
-                                    onChange={handleInputChange}
-                                    disabled={true}
-                                    className="w-full"
-                                />
-                                <p className="mt-1 text-xs text-gray-500">This email was provided by the inviter and cannot be changed</p>
-                            </div>
+                        <div className="space-y-4">
+                            <Input1
+                                type="email"
+                                name="email"
+                                id="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                placeholder="Email address"
+                                label="Email address"
+                                required={true}
+                                variant="outlined"
+                                disabled={true}
+                                error={errors.email}
+                                className="w-full"
+                                helpText="This email was provided by the inviter and cannot be changed"
+                            />
 
-                            <div>
-                                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Phone Number
-                                </label>
-                                <Input1
-                                    id="phone"
-                                    name="phone"
-                                    type="tel"
-                                    variant="outlined"
-                                    placeholder="Enter your phone number"
-                                    value={formData.phone}
-                                    onChange={handleInputChange}
-                                    className="w-full"
-                                />
-                                {formErrors.phone && (
-                                    <p className="mt-1 text-xs text-red-600">{formErrors.phone}</p>
-                                )}
-                            </div>
+                            <Input1
+                                type="tel"
+                                name="phone"
+                                id="phone"
+                                value={formData.phone}
+                                onChange={handleChange}
+                                placeholder="Phone number"
+                                label="Phone number"
+                                required={true}
+                                variant="outlined"
+                                error={errors.phone}
+                                className="w-full"
+                            />
 
-                            <div>
-                                <label htmlFor="inviteCode" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Invitation Code
-                                </label>
-                                <Input1
-                                    id="inviteCode"
-                                    name="inviteCode"
-                                    type="text"
-                                    variant="outlined"
-                                    placeholder="Enter invitation code"
-                                    value={formData.inviteCode}
-                                    onChange={handleInputChange}
-                                    className="w-full"
-                                />
-                                {formErrors.inviteCode && (
-                                    <p className="mt-1 text-xs text-red-600">{formErrors.inviteCode}</p>
-                                )}
-                            </div>
+                            <Input1
+                                type="text"
+                                name="inviteCode"
+                                id="inviteCode"
+                                value={formData.inviteCode}
+                                onChange={handleChange}
+                                placeholder="Invitation code"
+                                label="Invitation code"
+                                required={true}
+                                variant="outlined"
+                                error={errors.inviteCode}
+                                className="w-full"
+                                helpText="Use the code sent to you or shown above"
+                            />
+                        </div>
+                    </div>
 
-                            <div>
-                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Create Password
-                                </label>
-                                <Input1
-                                    id="password"
-                                    name="password"
-                                    type="password"
-                                    variant="outlined"
-                                    placeholder="Create a secure password"
-                                    value={formData.password}
-                                    onChange={handleInputChange}
-                                    className="w-full"
-                                />
-                                {formErrors.password && (
-                                    <p className="mt-1 text-xs text-red-600">{formErrors.password}</p>
-                                )}
-                            </div>
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                        <h3 className="text-lg font-semibold mb-4">Create Password</h3>
+                        
+                        <div className="space-y-4">
+                            <Input1
+                                type="password"
+                                name="password"
+                                id="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                placeholder="Password"
+                                label="Password"
+                                required={true}
+                                variant="outlined"
+                                error={errors.password}
+                                className="w-full"
+                                helpText="Must be at least 8 characters with uppercase, lowercase, and numbers"
+                            />
 
-                            <div>
-                                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Confirm Password
-                                </label>
-                                <Input1
-                                    id="confirmPassword"
-                                    name="confirmPassword"
-                                    type="password"
-                                    variant="outlined"
-                                    placeholder="Confirm your password"
-                                    value={formData.confirmPassword}
-                                    onChange={handleInputChange}
-                                    className="w-full"
-                                />
-                                {formErrors.confirmPassword && (
-                                    <p className="mt-1 text-xs text-red-600">{formErrors.confirmPassword}</p>
-                                )}
-                            </div>
+                            <Input1
+                                type="password"
+                                name="confirmPassword"
+                                id="confirmPassword"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                                placeholder="Confirm password"
+                                label="Confirm password"
+                                required={true}
+                                variant="outlined"
+                                error={errors.confirmPassword}
+                                className="w-full"
+                            />
 
-                            <div className="flex items-start">
+                            <div className="flex items-start mt-4">
                                 <div className="flex items-center h-5">
                                     <input
                                         id="agreeToTerms"
                                         name="agreeToTerms"
                                         type="checkbox"
                                         checked={formData.agreeToTerms}
-                                        onChange={handleInputChange}
+                                        onChange={handleChange}
                                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                     />
                                 </div>
@@ -364,42 +351,59 @@ const ClientInvitation = () => {
                                             Privacy Policy
                                         </a>
                                     </label>
-                                    {formErrors.agreeToTerms && (
-                                        <p className="mt-1 text-xs text-red-600">{formErrors.agreeToTerms}</p>
+                                    {errors.agreeToTerms && (
+                                        <p className="mt-1 text-xs text-red-600">{errors.agreeToTerms}</p>
                                     )}
                                 </div>
                             </div>
-
-                            <div>
-                                <Button1
-                                    type="submit"
-                                    text={isLoading ? 'Creating Account...' : 'Accept Invitation & Create Account'}
-                                    disabled={isLoading}
-                                    className="w-full"
-                                />
-                            </div>
-                        </form>
-
-                        <div className="mt-6">
-                            <p className="text-center text-sm text-gray-600">
-                                Already have an account?{' '}
-                                <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
-                                    Sign in
-                                </a>
-                            </p>
                         </div>
                     </div>
-                </div>
 
-                {/* Help Section */}
-                <div className="mt-8 text-center">
-                    <p className="text-sm text-gray-600">
-                        Having trouble with your invitation?{' '}
-                        <a href="/contact" className="font-medium text-blue-600 hover:text-blue-500">
-                            Contact support
+                    {errors.form && (
+                        <div className="text-red-600 text-center">
+                            {errors.form}
+                        </div>
+                    )}
+
+                    <div>
+                        <Button1
+                            type="submit"
+                            text={isSubmitting ? "Creating Account..." : "Accept Invitation & Join Case"}
+                            className="w-full py-3"
+                            disabled={isSubmitting}
+                        />
+                    </div>
+                </form>
+
+                <div className="text-center">
+                    <p className="text-sm">
+                        Already have an account?{" "}
+                        <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+                            Sign in
                         </a>
                     </p>
                 </div>
+
+                <div className="text-center">
+                    <p className="text-xs text-gray-500">
+                        By proceeding, you consent to join this case and allow communication related to this matter through the Attorney Management System.
+                    </p>
+                </div>
+                
+                {isPreview && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 text-center">
+                        <p className="text-sm text-yellow-800">
+                            <strong>Preview Mode:</strong> This is a demonstration of the invitation page.
+                            <br />
+                            <a href="/invitation/demo?preview=true&type=junior" className="text-blue-600 hover:underline">
+                                View as Junior Lawyer
+                            </a> | 
+                            <a href="/invitation/demo?preview=true" className="text-blue-600 hover:underline ml-2">
+                                View as Client
+                            </a>
+                        </p>
+                    </div>
+                )}
             </div>
         </div>
     );
