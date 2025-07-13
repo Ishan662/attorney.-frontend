@@ -35,6 +35,7 @@ import ViewMessages from './pages/Admin/ViewMessages';
 import AdminAnalytics from './pages/Admin/ViewAnalytics';
 import ClientDashboard from './pages/Client/Clientdashboard';
 import Clientcaseprofiles from './pages/Client/Clientcaseprofiles';
+import ClientInvitation from './pages/Client/ClientInvitation';
 
 export default function App() {
   return (
@@ -76,6 +77,8 @@ export default function App() {
           <Route path="admin/usermanagement" element={<UserManagement />} />
           <Route path="admin/viewmessages" element={<ViewMessages />} />
           <Route path="admin/viewanalytics" element={<AdminAnalytics />} />
+          <Route path="client/caseprofiles" element={<Clientcaseprofiles />} />
+          <Route path="client/invitation" element={<ClientInvitation />} />
         </Routes>
       </div>
     </Router>
