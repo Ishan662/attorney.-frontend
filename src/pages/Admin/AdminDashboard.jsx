@@ -243,13 +243,7 @@ const AdminDashboard = () => {
                     <h1 className="text-2xl font-bold">Admin Dashboard</h1>
                     <p className="text-gray-600">System overview and management</p>
                 </div>
-                <div>
-                    <Button1 
-                        text="System Settings" 
-                        onClick={() => navigate("/admin/settings")}
-                        className="py-2 px-4"
-                    />
-                </div>
+
             </div>
 
             {/* Stats Cards */}

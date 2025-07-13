@@ -10,9 +10,10 @@ const mockCases = [
     id: 1,
     caseNumber: '2023-PR-00123',
     title: 'The Estate of Eleanor Vance',
-    owner: 'John Doe',
+    owner: 'Me',
     type: 'Probate',
     nextHearing: '2024-03-15',
+    senior: 'Nishaagi Jewantha',
     junior: 'Jane Smith',
     fee: '$5,000',
     feeStatus: 'Paid',
@@ -21,9 +22,10 @@ const mockCases = [
     id: 2,
     caseNumber: '2023-GU-00456',
     title: "The Matter of the Guardianship of Finnigan O'Malley",
-    owner: 'Sarah Lee',
+    owner: 'Me',
     type: 'Guardianship',
     nextHearing: '2024-06-22',
+    senior: 'Nishaagi Jewantha',
     junior: 'David Chen',
     fee: '$3,500',
     feeStatus: 'Due',
@@ -32,9 +34,10 @@ const mockCases = [
     id: 3,
     caseNumber: '2023-ES-00789',
     title: 'The Case of the Disputed Will of Arthur Pendragon',
-    owner: 'Michael Brown',
+    owner: 'Me',
     type: 'Estate Litigation',
     nextHearing: '2024-05-10',
+    senior: 'Nishaagi Jewantha',
     junior: 'Emily White',
     fee: '$7,200',
     feeStatus: 'Paid',
@@ -42,9 +45,9 @@ const mockCases = [
 ];
 
 const user = {
-  name: 'Nishagi Jewantha',
-  email: 'jewanthadheerath@gmail.com',
-  role: 'lawyer',
+  name: 'Nethsilu Marasinghe',
+  email: 'kasuntharamarasinghe@gmail.com',
+  role: 'Client',
 };
 
 const CaseProfiles = () => {

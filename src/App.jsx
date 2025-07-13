@@ -30,6 +30,11 @@ import Tasks from './pages/JuniorLawyer/Tasks';
 import JuniorMessages from './pages/JuniorLawyer/JuniorMessages';
 import JuniorHearings from './pages/JuniorLawyer/JuniorHearing';
 import AccountUsers from './pages/Lawyer/AccountUsers';
+import UserManagement from './pages/Admin/UserManagement';
+import ViewMessages from './pages/Admin/ViewMessages';
+import AdminAnalytics from './pages/Admin/ViewAnalytics';
+import ClientDashboard from './pages/Client/Clientdashboard';
+import Clientcaseprofiles from './pages/Client/Clientcaseprofiles';
 
 export default function App() {
   return (
@@ -39,6 +44,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="admin/dashboard" element={<AdminDashboard />} />
           <Route path="junior/dashboard" element={<JuniorDashboard/>} />
+          <Route path="client/dashboard" element={<ClientDashboard />} />
           <Route path="admin/timeline" element={<Timeline />}/>
           <Route path='lawyer/calendar' element={< Lawyercalander />} />
           <Route path="lawyer/dashboard" element={<Dashboard />} />
@@ -49,6 +55,7 @@ export default function App() {
           <Route path="lawyer/meetingrequest" element={<Meetings />} />
           <Route path="lawyer/clients" element={<Clients />} />
           <Route path="client/schedulemeeting" element={<ScheduleMeeting />} />
+          <Route path="client/caseprofiles" element={<CaseProfiles />} />
           <Route path='/lawyer/messages' element={<Messages />} />
           <Route path="user/signup" element={<UserSignUp />} />
           <Route path="user/login" element={<UserLogin />} />
@@ -66,6 +73,9 @@ export default function App() {
           <Route path="junior/hearings" element={<JuniorHearings/>} />
           <Route path="lawyer/accountusers" element={<AccountUsers />} />
           <Route path="*" element={<NotFoundPage />} />
+          <Route path="admin/usermanagement" element={<UserManagement />} />
+          <Route path="admin/viewmessages" element={<ViewMessages />} />
+          <Route path="admin/viewanalytics" element={<AdminAnalytics />} />
         </Routes>
       </div>
     </Router>
