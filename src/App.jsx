@@ -35,7 +35,7 @@ import ViewMessages from './pages/Admin/ViewMessages';
 import AdminAnalytics from './pages/Admin/ViewAnalytics';
 import ClientDashboard from './pages/Client/Clientdashboard';
 import Clientcaseprofiles from './pages/Client/Clientcaseprofiles';
-import ClientCalendar from './pages/Client/Clientalendar';
+import ClientCalendar from './pages/Client/Clientcalendar';
 
 export default function App() {
   return (
