@@ -2,7 +2,7 @@ import { useState } from "react";
 import Sidebar from "../../components/layout/Sidebar";
 import Button1 from "../../components/UI/Button1";
 import Input1 from "../../components/UI/Input1";
-import { FaBriefcase, FaClock } from "react-icons/fa";
+import { FaBriefcase, FaClock, FaCog } from "react-icons/fa";
 
 const Lawyercalender = () => {
   const user = {
@@ -282,11 +282,23 @@ const Lawyercalender = () => {
           {/* Left Panel */}
           <div className="w-80 bg-white rounded-lg shadow-md p-6 flex flex-col h-screen overflow-y-auto">
             {/* Month view with weekday headers and calendar days */}
-            <div className="text-center font-semibold mb-4">
-              {selectedDate.toLocaleDateString("en-US", {
-                month: "long",
-                year: "numeric",
-              })}
+            <div className="flex justify-between items-center font-semibold mb-4 px-2">
+              <div>
+                {selectedDate.toLocaleDateString("en-US", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </div>
+              {/* <button
+                aria-label="Settings"
+                className="text-gray-6000 hover:text-gray-900 cursor-pointer p-1 rounded"
+                onClick={() => {
+                  // Placeholder for settings click handler
+                  alert("Settings clicked");
+                }}
+              >
+                <FaCog size={20} />
+              </button> */}
             </div>
 <Button1 text="Add Hearing" className="mb-6" onClick={() => { setSelectedTimeSlot(""); setShowPopup(true); }} />
 
@@ -298,17 +310,20 @@ const Lawyercalender = () => {
             <div className="grid grid-cols-7 gap-1 mb-6 h-[300px] overflow-y-auto">
               {generateCalendarDays().map((date, idx) =>
                 date ? (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedDate(date)}
-                    className={`text-center py-1 rounded ${
-                      date.toDateString() === selectedDate.toDateString()
-                        ? "bg-black-600 text-white"
-                        : "hover:bg-black-100"
-                    }`}
-                  >
-                    {date.getDate()}
-                  </button>
+<button
+  key={idx}
+  onClick={() => setSelectedDate(date)}
+  className={`flex flex-col items-center justify-start text-xs pt-1 rounded ${
+    date.toDateString() === selectedDate.toDateString()
+      ? "bg-black-600 text-white"
+      : "hover:bg-black-100"
+  }`}
+  style={{ height: "3rem" }}
+>
+  <div className="self-start pl-1">
+    {date.getDate()}
+  </div>
+</button>
                 ) : (
                   <div key={idx}></div>
                 )
@@ -393,12 +408,24 @@ const Lawyercalender = () => {
             ) : (
               <>
                 {/* Month view with weekday headers and calendar days */}
-                <h2 className="text-lg font-semibold mb-4">
-                  {selectedDate.toLocaleDateString("en-US", {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </h2>
+            <div className="flex justify-between items-center text-lg font-semibold mb-4">
+              <div>
+                {selectedDate.toLocaleDateString("en-US", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </div>
+              <button
+                aria-label="Settings"
+                className="text-gray-600 hover:text-gray-900 cursor-pointer p-1 rounded-full -mt-1"
+                onClick={() => {
+                  // Placeholder for settings click handler
+                  alert("Settings clicked");
+                }}
+              >
+                <FaCog size={26} />
+              </button>
+            </div>
                 <div className="grid grid-cols-7 text-center text-xs font-medium text-gray-500 mb-2">
                   {weekDays.map((day, idx) => (
                     <div key={idx}>{day}</div>
@@ -410,13 +437,28 @@ const Lawyercalender = () => {
                       <button
                         key={idx}
                         onClick={() => setSelectedDate(date)}
-                        className={`text-center py-1 rounded ${
+                        className={`text-center py-1 rounded relative ${
                           date.toDateString() === selectedDate.toDateString()
                             ? "bg-black-600 text-white"
                             : "hover:bg-black-100"
                         }`}
                       >
                         {date.getDate()}
+                        {date.getDate() === 4 && date.getMonth() === 6 && (
+                          <div className="absolute bottom-1 left-1 right-1 bg-red-200 text-red-800 text-xs rounded px-1 truncate">
+                            client meeting
+                          </div>
+                        )}
+                        {date.getDate() === 8 && date.getMonth() === 6 && (
+                          <div className="absolute bottom-1 left-1 right-1 bg-green-200 text-green-800 text-xs rounded px-1 truncate">
+                            galle high court
+                          </div>
+                        )}
+                        {date.getDate() === 17 && date.getMonth() === 6 && (
+                          <div className="absolute bottom-1 left-1 right-1 bg-blue-200 text-blue-800 text-xs rounded px-1 truncate">
+                            badulla court meeting
+                          </div>
+                        )}
                       </button>
                     ) : (
                       <div key={idx}></div>

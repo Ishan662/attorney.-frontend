@@ -255,6 +255,4 @@ const CaseDetails = () => (
     </PageLayout>
   );
 
-
-
 export default CaseDetails;
