@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Sidebar from '../../components/layout/Sidebar';
 import PageHeader from '../../components/layout/PageHeader';
 import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import { useNavigate } from 'react-router-dom';
-// Add these imports
-import { createCase, getJuniorsForFirm } from '../../services/caseService';
 
 const user = {
   name: 'Nishagi Jewantha',
@@ -55,38 +53,23 @@ const caseTypeOptions = [
   { value: 'HP/DHP', label: 'HP/DHP - Hire Purchase' },
 ];
 
+// Dummy junior lawyers
+const juniorLawyerOptions = [
+  { value: 'jane_smith', label: 'Jane Smith' },
+  { value: 'michael_johnson', label: 'Michael Johnson' },
+  { value: 'sarah_williams', label: 'Sarah Williams' },
+  { value: 'david_lee', label: 'David Lee' },
+  { value: 'priya_patel', label: 'Priya Patel' },
+  { value: 'robert_chen', label: 'Robert Chen' },
+];
+
 const NewCaseProfile = () => {
   const [form, setForm] = useState(initialState);
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [notificationCount, setNotificationCount] = useState(1);
   const [showCaseTypeDropdown, setShowCaseTypeDropdown] = useState(false);
   const [showJuniorDropdown, setShowJuniorDropdown] = useState(false);
-  // Add these new state variables
-  const [juniorLawyerOptions, setJuniorLawyerOptions] = useState([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
-
-  // Load junior lawyers when component mounts
-  useEffect(() => {
-    const loadJuniorLawyers = async () => {
-      try {
-        const juniors = await getJuniorsForFirm();
-        // Transform the API response to match your dropdown format
-        const formattedJuniors = juniors.map(junior => ({
-          value: junior.id, // Use the actual ID from backend
-          label: `${junior.firstName} ${junior.lastName}` // Adjust based on your user model
-        }));
-        setJuniorLawyerOptions(formattedJuniors);
-      } catch (error) {
-        console.error('Failed to load junior lawyers:', error);
-        // Fallback to empty array or show error message
-        setJuniorLawyerOptions([]);
-      }
-    };
-
-    loadJuniorLawyers();
-  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -105,27 +88,11 @@ const NewCaseProfile = () => {
   };
 
   // For simplicity, hearings/timeline/documents are not dynamic in this starter
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      // Call the backend API
-      const newCaseId = await createCase(form);
-      
-      // Show success message
-      alert('Case profile created successfully!');
-      
-      // Navigate to the case details page or cases list
-      navigate(`/lawyer/cases/${newCaseId}`); // or navigate('/lawyer/cases')
-      
-    } catch (error) {
-      console.error('Failed to create case:', error);
-      setError(error.message || 'Failed to create case. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Submit logic here
+    console.log('Form submitted:', form);
+    alert('Case profile submitted!');
   };
 
   // Optional: handle notification click
@@ -162,13 +129,6 @@ const NewCaseProfile = () => {
           {/* Center content with flex and max-width */}
           <div className="flex flex-col items-center w-full">
             <h1 className="text-2xl font-semibold mb-6">Add New Case Profile</h1>
-            
-            {/* Add error display */}
-            {error && (
-              <div className="w-full max-w-4xl mx-auto mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-                {error}
-              </div>
-            )}
             
             <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-4xl mx-auto">
               {/* Case Overview */}
@@ -384,12 +344,7 @@ const NewCaseProfile = () => {
 
               {/* Submit Button */}
               <div className="flex justify-center mt-6">
-                <Button1 
-                  text={isSubmitting ? "Creating..." : "Create Case Profile"} 
-                  type="submit" 
-                  className="px-8"
-                  disabled={isSubmitting}
-                />
+                <Button1 text="Create Case Profile" type="submit" className="px-8" />
               </div>
             </form>
           </div>

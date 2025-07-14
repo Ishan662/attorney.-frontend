@@ -176,3 +176,21 @@ export const sendInvitation = async (invitationData) => {
 };
 // ▲▲▲ ADD THIS NEW EXPORTED FUNCTION ▲▲▲
 
+/**
+ * Gets the current user's profile data.
+ * @returns {object|null} The current user's profile or null if not logged in.
+ */
+export const getCurrentUserProfile = () => currentUserProfile;
+
+/**
+ * Checks if a user is currently logged in.
+ * @returns {boolean} True if user is logged in, false otherwise.
+ */
+export const isLoggedIn = () => currentUserProfile !== null;
+
+/**
+ * Gets the current user's role.
+ * @returns {string|null} The user's role (LAWYER, JUNIOR_LAWYER, CLIENT) or null.
+ */
+export const getCurrentUserRole = () => currentUserProfile?.role || null;
+
