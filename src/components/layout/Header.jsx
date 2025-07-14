@@ -4,14 +4,14 @@ import logo from '../../assets/images/white_logo.png';
 
 const Header = () => {
     return (
-        <header className="bg-black text-white py-4 w-full">
+        <header className="bg-gradient-to-r from-black via-gray-900 to-gray-800 text-white py-4 w-full">
             <div className="container mx-auto px-4 flex items-center justify-between">
                 <div className="logo">
                     <Link to="/" className="block">
                         <img
                             src={logo}
                             alt="attorney."
-                            className="h-10" // Adjust height as needed
+                            className="h-8 hover:opacity-90 transition-opacity" 
                         />
                     </Link>
                 </div>
