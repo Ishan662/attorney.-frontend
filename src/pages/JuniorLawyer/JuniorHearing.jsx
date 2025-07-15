@@ -11,7 +11,7 @@ const JuniorHearings = () => {
     const [selectedFilter, setSelectedFilter] = useState("all");
 
     const user = {
-        name: 'Sujan Darshan',
+        name: 'Sujan Darshana',
         email: 'sujan@example.com',
         role: 'junior_lawyer'
     };
