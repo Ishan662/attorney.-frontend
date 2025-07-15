@@ -53,7 +53,7 @@ const AddClient = () => {
                   <label className="block text-gray-700 mb-2 font-medium">Client Name</label>
                   <Input1
                     type="text"
-                    placeholder="e.g., John Doe"
+                    placeholder="e.g., Ishan Maduranga"
                     variant="outlined"
                     className="mb-4"
                   />
