@@ -1,7 +1,7 @@
 import React from 'react';
 import protectImage from '../../assets/images/serve.png';
 
-const ProtectSlide = () => {
+const ProtectSlide = ({ isActive }) => {
     return (
         <>
             {/* Background Text */}
@@ -12,7 +12,8 @@ const ProtectSlide = () => {
             </div>
 
             {/* Hero Image */}
-            <div className="absolute right-1/4 top-1/2 transform -translate-y-1/2 z-10 animate-slide-in-right">
+            <div className={`absolute right-1/2 top-1/2 transform -translate-y-1/2 z-10 transition-all duration-1000 ${isActive ? 'animate-fade-in-up opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
+                }`}>
                 <div className="w-96 h-auto">
                     <img
                         src={protectImage}
@@ -40,7 +41,8 @@ const ProtectSlide = () => {
             </div>
 
             {/* Bottom Quote Section */}
-            <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 text-center animate-fade-in-up">
+            <div className={`absolute bottom-16 left-1/2 transform -translate-x-1/2 text-center transition-all duration-1000 delay-400 ${isActive ? 'animate-fade-in-up opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                }`}>
                 <div className="border-t border-gray-600 pt-6 mb-4">
                     <h3 className="text-xl text-gray-300 tracking-wider">
                         OUR CLIENTS

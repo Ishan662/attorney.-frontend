@@ -1,7 +1,7 @@
 import React from 'react';
 import justiceImage from '../../assets/images/lady.png';
 
-const JusticeSlide = () => {
+const JusticeSlide = ({ isActive }) => {
     return (
         <>
             {/* Background Text */}
@@ -12,7 +12,8 @@ const JusticeSlide = () => {
             </div>
 
             {/* Hero Image */}
-            <div className="absolute right-1/4 top-1/2 transform -translate-y-1/2 z-10 animate-slide-in-right">
+            <div className={`absolute right-1/4 top-1/4 transform -translate-y-1/2 z-10 transition-all duration-1000 ${isActive ? 'animate-fade-in-up opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
+                }`}>
                 <div className="w-96 h-auto">
                     <img
                         src={justiceImage}
@@ -40,13 +41,14 @@ const JusticeSlide = () => {
             </div>
 
             {/* Bottom Quote Section */}
-            <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 text-center animate-fade-in-up">
+            <div className={`absolute bottom-16 right-8 text-right max-w-md transition-all duration-1000 delay-400 ${isActive ? 'animate-fade-in-up opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                }`}>
                 <div className="border-t border-gray-600 pt-6 mb-4">
                     <h3 className="text-xl text-gray-300 tracking-wider">
                         OUR CLIENTS
                     </h3>
                 </div>
-                <p className="text-2xl md:text-3xl text-white font-light max-w-4xl mx-auto leading-relaxed">
+                <p className="text-2xl md:text-3xl text-white font-light leading-relaxed">
                     "Where Legal Innovation Meets Professional Excellence"
                 </p>
             </div>
