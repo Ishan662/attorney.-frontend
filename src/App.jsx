@@ -35,7 +35,9 @@ import ViewMessages from './pages/Admin/ViewMessages';
 import AdminAnalytics from './pages/Admin/ViewAnalytics';
 import ClientDashboard from './pages/Client/Clientdashboard';
 import Clientcaseprofiles from './pages/Client/Clientcaseprofiles';
+
 import ClientInvitation from './pages/Client/ClientInvitation';
+import UserOTP from './pages/Common/UserOTP';
 
 export default function App() {
   return (
@@ -60,6 +62,7 @@ export default function App() {
           <Route path='/lawyer/messages' element={<Messages />} />
           <Route path="user/signup" element={<UserSignUp />} />
           <Route path="user/login" element={<UserLogin />} />
+          <Route path="user/otp" element={<UserOTP />} />
           <Route path="lawyer/caseprofile" element={<CaseProfiles />} />
           <Route path="lawyer/casedetails" element={<CaseDetails />} />
           <Route path="lawyer/newcaseprofile" element={<NewCaseProfile />} />
