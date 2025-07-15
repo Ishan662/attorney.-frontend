@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../../components/layout/PageHeader";
-import Button1 from "../../components/UI/Button1";
-import Button2 from "../../components/UI/Button2";
 import PageLayout from "../../components/layout/PageLayout";
 
 const JuniorDashboard = () => {
