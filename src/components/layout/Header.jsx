@@ -28,7 +28,7 @@ const Header = () => {
                     <Link to="/help" className="hover:opacity-80 transition-opacity">Help</Link>
                     <div className="flex items-center space-x-3">
                         <Link to="user/login" className="hover:opacity-80 transition-opacity">Log in</Link>
-                        <Link to="user/signup" className="bg-white text-black px-4 py-2 rounded-full hover:bg-gray-100 
+                        <Link to="user/signup" className="bg-white text-black px-4 py-2 rounded-lg hover:bg-gray-100 
                         transition-colors font-medium">Sign up</Link>
                     </div>
                 </div>
