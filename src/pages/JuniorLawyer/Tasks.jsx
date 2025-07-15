@@ -10,69 +10,16 @@ const user = {
 };
 
 const initialTasks = [
-    { id: 1, title: "Draft Affidavit", due: "2024-07-11", status: "Pending", documents: [] },
-    { id: 2, title: "Prepare Evidence", due: "2024-07-13", status: "In Progress", documents: [] },
-    { id: 3, title: "File Court Documents", due: "2024-07-15", status: "Completed", documents: [] },
+    { id: 1, title: "Draft Affidavit", due: "2024-07-11", status: "Pending" },
+    { id: 2, title: "Prepare Evidence", due: "2024-07-13", status: "In Progress" },
+    { id: 3, title: "File Court Documents", due: "2024-07-15", status: "Completed" },
 ];
 
 const Tasks = () => {
     const [notificationCount, setNotificationCount] = useState(1);
-    const [tasks, setTasks] = useState(initialTasks);
+    const [tasks] = useState(initialTasks);
 
     const handleNotificationClick = () => { };
-
-    const handleAddDocument = (taskId) => {
-        // Create a file input element
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.multiple = true;
-        fileInput.accept = '.pdf,.doc,.docx,.txt,.jpg,.jpeg,.png';
-        
-        fileInput.onchange = (event) => {
-            const files = Array.from(event.target.files);
-            if (files.length > 0) {
-                setTasks(prevTasks => 
-                    prevTasks.map(task => 
-                        task.id === taskId 
-                            ? { 
-                                ...task, 
-                                documents: [...task.documents, ...files.map(file => ({
-                                    id: Date.now() + Math.random(),
-                                    name: file.name,
-                                    size: file.size,
-                                    type: file.type,
-                                    file: file
-                                }))]
-                              }
-                            : task
-                    )
-                );
-            }
-        };
-        
-        fileInput.click();
-    };
-
-    const handleRemoveDocument = (taskId, documentId) => {
-        setTasks(prevTasks => 
-            prevTasks.map(task => 
-                task.id === taskId 
-                    ? { 
-                        ...task, 
-                        documents: task.documents.filter(doc => doc.id !== documentId)
-                      }
-                    : task
-            )
-        );
-    };
-
-    const formatFileSize = (bytes) => {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    };
 
     return (
         <PageLayout user={user}>
@@ -108,46 +55,7 @@ const Tasks = () => {
                                         {task.status}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4">
-                                    <div className="space-y-2">
-                                        <Button1
-                                            onClick={() => handleAddDocument(task.id)}
-                                            text="Add Document"
-                                            className="text-sm py-1 px-4"
-                                            
-                                            Add Document
-                                       />
-                                        
-                                        {task.documents.length > 0 && (
-                                            <div className="mt-2 space-y-1">
-                                                {task.documents.map((doc) => (
-                                                    <div key={doc.id} className="flex items-center justify-between bg-gray-50 px-2 py-1 rounded text-xs">
-                                                        <div className="flex items-center space-x-2">
-                                                            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                            </svg>
-                                                            <span className="truncate max-w-32" title={doc.name}>
-                                                                {doc.name}
-                                                            </span>
-                                                            <span className="text-gray-400">
-                                                                ({formatFileSize(doc.size)})
-                                                            </span>
-                                                        </div>
-                                                        <button
-                                                            onClick={() => handleRemoveDocument(task.id, doc.id)}
-                                                            className="text-red-500 hover:text-red-700 ml-2"
-                                                            title="Remove document"
-                                                        >
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap"><Button1 text="Add Documents" className="mt-2" /></td> 
                             </tr>
                         ))}
                     </tbody>
