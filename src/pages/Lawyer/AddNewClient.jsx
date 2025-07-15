@@ -62,7 +62,7 @@ const AddClient = () => {
                   <label className="block text-gray-700 mb-2 font-medium">Phone Number</label>
                   <Input1
                     type="text"
-                    placeholder="e.g., +1234567890"
+                    placeholder="e.g., 071234567"
                     variant="outlined"
                     className="mb-4"
                   />
