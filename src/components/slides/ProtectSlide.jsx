@@ -14,11 +14,11 @@ const ProtectSlide = ({ isActive }) => {
             {/* Hero Image */}
             <div className={`absolute right-1/2 top-1/2 transform -translate-y-1/2 z-10 transition-all duration-1000 ${isActive ? 'animate-fade-in-up opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
                 }`}>
-                <div className="w-96 h-auto">
+                <div className="w-96 h-auto group cursor-pointer">
                     <img
                         src={protectImage}
                         alt="Legal Protection"
-                        className="w-full h-full object-contain filter brightness-110 contrast-110 drop-shadow-2xl"
+                        className="w-full h-full object-contain filter brightness-110 contrast-110 drop-shadow-2xl transition-transform duration-500 group-hover:scale-110"
                     />
                 </div>
             </div>
@@ -34,7 +34,7 @@ const ProtectSlide = ({ isActive }) => {
                         advanced technology and comprehensive<br />
                         case tracking systems.
                     </p>
-                    <div className="inline-block border border-gray-400 px-8 py-3 text-gray-300 hover:bg-white hover:text-black transition-all duration-300 cursor-pointer">
+                    <div className="inline-block border border-gray-400 px-8 py-3 rounded-lg text-gray-300 hover:bg-white hover:text-black transition-all duration-300 cursor-pointer">
                         START TODAY
                     </div>
                 </div>
