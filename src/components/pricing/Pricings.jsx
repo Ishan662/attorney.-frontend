@@ -77,8 +77,8 @@ const Pricings = () => {
                         <button
                             onClick={() => setBillingPeriod('monthly')}
                             className={`px-6 py-2 rounded-md transition-all duration-200 ${billingPeriod === 'monthly'
-                                    ? 'bg-gray-200 text-gray-900 shadow-sm'
-                                    : 'text-gray-600 hover:text-gray-900'
+                                ? 'bg-gray-200 text-gray-900 shadow-sm'
+                                : 'text-gray-600 hover:text-gray-900'
                                 }`}
                         >
                             Monthly
@@ -86,8 +86,8 @@ const Pricings = () => {
                         <button
                             onClick={() => setBillingPeriod('yearly')}
                             className={`px-6 py-2 rounded-md transition-all duration-200 relative ${billingPeriod === 'yearly'
-                                    ? 'bg-gray-200 text-gray-900 shadow-sm'
-                                    : 'text-gray-600 hover:text-gray-900'
+                                ? 'bg-gray-200 text-gray-900 shadow-sm'
+                                : 'text-gray-600 hover:text-gray-900'
                                 }`}
                         >
                             Yearly

@@ -42,12 +42,12 @@ const Home = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
 
-        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-black via-gray-900 to-gray-800 relative snap-y snap-mandatory">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-gray-800 relative snap-y snap-mandatory">
           {/* Hero Section Carousel */}
-          <div className="h-screen flex items-center justify-center relative -mt-40 snap-start">
+          <div className="h-screen flex items-center justify-center relative -mt-40 snap-start overflow-hidden">
 
             {/* Slides Container */}
-            <div className="w-full h-full relative">
+            <div className="w-full h-full relative overflow-hidden">
               {heroSlides.map((slide, index) => {
                 const SlideComponent = slide.component;
                 return (
@@ -157,7 +157,7 @@ const Home = () => {
           </div>
 
           {/* Pricing Section - Slides on top with snap */}
-          <div className="mt-24 min-h-screen snap-start bg-gray-50 rounded-t-3xl relative z-10">
+          <div className="mt-24 min-h-screen snap-start bg-gray-50 rounded-t-3xl relative z-10 overflow-hidden">
             <Pricings />
           </div>
 
