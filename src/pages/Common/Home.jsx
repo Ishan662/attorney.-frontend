@@ -7,6 +7,7 @@ import Sidebar from '../../components/layout/Sidebar';
 import DefendSlide from '../../components/slides/DefendSlide';
 import JusticeSlide from '../../components/slides/JusticeSlide';
 import ProtectSlide from '../../components/slides/ProtectSlide';
+import Pricings from '../../components/pricing/Pricings';
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -41,9 +42,9 @@ const Home = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
 
-        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-black via-gray-900 to-gray-800 relative overflow-hidden">
+        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-black via-gray-900 to-gray-800 relative snap-y snap-mandatory">
           {/* Hero Section Carousel */}
-          <div className="h-screen flex items-center justify-center relative -mt-40">
+          <div className="h-screen flex items-center justify-center relative -mt-40 snap-start">
 
             {/* Slides Container */}
             <div className="w-full h-full relative">
@@ -154,6 +155,12 @@ const Home = () => {
               ))}
             </div>
           </div>
+
+          {/* Pricing Section - Slides on top with snap */}
+          <div className="mt-24 min-h-screen snap-start bg-gray-50 rounded-t-3xl relative z-10">
+            <Pricings />
+          </div>
+
         </main>
       </div>
     </div>
