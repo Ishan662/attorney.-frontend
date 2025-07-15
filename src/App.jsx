@@ -40,6 +40,9 @@ import Clientcaseprofiles from './pages/Client/Clientcaseprofiles';
 import LawyerDashboard from './pages/Lawyer/LawyerDashboard';
 import AcceptInvitationPage from './pages/Common/AcceptInvitationPage';
 
+import ClientInvitation from './pages/Client/ClientInvitation';
+import UserOTP from './pages/Common/UserOTP';
+
 export default function App() {
   return (
     <Router>
@@ -65,6 +68,7 @@ export default function App() {
           <Route path='/lawyer/messages' element={<Messages />} />
           <Route path="user/signup" element={<UserSignUp />} />
           <Route path="user/login" element={<UserLogin />} />
+          <Route path="user/otp" element={<UserOTP />} />
           <Route path="lawyer/caseprofile" element={<CaseProfiles />} />
           <Route path="lawyer/casedetails" element={<CaseDetails />} />
           <Route path="lawyer/newcaseprofile" element={<NewCaseProfile />} />
@@ -82,10 +86,13 @@ export default function App() {
           <Route path="admin/usermanagement" element={<UserManagement />} />
           <Route path="admin/viewmessages" element={<ViewMessages />} />
           <Route path="admin/viewanalytics" element={<AdminAnalytics />} />
+          <Route path="client/caseprofiles" element={<Clientcaseprofiles />} />
+          <Route path="/invitation/:inviteToken" element={<ClientInvitation />} />  
 
                     {/* testing routes */}
           <Route path="layer/dashboard" element={<LawyerDashboard />} />
           <Route path="accept-invitation" element={<AcceptInvitationPage />} />
+ 
         </Routes>
       </div>
     </Router>

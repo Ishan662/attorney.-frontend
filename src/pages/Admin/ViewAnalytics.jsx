@@ -626,39 +626,33 @@
 //                 </div>
 //             </div>
 
-//             {/* Export and Download Buttons */}
-//             <div className="flex justify-end space-x-4 mb-8">
-//                 <Button2
-//                     text="Export as PDF"
-//                     onClick={() => console.log('Export as PDF')}
-//                     className="px-4 py-2"
-//                 />
-//                 <Button2
-//                     text="Download CSV"
-//                     onClick={() => console.log('Download CSV')}
-//                     className="px-4 py-2"
-//                 />
-//                 <Button2
-//                     text="Print Report"
-//                     onClick={() => console.log('Print Report')}
-//                     className="px-4 py-2"
-//                 />
-//             </div>
-//             <ReportGenerator
-//                 isOpen={showReportGenerator}
-//                 onClose={() => setShowReportGenerator(false)}
-//                 analyticsData={analyticsData}
-//                 chartType={chartType}
-//                 timeRange={timeRange}
-//             />
-//         </PageLayout>
-//     );
+    //         {/* Export and Download Buttons */}
+    //         <div className="flex justify-end space-x-4 mb-8">
+    //             <Button2
+    //                 text="Export as PDF"
+    //                 onClick={() => console.log('Export as PDF')}
+    //                 className="px-4 py-2"
+    //             />
+    //             <Button2
+    //                 text="Download CSV"
+    //                 onClick={() => console.log('Download CSV')}
+    //                 className="px-4 py-2"
+    //             />
+    //             <Button2
+    //                 text="Print Report"
+    //                 onClick={() => console.log('Print Report')}
+    //                 className="px-4 py-2"
+    //             />
+    //         </div>
+    //         <ReportGenerator
+    //             isOpen={showReportGenerator}
+    //             onClose={() => setShowReportGenerator(false)}
+    //             analyticsData={analyticsData}
+    //             chartType={chartType}
+    //             timeRange={timeRange}
+    //         />
+    //     </PageLayout>
+    // );
 // };
-
-// export default AdminAnalytics;
-
-const AdminAnalytics = () => {
-
-}
 
 export default AdminAnalytics;

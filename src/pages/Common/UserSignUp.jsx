@@ -104,6 +104,12 @@ const UserSignUp = () => {
                 alert('Welcome! Your account has been created.');
                 navigate('/dashboard');
 
+                // Call your API to register the user
+                // const response = await registerUser(formData);
+                // console.log('Form submitted successfully', formData);
+
+                // Redirect to dashboard or login page after successful registration
+                navigate('/user/otp');
             } catch (error) {
                 console.error('Registration error:', error);
                 setErrors({ form: error.message || 'Registration failed. Please try again.' });
@@ -128,6 +134,9 @@ const UserSignUp = () => {
         } finally {
             setIsSubmitting(false);
         }
+    const handleGoogleSignup = () => {
+        // Implement Google OAuth sign-up
+        // console.log('Google sign-up clicked');
     };
 
     return (

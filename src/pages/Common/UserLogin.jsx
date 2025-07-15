@@ -94,7 +94,7 @@ const UserLogin = () => {
 
     const handleAppleLogin = () => {
         // Implement Apple login
-        console.log('Apple login clicked');
+        // console.log('Apple login clicked');
     };
 
     return (
