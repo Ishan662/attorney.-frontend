@@ -56,7 +56,7 @@ const UserLogin = () => {
             try {
                 // Call your API to log in the user
                 // const response = await loginUser(formData);
-                console.log('Login submitted successfully', formData);
+                // console.log('Login submitted successfully', formData);
 
                 // Redirect to dashboard after successful login
                 navigate('/dashboard');
@@ -73,12 +73,12 @@ const UserLogin = () => {
 
     const handleGoogleLogin = () => {
         // Implement Google OAuth login
-        console.log('Google login clicked');
+        // console.log('Google login clicked');
     };
 
     const handleAppleLogin = () => {
         // Implement Apple login
-        console.log('Apple login clicked');
+        // console.log('Apple login clicked');
     };
 
     return (
