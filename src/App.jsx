@@ -79,7 +79,8 @@ export default function App() {
           <Route path="admin/viewmessages" element={<ViewMessages />} />
           <Route path="admin/viewanalytics" element={<AdminAnalytics />} />
           <Route path="client/caseprofiles" element={<Clientcaseprofiles />} />
-          <Route path="/invitation/:inviteToken" element={<ClientInvitation />} />   
+          <Route path="/invitation/:inviteToken" element={<ClientInvitation />} /> 
+          <Route path="lawyer/addnexthearing" element={<AddNextHearingModal />} />  
         </Routes>
       </div>
     </Router>
