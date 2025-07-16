@@ -36,6 +36,7 @@ import AdminAnalytics from './pages/Admin/ViewAnalytics';
 import ClientDashboard from './pages/Client/Clientdashboard';
 import Clientcaseprofiles from './pages/Client/Clientcaseprofiles';
 import ClientInvitation from './pages/Client/ClientInvitation';
+import AddNextHearingModal from './pages/Lawyer/AddNextHearingDate';
 
 export default function App() {
   return (
