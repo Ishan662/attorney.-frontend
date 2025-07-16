@@ -38,6 +38,7 @@ import ViewMessages from './pages/Admin/ViewMessages';
 import AdminAnalytics from './pages/Admin/ViewAnalytics';
 import ClientDashboard from './pages/Client/Clientdashboard';
 import Clientcaseprofiles from './pages/Client/Clientcaseprofiles';
+import ClientCalendar from './pages/Client/Clientcalendar';
 import LawyerDashboard from './pages/Lawyer/LawyerDashboard';
 import AcceptInvitationPage from './pages/Common/AcceptInvitationPage';
 
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="lawyer/clients" element={<Clients />} />
           <Route path="client/schedulemeeting" element={<ScheduleMeeting />} />
           <Route path="client/caseprofiles" element={<CaseProfiles />} />
+          <Route path="client/clientcalendar" element={<ClientCalendar />} />
           <Route path='/lawyer/messages' element={<Messages />} />
           <Route path="user/signup" element={<UserSignUp />} />
           <Route path="user/login" element={<UserLogin />} />
