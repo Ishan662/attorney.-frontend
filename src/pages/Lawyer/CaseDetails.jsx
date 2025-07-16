@@ -218,7 +218,7 @@ const CaseDetails = () => (
         </div>
       </div>
       <div className="flex justify-center mt-4">
-        <Button1 text="Add Next Hearing Date" className="mt-2" />
+        <Button1 text="Add Next Hearing Date" className="mt-2" to="/lawyer/addnexthearing"/>
       </div>
     </section>
 
