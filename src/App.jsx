@@ -36,7 +36,7 @@ import AdminAnalytics from './pages/Admin/ViewAnalytics';
 import ClientDashboard from './pages/Client/Clientdashboard';
 import Clientcaseprofiles from './pages/Client/Clientcaseprofiles';
 import ClientCalendar from './pages/Client/Clientcalendar';
-
+import AddNextHearingModal from './pages/Lawyer/AddNextHearingDate';
 import ClientInvitation from './pages/Client/ClientInvitation';
 import UserOTP from './pages/Common/UserOTP';
 
@@ -83,7 +83,8 @@ export default function App() {
           <Route path="admin/viewmessages" element={<ViewMessages />} />
           <Route path="admin/viewanalytics" element={<AdminAnalytics />} />
           <Route path="client/caseprofiles" element={<Clientcaseprofiles />} />
-          <Route path="/invitation/:inviteToken" element={<ClientInvitation />} />   
+          <Route path="/invitation/:inviteToken" element={<ClientInvitation />} /> 
+          <Route path="lawyer/addnexthearing" element={<AddNextHearingModal />} />  
         </Routes>
       </div>
     </Router>

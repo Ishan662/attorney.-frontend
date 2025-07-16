@@ -53,7 +53,7 @@ const AddClient = () => {
                   <label className="block text-gray-700 mb-2 font-medium">Client Name</label>
                   <Input1
                     type="text"
-                    placeholder="e.g., John Doe"
+                    placeholder="e.g., Ishan Maduranga"
                     variant="outlined"
                     className="mb-4"
                   />
@@ -62,7 +62,7 @@ const AddClient = () => {
                   <label className="block text-gray-700 mb-2 font-medium">Phone Number</label>
                   <Input1
                     type="text"
-                    placeholder="e.g., +1234567890"
+                    placeholder="e.g., 071234567"
                     variant="outlined"
                     className="mb-4"
                   />
@@ -71,7 +71,7 @@ const AddClient = () => {
                   <label className="block text-gray-700 mb-2 font-medium">Email Address</label>
                   <Input1
                     type="email"
-                    placeholder="e.g., john.doe@example.com"
+                    placeholder="e.g., ishan@gmail.com"
                     variant="outlined"
                     className="mb-4"
                   />
