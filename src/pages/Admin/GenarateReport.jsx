@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-import { saveAs } from 'file-saver';
+// import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+// import { saveAs } from 'file-saver';
 import { format } from 'date-fns';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';

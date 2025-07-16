@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../../components/layout/PageHeader";
-import Button1 from "../../components/UI/Button1";
-import Button2 from "../../components/UI/Button2";
 import PageLayout from "../../components/layout/PageLayout";
 
 const JuniorHearings = () => {
@@ -11,7 +9,7 @@ const JuniorHearings = () => {
     const [selectedFilter, setSelectedFilter] = useState("all");
 
     const user = {
-        name: 'Sujan Darshan',
+        name: 'Sujan Darshana',
         email: 'sujan@example.com',
         role: 'junior_lawyer'
     };
@@ -248,6 +246,7 @@ const JuniorHearings = () => {
                                         </span>
                                     ))}
                                 </div>
+                                <Button1 text="Add Documents" className="mt-2" />
                             </div>
 
                             {/* Actions */}
@@ -276,28 +275,7 @@ const JuniorHearings = () => {
                 </div>
             )}
 
-            {/* Summary Stats */}
-            <div className="mt-8 bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4">Hearing Summary</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="text-center">
-                        <div className="text-2xl font-bold text-red-600">{hearings.filter(h => h.status === "Today").length}</div>
-                        <div className="text-sm text-gray-600">Today</div>
-                    </div>
-                    <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">{hearings.filter(h => h.status === "Upcoming").length}</div>
-                        <div className="text-sm text-gray-600">Upcoming</div>
-                    </div>
-                    <div className="text-center">
-                        <div className="text-2xl font-bold text-yellow-600">{hearings.filter(h => h.status === "This Week").length}</div>
-                        <div className="text-sm text-gray-600">This Week</div>
-                    </div>
-                    <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">{hearings.filter(h => h.priority === "High").length}</div>
-                        <div className="text-sm text-gray-600">High Priority</div>
-                    </div>
-                </div>
-            </div>
+            
         </PageLayout>
     );
 };

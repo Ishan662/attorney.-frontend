@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import AuthHeader from '../../components/layout/AuthHeader';
+import { loginWithEmail, loginWithGoogle, getFullSession } from '../../services/authService';
+import { useAuth } from '../../context/AuthContext'; 
 
 const UserLogin = () => {
     const navigate = useNavigate();
@@ -12,6 +14,34 @@ const UserLogin = () => {
     });
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const { currentUser } = useAuth();
+
+    const navigateUserByRole = (currentUser) => {
+        if (!currentUser || !currentUser.role) {
+            throw new Error("Login succeeded but user profile is incomplete.");
+        }
+        
+        switch (currentUser.role) {
+            case 'LAWYER':
+                navigate('/lawyer/dashboard');
+                break;
+            case 'JUNIOR':
+                navigate('/junior/cases');
+                break;
+            case 'CLIENT':
+                navigate('/client/caseprofiles');
+                break;
+            case 'ADMIN':
+                navigate('/admin/systemsettings');
+                break;
+            case 'RESEARCHER':
+                navigate('/researcher/chatbot');
+                break;
+            default:
+                navigate('/'); 
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -48,37 +78,48 @@ const UserLogin = () => {
         return Object.keys(tempErrors).length === 0;
     };
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         if (validate()) {
             setIsSubmitting(true);
+            setErrors({});
             try {
-                // Call your API to log in the user
-                // const response = await loginUser(formData);
-                console.log('Login submitted successfully', formData);
+                
+                await loginWithEmail(formData.email, formData.password);
+            
+                // navigate('/lawyer/dashboard');
+                navigateUserByRole(currentUser);
 
-                // Redirect to dashboard after successful login
-                navigate('/dashboard');
             } catch (error) {
-                console.error('Login error:', error);
-                setErrors({
-                    form: 'Invalid email or password. Please try again.'
-                });
+                setErrors({ form: error.message });
             } finally {
                 setIsSubmitting(false);
             }
         }
     };
 
-    const handleGoogleLogin = () => {
-        // Implement Google OAuth login
-        console.log('Google login clicked');
+
+    // The handleGoogleLogin function does not need to change.
+    const handleGoogleLogin = async () => {
+        setIsSubmitting(true);
+        setErrors({});
+        try {
+            // It calls the exact same function. The backend handles the difference.
+            const userDto = await loginWithGoogle(); 
+            alert(`Welcome back, ${userDto.fullName}!`);
+            navigate('lawyer/dashboard');
+        } catch (error) {
+            console.error('Google login error:', error);
+            setErrors({ form: error.message || 'Google login failed.' });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleAppleLogin = () => {
         // Implement Apple login
-        console.log('Apple login clicked');
+        // console.log('Apple login clicked');
     };
 
     return (
@@ -214,7 +255,7 @@ const UserLogin = () => {
                 <div className="text-center mt-4">
                     <p className="text-sm">
                         Don't have an account?{" "}
-                        <Link to="user/signup" className="font-medium text-black hover:text-gray-800">
+                        <Link to="/user/signup" className="font-medium text-black hover:text-gray-800">
                             Sign up
                         </Link>
                     </p>
