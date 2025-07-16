@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PageLayout from '../../components/layout/PageLayout';
+import Button2 from '../../components/UI/Button2';
+import AddNextHearingModal from './AddNextHearingDate'; 
 import Button1 from '../../components/UI/Button1';
 import { getCaseById } from '../../services/caseService'; // Your service function
 
@@ -17,6 +19,23 @@ const staticDocuments = [
 ];
 
 const CaseDetails = () => {
+
+      // State for managing hearings
+    const [hearings, setHearings] = useState(caseData.hearings);
+    
+    // State for modal visibility
+    const [showHearingModal, setShowHearingModal] = useState(false);
+
+    // Function to handle adding a new hearing
+    const handleAddHearing = (newHearing) => {
+      // Add the new hearing to the hearings array
+      const updatedHearings = [...hearings, newHearing];
+      setHearings(updatedHearings);
+      
+      // Show success message (you could use toast notifications here)
+      alert("New hearing date added successfully!");
+    };
+
     const { caseId } = useParams();
     const navigate = useNavigate();
 
@@ -212,6 +231,31 @@ const CaseDetails = () => {
             </section>
         </PageLayout>
     );
+};
+      {/* Documents */}
+      <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+        <h2 className="text-xl font-semibold mb-6">Documents</h2>
+        <ul className="list-disc pl-6 mb-4 text-blue-700">
+          {caseData.documents.map((doc, idx) => (
+            <li key={idx}>
+              <a href={doc.url} className="hover:underline" target="_blank" rel="noopener noreferrer">{doc.name}</a>
+            </li>
+          ))}
+        </ul>
+        <Button1 text="Add Documents" className="mt-2" />
+      </section>
+
+      {/* Add Next Hearing Modal */}
+      {showHearingModal && (
+        <AddNextHearingModal 
+          isOpen={showHearingModal}
+          onClose={() => setShowHearingModal(false)}
+          caseNumber={caseData.number}
+          onSave={handleAddHearing}
+        />
+      )}
+    </PageLayout>
+  );
 };
 
 export default CaseDetails;

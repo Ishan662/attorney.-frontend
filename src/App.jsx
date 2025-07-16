@@ -39,6 +39,7 @@ import AdminAnalytics from './pages/Admin/ViewAnalytics';
 import ClientDashboard from './pages/Client/Clientdashboard';
 import Clientcaseprofiles from './pages/Client/Clientcaseprofiles';
 import ClientCalendar from './pages/Client/Clientcalendar';
+import AddNextHearingModal from './pages/Lawyer/AddNextHearingDate';
 import LawyerDashboard from './pages/Lawyer/LawyerDashboard';
 import AcceptInvitationPage from './pages/Common/AcceptInvitationPage';
 
@@ -102,6 +103,8 @@ export default function App() {
           <Route path="layer/dashboard" element={<LawyerDashboard />} />
           <Route path="accept-invitation/:token" element={<AcceptInvitationPage />} />
  
+          <Route path="/invitation/:inviteToken" element={<ClientInvitation />} /> 
+          <Route path="lawyer/addnexthearing" element={<AddNextHearingModal />} />  
         </Routes>
       </div>
     </Router>
