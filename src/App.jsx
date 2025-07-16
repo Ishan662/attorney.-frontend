@@ -70,7 +70,7 @@ export default function App() {
           <Route path="user/login" element={<UserLogin />} />
           <Route path="user/otp" element={<UserOTP />} />
           <Route path="lawyer/caseprofile" element={<CaseProfiles />} />
-          <Route path="lawyer/casedetails" element={<CaseDetails />} />
+          <Route path="lawyer/case/:caseId" element={<CaseDetails />} />
           <Route path="lawyer/newcaseprofile" element={<NewCaseProfile />} />
           <Route path="lawyer/cases" element={<Cases />} />
           <Route path="lawyer/duepayments" element={<DuePayments />} />
