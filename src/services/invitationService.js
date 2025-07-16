@@ -10,7 +10,7 @@ import { authenticatedFetch } from './authService';
 export const sendInvitation = async (invitationData) => {
   // This uses the authenticatedFetch helper, ensuring only a logged-in
   // user can call this. The backend will verify they have the 'LAWYER' role.
-  return await authenticatedFetch('/api/invitations', {
+  return await authenticatedFetch('/api/invitations/create-invitation', {
     method: 'POST',
     body: JSON.stringify(invitationData),
   });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+// import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import AuthHeader from '../../components/layout/AuthHeader';
@@ -9,8 +10,9 @@ import { finalizeInvitation, getInvitationDetails } from '../../services/invitat
 
 const AcceptInvitationPage = () => {
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const invitationToken = searchParams.get('token');
+    // const [searchParams] = useSearchParams();
+     const { token: invitationToken } = useParams();
+    // const invitationToken = searchParams.get('token');
 
     // State for the form fields the user can edit
     const [formData, setFormData] = useState({
