@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import AuthHeader from '../../components/layout/AuthHeader';
-import { loginWithEmail, loginWithGoogle, fetchAndStoreSession } from '../../services/authService';
+import { loginWithEmail, loginWithGoogle, getFullSession } from '../../services/authService';
+import { useAuth } from '../../context/AuthContext'; 
 
 const UserLogin = () => {
     const navigate = useNavigate();
@@ -13,6 +14,34 @@ const UserLogin = () => {
     });
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const { currentUser } = useAuth();
+
+    const navigateUserByRole = (currentUser) => {
+        if (!currentUser || !currentUser.role) {
+            throw new Error("Login succeeded but user profile is incomplete.");
+        }
+        
+        switch (currentUser.role) {
+            case 'LAWYER':
+                navigate('/lawyer/dashboard');
+                break;
+            case 'JUNIOR':
+                navigate('/junior/cases');
+                break;
+            case 'CLIENT':
+                navigate('/client/caseprofiles');
+                break;
+            case 'ADMIN':
+                navigate('/admin/systemsettings');
+                break;
+            case 'RESEARCHER':
+                navigate('/researcher/chatbot');
+                break;
+            default:
+                navigate('/'); 
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -56,30 +85,11 @@ const UserLogin = () => {
             setIsSubmitting(true);
             setErrors({});
             try {
-                // --- ▼▼▼ THIS IS THE FINAL, CORRECT LOGIC ▼▼▼ ---
-
-                // Step 1: Perform the initial login and status check.
-                const loginStatus = await loginWithEmail(formData.email, formData.password);
                 
-                // Step 2: Make a decision based on the status.
-                if (loginStatus.status === 'PENDING_PHONE_VERIFICATION') {
-                    // If pending, the journey ends here for now. Go to OTP page.
-                    navigate('/user/otp', { state: { phoneNumber: loginStatus.phoneNumber } });
-
-                } else if (loginStatus.status === 'ACTIVE') {
-                    // If ACTIVE, the user is allowed in. Now, perform the second handshake
-                    // to get all the detailed session data the application needs.
-                    await fetchAndStoreSession();
-                    
-                    // Now that the session is stored globally, we can safely go to the dashboard.
-                    alert(`Welcome back, ${loginStatus.fullName}!`);
-                    navigate('/dashboard');
-
-                } else {
-                    // Handle inactive or other states.
-                    throw new Error("Your account is not active. Please contact support.");
-                }
-                // --- ▲▲▲ THIS IS THE FINAL, CORRECT LOGIC ▲▲▲ ---
+                await loginWithEmail(formData.email, formData.password);
+            
+                // navigate('/lawyer/dashboard');
+                navigateUserByRole(currentUser);
 
             } catch (error) {
                 setErrors({ form: error.message });
@@ -98,7 +108,7 @@ const UserLogin = () => {
             // It calls the exact same function. The backend handles the difference.
             const userDto = await loginWithGoogle(); 
             alert(`Welcome back, ${userDto.fullName}!`);
-            navigate('/dashboard');
+            navigate('lawyer/dashboard');
         } catch (error) {
             console.error('Google login error:', error);
             setErrors({ form: error.message || 'Google login failed.' });

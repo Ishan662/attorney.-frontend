@@ -1,5 +1,3 @@
-// >> In services/authService.js (REPLACE THE ENTIRE FILE)
-
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -7,28 +5,17 @@ import {
   GoogleAuthProvider,
   onAuthStateChanged,
   sendEmailVerification,
-  getAuth,
-  RecaptchaVerifier,
-  PhoneAuthProvider,
   signOut,
 } from 'firebase/auth';
 import { auth } from './firebase'; // Your firebase config file
 
-// --- STATE MANAGEMENT ---
-// This simple variable will hold the rich user profile object from our backend.
-// In a larger application, this would be managed by a state library like Redux/Zustand.
-let currentUserProfile = null;
-
-/**
- * A helper function to make authenticated API calls to your backend.
- * It automatically gets a fresh token from Firebase for every request.
- * @param {string} endpoint - The backend API endpoint (e.g., '/api/cases')
- * @param {object} options - The standard Fetch API options (method, body, etc.)
- * @returns {Promise<any>} The JSON response from the backend.
- */
+// This helper function is the core of your API communication. It's self-contained and robust.
 export const authenticatedFetch = async (endpoint, options = {}) => {
   const user = auth.currentUser;
-  if (!user) throw new Error("Authentication Error: No user is signed in.");
+  if (!user) {
+    throw new Error("No authenticated user found. Please log in again.");
+  }
+
   const idToken = await user.getIdToken();
 
   const response = await fetch(`http://localhost:8080${endpoint}`, {
@@ -41,11 +28,17 @@ export const authenticatedFetch = async (endpoint, options = {}) => {
   });
 
   if (!response.ok) {
-    const errorBody = await response.teauthenticatedFetchxt();
-    throw new Error(errorBody || `API Error: ${response.status}`);
+    const errorBody = await response.text();
+    let errorMessage = `API Error: ${response.status}`;
+    try {
+        const parsedError = JSON.parse(errorBody);
+        errorMessage = parsedError.message || errorBody;
+    } catch (e) {
+        errorMessage = errorBody || errorMessage;
+    }
+    throw new Error(errorMessage);
   }
 
-  // Handle responses that might not have a JSON body (e.g., HTTP 204)
   const contentType = response.headers.get("content-type");
   if (contentType && contentType.includes("application/json")) {
     return response.json();
@@ -54,78 +47,111 @@ export const authenticatedFetch = async (endpoint, options = {}) => {
 };
 
 
-
-// --- USER JOURNEY FUNCTIONS ---
+// ========================================================================
+// --- CORE AUTHENTICATION JOURNEYS ---
+// ========================================================================
 
 /**
- * JOURNEY 1: A brand new user signs up publicly as a LAWYER.
- * This calls the new, specific backend endpoint for lawyer registration.
+ * Signs up a new lawyer. This involves creating their Firebase account,
+ * sending a verification email, registering them on the backend, and logging them out.
  */
 export const signupNewLawyer = async (email, password, profileData) => {
-  // await createUserWithEmailAndPassword(auth, email, password);
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  // After Firebase account is created, we register them on our backend.
-
-  try {
-    await sendEmailVerification(userCredential.user);
-  } catch (emailError) {
-    console.error("Could not send verification email:", emailError);
-    // You can decide to alert the user here if you want
-  }
-
-  const backendUser = await authenticatedFetch('/api/auth/register-lawyer', {
-    method: 'POST',
-    body: JSON.stringify(profileData)
-  });  
   
-  // CRITICAL - Log the user out immediately.
-  // This forces them to go to their email and verify before they can log in.
+  // We need the token from the newly created user to make the backend call.
+  const idToken = await userCredential.user.getIdToken();
+  await fetch('http://localhost:8080/api/auth/register-lawyer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+      body: JSON.stringify(profileData),
+  });
+  
+  // Send verification email and force logout so they must verify before continuing.
+  await sendEmailVerification(userCredential.user);
   await signOut(auth);
-  return;
 };
-
 
 /**
- * JOURNEY 2: Any existing user logs in.
- * This calls the new endpoint to fetch the user's session data.
+ * Logs in a user with email/password. This is the first step that checks email verification
+ * and gets the user's application status from the backend.
+ * @returns {Promise<object>} A lightweight object like { status, phoneNumber, fullName }
  */
 export const loginWithEmail = async (email, password) => {
-  return await checkLoginStatus(email, password); // This is just for clarity, keeping the old name.
-};
-
-export const checkLoginStatus = async (email, password) => {
   const userCredential = await signInWithEmailAndPassword(auth, email, password);
   if (!userCredential.user.emailVerified) {
+    await sendEmailVerification(userCredential.user);
     await signOut(auth);
-    throw new Error("Your email is not verified. Please check your inbox.");
+    throw new Error("Your email is not verified. Please check your inbox for the verification link.");
   }
-  // Call the lightweight status endpoint
   return await authenticatedFetch('/api/auth/status');
 };
 
-export const fetchAndStoreSession = async () => {
-  if (!auth.currentUser) {
-    throw new Error("No user is logged in to fetch a session for.");
-  }
-  // Call the main session endpoint that returns all the details.
-  const fullProfile = await authenticatedFetch('/api/auth/session');
-  // Store it globally for the rest of the app to use.
-  currentUserProfile = fullProfile;
-  return fullProfile;
+/**
+ * Handles Google Sign-in for new or existing users.
+ * The backend's '/google-sync' endpoint handles the logic to either find or create the user.
+ */
+export const loginWithGoogle = async () => {
+    await signInWithPopup(auth, new GoogleAuthProvider());
+    // This endpoint handles the full logic for Google users.
+    return await authenticatedFetch('/api/auth/google-sync', { method: 'POST' });
+};
+
+/**
+ * Logs out the user from Firebase.
+ */
+export const logout = async () => {
+  await signOut(auth);
+  // Redirecting here ensures a clean state on logout.
+  window.location.href = '/user/login';
 };
 
 
+// ========================================================================
+// --- TWILIO PHONE VERIFICATION JOURNEYS ---
+// ========================================================================
 
 /**
- * JOURNEY 3: An invited user (Junior/Client) finalizes their sign-up.
- * This calls the dedicated invitation finalization endpoint.
+ * Asks our backend to send an OTP to the currently logged-in user's phone.
+ */
+export const sendTwilioOtp = async () => {
+  return await authenticatedFetch('/api/otp/send', { method: 'POST' });
+};
+
+/**
+ * Sends the user-entered OTP to our backend for verification and account activation.
+ * @param {string} otpCode The 6-digit code from the user.
+ * @returns {Promise<object>} The fully activated user profile DTO.
+ */
+export const verifyTwilioOtpAndActivate = async (otpCode) => {
+  return await authenticatedFetch('/api/otp/verify', {
+    method: 'POST',
+    body: JSON.stringify({ otpCode })
+  });
+};
+
+
+// ========================================================================
+// --- INVITATION JOURNEYS ---
+// ========================================================================
+
+/**
+ * Allows a lawyer to invite a new user (Junior/Client) to their firm.
+ */
+export const sendInvitation = async (invitationData) => {
+  return await authenticatedFetch('/api/invitations', {
+    method: 'POST',
+    body: JSON.stringify(invitationData)
+  });
+};
+
+/**
+ * Allows an invited user to finalize their registration.
  */
 export const finalizeInvitation = async (email, password, invitationToken, profileData) => {
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const firebaseIdToken = await userCredential.user.getIdToken();
 
-  // This is a special, unauthenticated call to link the accounts.
-  await fetch('http://localhost:8080/api/invitations/finalize', {
+  const response = await fetch('http://localhost:8080/api/invitations/finalize', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -136,250 +162,24 @@ export const finalizeInvitation = async (email, password, invitationToken, profi
     })
   });
 
-  // After finalizing, we log them in properly by fetching their new session info.
-  const backendUser = await authenticatedFetch('/api/auth/session');
-  currentUserProfile = backendUser;
-  return backendUser;
-};
+  if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(errorBody || "Failed to finalize invitation.");
+  }
 
-/**
- * Handles Google Sign-in for both new lawyers and existing users.
- * You will need a new backend endpoint to handle this "login or register" logic.
- */
-export const loginWithGoogle = async () => {
-    await signInWithPopup(auth, new GoogleAuthProvider());
-    // This new endpoint will check if the user exists. If not, it will register them
-    // as a lawyer. If they do exist, it will just return their session info.
-    const backendUser = await authenticatedFetch('/api/auth/google-sync', { method: 'POST' });
-    currentUserProfile = backendUser;
-    console.log(backendUser);
-    return backendUser;
+  // After finalizing, fetch their full session to log them in.
+  return await authenticatedFetch('/api/auth/session');
 };
 
 
+// ========================================================================
+// --- SESSION MANAGEMENT ---
+// ========================================================================
+
 /**
- * Logs out the user from Firebase and clears the local profile.
+ * Fetches the full, detailed user profile from our backend.
+ * This should be called ONLY after a user is confirmed to be ACTIVE.
  */
-export const logout = async () => {
-  await signOut(auth);
-  currentUserProfile = null;
-  // Redirect to login page to ensure a clean state
-  window.location.href = '/login';
+export const getFullSession = async () => {
+    return await authenticatedFetch('/api/auth/session');
 };
-
-
-/**
- * A listener to keep the app's state in sync with Firebase's auth state.
- * This should be called once when your entire application first loads (e.g., in App.js).
- * @param {function} onLogin - A callback function to run when a user is logged in.
- * @param {function} onLogout - A callback function to run when a user is logged out.
- */
-export const initializeAuthListener = (onLogin, onLogout) => {
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      // User is signed into Firebase. Fetch their profile from our backend.
-      try {
-        const profile = await authenticatedFetch('/api/auth/session');
-        currentUserProfile = profile;
-        if (onLogin) onLogin(profile);
-      } catch (error) {
-        console.error("Session restoration failed. Logging out.", error);
-        await logout();
-      }
-    } else {
-      // User is not signed into Firebase.
-      currentUserProfile = null;
-      if (onLogout) onLogout();
-    }
-  });
-};
-
-// ▼▼▼ ADD THIS NEW EXPORTED FUNCTION ▼▼▼
-/**
- * JOURNEY 6: A lawyer invites a new user.
- * @param {object} invitationData - { email, fullName, role, caseId }
- */
-export const sendInvitation = async (invitationData) => {
-  // This uses our authenticatedFetch helper, ensuring only a logged-in
-  // user (who we assume is a lawyer based on backend rules) can call this.
-  return await authenticatedFetch('/api/invitations', {
-    method: 'POST',
-    body: JSON.stringify(invitationData)
-  });
-};
-
-// >> Add these new functions inside services/authService.js
-
-/**
- * JOURNEY 4: Sends the SMS OTP to the user's phone.
- * This is called from the OTP page after a user has successfully logged in.
- * @param {string} phoneNumber - The user's phone number.
- * @param {string} recaptchaContainerId - The ID of the DOM element for the reCAPTCHA.
- * @returns {Promise<object>} The Firebase confirmationResult object.
- */
-// >> In your existing file: services/authService.js
-
-// >> In your existing file: services/authService.js
-
-/**
- * Sends a verification SMS to the user's phone number.
- * This function correctly initializes the invisible reCAPTCHA and lets the Firebase SDK
- * handle the logic for bypassing it with test numbers.
- * @param {string} phoneNumber - The phone number in E.164 format (e.g., '+94767501542').
- * @param {string} recaptchaContainerId - The ID of the DOM element to host the reCAPTCHA widget.
- * @returns {Promise<object>} The Firebase confirmationResult object.
- */
-  export const sendPhoneVerificationSms = async (phoneNumber, recaptchaContainerId) => {
-    // Get the auth instance from Firebase.
-    const auth = getAuth();
-
-    // 1. Initialize the RecaptchaVerifier.
-    // We attach it to the global 'window' object. This is a common practice to ensure that
-    // the reCAPTCHA widget, which can be slow to load, is only created once per page load,
-    // even if this function is called multiple times.
-    if (!window.recaptchaVerifier) {
-      console.log("Initializing new RecaptchaVerifier...");
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, recaptchaContainerId, {
-        'size': 'invisible',
-        'callback': (response) => {
-          // This callback is executed when the reCAPTCHA is successfully solved (usually invisibly).
-          // We don't need to do anything here for the phone auth flow, but it's required.
-          console.log("reCAPTCHA solved:", response);
-        },
-        'expired-callback': () => {
-          // This is called if the user doesn't solve the reCAPTCHA in time.
-          console.log("reCAPTCHA expired. Please try again.");
-        }
-      });
-    }
-
-    // Assign the initialized verifier to a local variable.
-    const appVerifier = window.recaptchaVerifier;
-
-    // 2. Call the verifyPhoneNumber function.
-    // You ALWAYS pass the appVerifier. The Firebase SDK is responsible for checking
-    // if the `phoneNumber` is a test number from your console.
-    //   - If it IS a test number, the SDK will ignore the reCAPTCHA and immediately resolve.
-    //   - If it is NOT a test number, the SDK will execute the invisible reCAPTCHA flow.
-    const phoneProvider = new PhoneAuthProvider(auth);
-    
-    try {
-      console.log(`Attempting to verify phone number: ${phoneNumber}`);
-      const confirmationResult = await phoneProvider.verifyPhoneNumber(phoneNumber, appVerifier);
-      console.log("Firebase has sent the code and returned a confirmation result.");
-      return confirmationResult;
-    } catch (error) {
-      // This will catch errors like invalid phone number format, network issues, or
-      // if the reCAPTCHA fails to load or is blocked.
-      console.error("Error during verifyPhoneNumber:", error);
-      // Re-throw the error so the component calling this function can handle it.
-      throw error;
-    }
-  };
-
-  export const sendTwilioOtp = async () => {
-    // The Problem: auth.currentUser might be null right after a redirect.
-    // The Solution: We create a promise that waits until Firebase confirms the auth state.
-    const getCurrentUser = () => {
-      return new Promise((resolve, reject) => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-          unsubscribe(); // Stop listening immediately after we get the first result
-          if (user) {
-            resolve(user); // The user object is now available
-          } else {
-            reject(new Error("No user is signed in to send an OTP."));
-          }
-        });
-      });
-    };
-
-    try {
-      // We wait for the promise to resolve. This guarantees `user` is not null.
-      const user = await getCurrentUser();
-      
-      // Now that we are SURE we have the user object, we get their token
-      // and make the call to our backend.
-      const idToken = await user.getIdToken();
-
-      const response = await fetch('http://localhost:8080/api/otp/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`,
-        },
-      });
-
-      if (!response.ok) {
-          const errorBody = await response.text();
-          throw new Error(errorBody || 'Failed to send OTP.');
-      }
-      // No need to return anything if successful
-      return;
-
-    } catch (error) {
-      console.error("Error in sendTwilioOtp:", error);
-      throw error; // Re-throw the error for the component to handle
-    }
-  };
-
-/**
- * NEW: Sends the user-entered OTP to our backend for verification with Twilio.
- * If successful, the backend will activate the user account.
- * @param {string} otpCode - The 6-digit code from the user.
- * @returns {Promise<object>} The now fully active user profile.
- */
-export const verifyTwilioOtpAndActivate = async (otpCode) => {
-  const backendUser = await authenticatedFetch('/api/otp/verify', {
-    method: 'POST',
-    body: JSON.stringify({ otpCode })
-  });
-
-  // After activation, we need to get the full session info.
-  // The 'backendUser' returned from verify might already be the full DTO.
-  // If so, this next call might be redundant, but it's safe to ensure we have the latest.
-  currentUserProfile = await authenticatedFetch('/api/auth/session');
-  return currentUserProfile;
-};
-
-/**
- * JOURNEY 5: Verifies the OTP code and activates the user's account on the backend.
- * @param {object} confirmationResult - The object from the previous step.
- * @param {string} otpCode - The 6-digit code entered by the user.
- * @returns {Promise<object>} The now fully active user profile from the backend.
- */
-export const verifyPhoneAndActivateAccount = async (confirmationResult, otpCode) => {
-  // 1. Confirm the code with Firebase. This proves phone ownership.
-  await confirmationResult.confirm(otpCode);
-
-  // 2. Now that the phone is verified, tell our backend to update the user's status.
-  const backendUser = await authenticatedFetch('/api/auth/activate-account', {
-    method: 'POST'
-  });
-  
-  // 3. Update the local state and return the fully active profile.
-  currentUserProfile = backendUser;
-  return backendUser;
-};
-
-
-
-// ... (The rest of your existing exported functions like logout, getCurrentUserProfile, etc. follow here)
-
-/**
- * Gets the current user's profile data.
- * @returns {object|null} The current user's profile or null if not logged in.
- */
-export const getCurrentUserProfile = () => currentUserProfile;
-
-/**
- * Checks if a user is currently logged in.
- * @returns {boolean} True if user is logged in, false otherwise.
- */
-export const isLoggedIn = () => currentUserProfile !== null;
-
-/**
- * Gets the current user's role.
- * @returns {string|null} The user's role (LAWYER, JUNIOR_LAWYER, CLIENT) or null.
- */
-export const getCurrentUserRole = () => currentUserProfile?.role || null;
-

@@ -1,50 +1,57 @@
 // >> In your existing file: pages/UserOTP.jsx
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext'; // Import the new auth hook
+
+// Import the specific Twilio service functions
+import { sendTwilioOtp, verifyTwilioOtpAndActivate } from '../../services/authService';
+
+// Import your UI components
 import Button1 from '../../components/UI/Button1';
 import AuthHeader from '../../components/layout/AuthHeader';
-// --- ▼▼▼ IMPORT THE CORRECT TWILIO SERVICE FUNCTIONS ▼▼▼ ---
-import { sendTwilioOtp, verifyTwilioOtpAndActivate } from '../../services/authService';
-import Input1 from '../../components/UI/Input1'; // Assuming this is your custom input
+import Input1 from '../../components/UI/Input1';
 
 const UserOTP = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    
-    // State is simpler now. We just need the code itself.
-    const [otp, setOtp] = useState(''); 
+    const { currentUser } = useAuth(); // Get the currently logged-in user from context
+
+    const [otp, setOtp] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
-    
+
+    // Get the phone number passed from the login page's navigation state
     const phoneNumber = location.state?.phoneNumber;
 
-    // --- ▼▼▼ LOGIC TO SEND THE SMS VIA YOUR BACKEND ▼▼▼ ---
+    // This function handles sending the initial SMS and the "Resend" functionality
+    const handleSendOtp = async () => {
+        setError(''); // Clear previous errors
+        try {
+            await sendTwilioOtp();
+            // Optionally, you can show a success message to the user
+            // alert('A new verification code has been sent.');
+        } catch (err) {
+            console.error("Failed to send OTP:", err);
+            setError('Failed to send verification code. Please try again later.');
+        }
+    };
+
+    // This useEffect hook triggers the very first OTP send when the page loads
     useEffect(() => {
-        if (!phoneNumber) {
+        // If we land on this page without a phone number or a logged-in user, something is wrong.
+        // Redirect back to login to be safe.
+        if (!phoneNumber || !currentUser) {
             navigate('/user/login');
             return;
         }
 
-        // This function now calls your backend's /api/otp/send endpoint.
-        const triggerSms = async () => {
-            try {
-                await sendTwilioOtp();
-                // No result to store. The backend and Twilio handle everything.
-            } catch (err) {
-                console.error("Failed to send OTP:", err);
-                setError('Failed to send verification code. Please try logging in again.');
-            }
-        };
+        handleSendOtp(); // Send the initial OTP
+    }, []); // The empty dependency array ensures this runs only once on mount
 
-        triggerSms();
-    }, [phoneNumber, navigate]);
-    // --- ▲▲▲ LOGIC TO SEND THE SMS VIA YOUR BACKEND ▲▲▲ ---
-
-
-    // --- ▼▼▼ NEW SUBMIT HANDLER FOR TWILIO FLOW ▼▼▼ ---
+    // This function handles the final verification and activation
     const handleSubmit = async (e) => {
-        e.preventDefault(); // Use the event to prevent form submission
+        e.preventDefault();
         
         if (otp.length !== 6) {
             setError('Please enter a valid 6-digit code.');
@@ -55,10 +62,13 @@ const UserOTP = () => {
         setError('');
 
         try {
-            // This function now calls your backend's /api/otp/verify endpoint.
+            // This function calls our backend to verify the code with Twilio
+            // and activate the user's account.
             await verifyTwilioOtpAndActivate(otp);
             
-            // Success! The user's account is now active on the backend.
+            // Success! The user is now fully active.
+            // The AuthProvider will automatically pick up the new "ACTIVE" status on the next
+            // session check or page reload. For an immediate effect, we just navigate.
             navigate('/dashboard');
 
         } catch (err) {
@@ -68,14 +78,9 @@ const UserOTP = () => {
             setIsSubmitting(false);
         }
     };
-    // --- ▲▲▲ NEW SUBMIT HANDLER FOR TWILIO FLOW ▲▲▲ ---
 
-
-    // Your JSX remains very similar, just simplified.
     return (
         <div className="min-h-screen flex flex-col bg-gray-50 px-4 pt-20">
-            {/* NO reCAPTCHA div is needed anymore! This can be removed. */}
-
             <AuthHeader />
             <div className="flex-1 flex flex-col items-center justify-center ">
                 <div className="w-full max-w-md mx-auto flex flex-col items-center rounded-xl shadow-md py-16 px-8 bg-white">
@@ -85,12 +90,10 @@ const UserOTP = () => {
                         Enter the 6-digit code sent via SMS to <span className="font-bold">{phoneNumber || 'your phone'}</span>
                     </p>
                     
-                    {/* The form now calls our new handleSubmit */}
                     <form className="w-full flex flex-col items-center" onSubmit={handleSubmit}>
                         <div className="mb-8 flex flex-col items-center">
                             <label className="mb-2 font-semibold text-black text-base">Verification Code</label>
                             
-                            {/* Using a single input is often a better UX than 6 separate ones */}
                             <Input1
                                 type="tel"
                                 name="otp"
@@ -99,12 +102,12 @@ const UserOTP = () => {
                                 placeholder="123456"
                                 required={true}
                                 maxLength="6"
-                                error={error ? " " : ""} // Pass a non-empty string to trigger error style
+                                error={error ? " " : ""}
                                 className="w-48 h-12 text-2xl text-center tracking-[.5em]"
                                 inputMode="numeric"
                             />
                             
-                            <button type="button" className="mt-2 text-xs text-blue-500 hover:underline" onClick={() => sendTwilioOtp()}>
+                            <button type="button" className="mt-2 text-xs text-blue-500 hover:underline" onClick={handleSendOtp}>
                                 Didn't receive a code? Resend
                             </button>
                         </div>
@@ -113,7 +116,7 @@ const UserOTP = () => {
 
                         <div className="flex justify-center w-full mt-10">
                             <Button1
-                                type="submit" // The button should be type="submit" for the form
+                                type="submit"
                                 text={isSubmitting ? "Verifying..." : "Verify & Continue"}
                                 className="w-full max-w-xs h-12 flex items-center justify-center text-base"
                                 disabled={isSubmitting}

@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
+import ProtectedRoute from './components/protected/ProtectedRoute'
 
 import Home from './pages/Common/Home';
 import Dashboard from './pages/Lawyer/Dashboard';
@@ -56,11 +57,10 @@ export default function App() {
           <Route path="client/dashboard" element={<ClientDashboard />} />
           <Route path="admin/timeline" element={<Timeline />}/>
           <Route path='lawyer/calendar' element={< Lawyercalander />} />
-          <Route path="lawyer/dashboard" element={<Dashboard />} />
+          {/* <Route path="lawyer/dashboard" element={<Dashboard />} /> */}
           <Route path="lawyer/timeline" element={<Timeline />} />
           <Route path="lawyer/incomes" element={<Incomes />} />
           {/* <Route path="lawyer/day-summary" element={<DaySummary />} /> */}
-          <Route path="lawyer/addnewclient" element={<AddClient />} />
           {/* <Route path="lawyer/meetingrequest" element={<Meetings />} /> */}
           <Route path="lawyer/clients" element={<Clients />} />
           <Route path="client/schedulemeeting" element={<ScheduleMeeting />} />
@@ -89,9 +89,16 @@ export default function App() {
           <Route path="client/caseprofiles" element={<Clientcaseprofiles />} />
           <Route path="/invitation/:inviteToken" element={<ClientInvitation />} />  
 
-                    {/* testing routes */}
+          <Route path="lawyer/dashboard" element={<ProtectedRoute allowedRoles={['LAWYER']}>
+            <Dashboard />
+          </ProtectedRoute>} />
+          <Route path="lawyer/addnewclient" element={<ProtectedRoute allowedRoles={['LAWYER']}>
+            <AddClient />
+          </ProtectedRoute>} />
+
+          {/* testing routes */}
           <Route path="layer/dashboard" element={<LawyerDashboard />} />
-          <Route path="accept-invitation" element={<AcceptInvitationPage />} />
+          <Route path="accept-invitation/:token" element={<AcceptInvitationPage />} />
  
         </Routes>
       </div>
