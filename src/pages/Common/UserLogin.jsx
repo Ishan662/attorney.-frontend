@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import AuthHeader from '../../components/layout/AuthHeader';
-import { loginWithEmail, loginWithGoogle } from '../../services/authService';
+import { loginWithEmail, loginWithGoogle, fetchAndStoreSession } from '../../services/authService';
 
 const UserLogin = () => {
     const navigate = useNavigate();
@@ -52,28 +52,43 @@ const UserLogin = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         if (validate()) {
             setIsSubmitting(true);
             setErrors({});
             try {
-                // ▼▼▼ THIS IS THE ONLY CHANGE IN THIS FUNCTION ▼▼▼
-                // Call the correct service function for logging in with email.
-                // This function now handles fetching session data from our backend.
-                const user = await loginWithEmail(formData.email, formData.password);
-                // ▲▲▲ THIS IS THE ONLY CHANGE IN THIS FUNCTION ▲▲▲
+                // --- ▼▼▼ THIS IS THE FINAL, CORRECT LOGIC ▼▼▼ ---
+
+                // Step 1: Perform the initial login and status check.
+                const loginStatus = await loginWithEmail(formData.email, formData.password);
                 
-                alert(`Welcome back, ${user.fullName}!`);
-                navigate('/dashboard');
+                // Step 2: Make a decision based on the status.
+                if (loginStatus.status === 'PENDING_PHONE_VERIFICATION') {
+                    // If pending, the journey ends here for now. Go to OTP page.
+                    navigate('/user/otp', { state: { phoneNumber: loginStatus.phoneNumber } });
+
+                } else if (loginStatus.status === 'ACTIVE') {
+                    // If ACTIVE, the user is allowed in. Now, perform the second handshake
+                    // to get all the detailed session data the application needs.
+                    await fetchAndStoreSession();
+                    
+                    // Now that the session is stored globally, we can safely go to the dashboard.
+                    alert(`Welcome back, ${loginStatus.fullName}!`);
+                    navigate('/dashboard');
+
+                } else {
+                    // Handle inactive or other states.
+                    throw new Error("Your account is not active. Please contact support.");
+                }
+                // --- ▲▲▲ THIS IS THE FINAL, CORRECT LOGIC ▲▲▲ ---
 
             } catch (error) {
-                console.error('Login error:', error);
-                setErrors({ form: 'Invalid email or password. Please try again.' });
+                setErrors({ form: error.message });
             } finally {
                 setIsSubmitting(false);
             }
         }
     };
+
 
     // The handleGoogleLogin function does not need to change.
     const handleGoogleLogin = async () => {

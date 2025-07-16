@@ -93,25 +93,22 @@ const UserSignUp = () => {
                 const profileData = {
                     firstName: formData.firstName,
                     lastName: formData.lastName,
-                    phoneNumber: formData.phoneNumber,
+                    // Format the phone number to international standard (E.164) if possible
+                    // This is crucial for Firebase Phone Auth. Adjust country code as needed.
+                    phoneNumber: `+94${formData.phoneNumber.slice(-9)}`,
                 };
 
-                // ▼▼▼ THIS IS THE ONLY CHANGE IN THIS FUNCTION ▼▼▼
-                // Call the new, specific function for registering a lawyer.
+                // The `signupNewLawyer` function now handles sending the email
+                // and logging the user out automatically.
                 await signupNewLawyer(formData.email, formData.password, profileData);
-                // ▲▲▲ THIS IS THE ONLY CHANGE IN THIS FUNCTION ▲▲▲
 
-                alert('Welcome! Your account has been created.');
-                navigate('/dashboard');
+                // Now, give the user clear instructions and send them to the login page.
+                alert('Account created! A verification link has been sent to your email. Please verify your email, then log in to continue.');
+                navigate('/user/login');
 
-                // Call your API to register the user
-                // const response = await registerUser(formData);
-                // console.log('Form submitted successfully', formData);
-
-                // Redirect to dashboard or login page after successful registration
-                navigate('/user/otp');
             } catch (error) {
                 console.error('Registration error:', error);
+                // The error message from authService will be more specific now.
                 setErrors({ form: error.message || 'Registration failed. Please try again.' });
             } finally {
                 setIsSubmitting(false);
@@ -134,10 +131,7 @@ const UserSignUp = () => {
         } finally {
             setIsSubmitting(false);
         }
-    const handleGoogleSignup = () => {
-        // Implement Google OAuth sign-up
-        // console.log('Google sign-up clicked');
-    };
+    }
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50  px-4 sm:px-6 lg:px-8 pt-20">
