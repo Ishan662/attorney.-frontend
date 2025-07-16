@@ -246,6 +246,7 @@ const JuniorHearings = () => {
                                         </span>
                                     ))}
                                 </div>
+                                <Button1 text="Add Documents" className="mt-2" />
                             </div>
 
                             {/* Actions */}
