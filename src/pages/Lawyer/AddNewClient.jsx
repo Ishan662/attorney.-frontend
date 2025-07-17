@@ -3,7 +3,8 @@ import Sidebar from '../../components/layout/Sidebar';
 import Button1 from '../../components/UI/Button1';
 import Input1 from '../../components/UI/Input1';
 import PageHeader from '../../components/layout/PageHeader';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom'; // Import useParams
+import { sendInvitation } from '../../services/invitationService'; // Adjust path if needed
 
 const AddClient = () => {
   const user = {
@@ -20,6 +21,64 @@ const AddClient = () => {
   };
 
   const navigate = useNavigate();
+  
+  // --- ▼▼▼ ADD STATE AND HANDLERS FOR THE FORM ▼▼▼ ---
+  // const { caseId } = useParams();
+
+  // const { caseId } = "aae06104-b80a-488e-9863-31013c067119";
+  
+  const caseId = "aae06104-b80a-488e-9863-31013c067119";
+
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phoneNumber: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.fullName || !formData.email) {
+      setFormError('Client name and email are required.');
+      return;
+    }
+    if (!caseId) {
+      setFormError('Error: Case ID not found. Please navigate from the case details page.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFormError('');
+    setSuccessMessage('');
+
+    try {
+      const invitationData = {
+        fullName: formData.fullName,
+        email: formData.email,
+        role: 'CLIENT',
+        caseId: caseId
+      };
+
+      await sendInvitation(invitationData);
+
+      setSuccessMessage(`Invitation sent successfully to ${formData.email}!`);
+      setFormData({ fullName: '', email: '', phoneNumber: '' }); // Clear form
+
+    } catch (err) {
+      console.error("Failed to send client invitation:", err);
+      setFormError(err.message || 'An unexpected error occurred.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  // --- ▲▲▲ ADD STATE AND HANDLERS FOR THE FORM ▲▲▲ ---
 
   return (
     <div className="flex min-h-screen bg-white-50">
@@ -36,7 +95,6 @@ const AddClient = () => {
       >
         {/* Main content area */}
         <div className="p-6">
-
           {/* Page Title */}
           <div className="flex flex-col items-center w-full">
             <h1 className="text-2xl font-bold text-gray-800">Add New Client</h1>
@@ -46,14 +104,17 @@ const AddClient = () => {
           <main className="flex-1 flex items-start justify-center overflow-y-auto">
             <div className="bg-white rounded-xl shadow-lg p-10 w-full max-w-xl">
               <h2 className="text-3xl font-semibold text-center mb-8">Enter Client Details</h2>
-              <form
-                
-              >
+              
+              {/* --- ▼▼▼ UPDATE FORM TO BE CONTROLLED BY STATE ▼▼▼ --- */}
+              <form onSubmit={handleSubmit}>
                 <div className="mb-5">
                   <label className="block text-gray-700 mb-2 font-medium">Client Name</label>
                   <Input1
                     type="text"
-                    placeholder="e.g., Ishan Maduranga"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    placeholder="e.g., John Doe"
                     variant="outlined"
                     className="mb-4"
                   />
@@ -62,7 +123,10 @@ const AddClient = () => {
                   <label className="block text-gray-700 mb-2 font-medium">Phone Number</label>
                   <Input1
                     type="text"
-                    placeholder="e.g., 071234567"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    placeholder="e.g., +1234567890"
                     variant="outlined"
                     className="mb-4"
                   />
@@ -71,7 +135,10 @@ const AddClient = () => {
                   <label className="block text-gray-700 mb-2 font-medium">Email Address</label>
                   <Input1
                     type="email"
-                    placeholder="e.g., ishan@gmail.com"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="e.g., john.doe@example.com"
                     variant="outlined"
                     className="mb-4"
                   />
@@ -80,17 +147,23 @@ const AddClient = () => {
                   <label className="block text-gray-700 mb-2 font-medium">Case Details</label>
                   <textarea
                     rows={4}
-                    placeholder=""
+                    placeholder="Optional notes about the client or case..."
                     className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200 resize-none"
                   />
                 </div>
+
+                {formError && <p className="text-red-500 text-center my-2">{formError}</p>}
+                {successMessage && <p className="text-green-500 text-center my-2">{successMessage}</p>}
+
                 <Button1
                   type="submit"
                   className="mt-2"
+                  disabled={isSubmitting}
                 >
-                  Save New Client
+                  {isSubmitting ? 'Sending...' : 'Send Invitation'}
                 </Button1>
               </form>
+              {/* --- ▲▲▲ UPDATE FORM TO BE CONTROLLED BY STATE ▲▲▲ --- */}
             </div>
           </main>
         </div>

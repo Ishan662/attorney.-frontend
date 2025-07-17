@@ -4,6 +4,8 @@ import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import AuthHeader from '../../components/layout/AuthHeader';
 import { Navigate } from 'react-router-dom';
+import { signupNewLawyer, loginWithGoogle } from '../../services/authService'; // Adjust path
+
 
 const UserSignUp = () => {
     const navigate = useNavigate();
@@ -79,33 +81,57 @@ const UserSignUp = () => {
         return Object.keys(tempErrors).length === 0;
     };
 
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (validate()) {
             setIsSubmitting(true);
+            setErrors({});
             try {
-                // Call your API to register the user
-                // const response = await registerUser(formData);
-                // console.log('Form submitted successfully', formData);
+                const profileData = {
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    // Format the phone number to international standard (E.164) if possible
+                    // This is crucial for Firebase Phone Auth. Adjust country code as needed.
+                    phoneNumber: `+94${formData.phoneNumber.slice(-9)}`,
+                };
 
-                // Redirect to dashboard or login page after successful registration
-                navigate('/user/otp');
+                // The `signupNewLawyer` function now handles sending the email
+                // and logging the user out automatically.
+                await signupNewLawyer(formData.email, formData.password, profileData);
+
+                // Now, give the user clear instructions and send them to the login page.
+                alert('Account created! A verification link has been sent to your email. Please verify your email, then log in to continue.');
+                navigate('/user/login');
+
             } catch (error) {
                 console.error('Registration error:', error);
-                setErrors({
-                    form: 'Registration failed. Please try again.'
-                });
+                // The error message from authService will be more specific now.
+                setErrors({ form: error.message || 'Registration failed. Please try again.' });
             } finally {
                 setIsSubmitting(false);
             }
         }
     };
 
-    const handleGoogleSignup = () => {
-        // Implement Google OAuth sign-up
-        // console.log('Google sign-up clicked');
-    };
+    // >> In UserSignUp.jsx
+    const handleGoogleSignup = async () => {
+        setIsSubmitting(true);
+        setErrors({});
+        try {
+            // This function from authService.js now correctly handles everything.
+            const userDto = await loginWithGoogle(); 
+            alert(`Welcome, ${userDto.fullName}!`);
+            navigate('/dashboard');
+        } catch (error) {
+            console.error('Google registration error:', error);
+            setErrors({ form: error.message || 'Google sign-up failed.' });
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50  px-4 sm:px-6 lg:px-8 pt-20">
@@ -277,7 +303,7 @@ const UserSignUp = () => {
                 <div className="text-center mt-4">
                     <p className="text-sm">
                         Already have an account?{" "}
-                        <Link to="user/login" className="font-medium text-black hover:text-gray-800">
+                        <Link to="/user/login" className="font-medium text-black hover:text-gray-800">
                             Log in
                         </Link>
                     </p>
