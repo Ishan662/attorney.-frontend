@@ -35,3 +35,26 @@ const LawyerAddDocuments = ({ isOpen, onClose, caseNumber, onSave }) => {
       }
     }
   };
+
+   const handleNameChange = (e) => {
+    setDocumentName(e.target.value);
+    if (e.target.value) {
+      setNameError('');
+    }
+  };
+
+  const validateForm = () => {
+    let valid = true;
+
+    if (!documentName.trim()) {
+      setNameError('Document name is required');
+      valid = false;
+    }
+
+    if (!selectedFile) {
+      setFileError('Please select a file to upload');
+      valid = false;
+    }
+
+    return valid;
+  };
