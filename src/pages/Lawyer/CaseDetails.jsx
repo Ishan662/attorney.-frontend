@@ -3,6 +3,7 @@ import PageLayout from '../../components/layout/PageLayout';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import AddNextHearingModal from './AddNextHearingDate'; 
+import LawyerAddDocuments from './AddDocuments';
 
 const user = {
   name: 'Nishagi Jewantha',
