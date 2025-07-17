@@ -157,7 +157,7 @@ const Home = () => {
           </div>
 
           {/* Pricing Section - Slides on top with snap */}
-          <div className="mt-24 min-h-screen snap-start bg-gray-50 rounded-t-3xl relative z-10 overflow-hidden">
+          <div className="mt-24 min-h-screen snap-start bg-gray-50  relative z-10 overflow-hidden">
             <Pricings />
           </div>
 
