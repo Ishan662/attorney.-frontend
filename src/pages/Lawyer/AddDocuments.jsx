@@ -58,3 +58,27 @@ const LawyerAddDocuments = ({ isOpen, onClose, caseNumber, onSave }) => {
 
     return valid;
   };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (validateForm()) {
+      setIsUploading(true);
+      
+      // Simulate file upload with timeout
+      setTimeout(() => {
+        const newDocument = {
+          name: documentName,
+          type: documentType,
+          url: URL.createObjectURL(selectedFile),
+          uploadDate: new Date().toISOString(),
+          fileSize: (selectedFile.size / 1024).toFixed(2) + ' KB',
+          fileName: selectedFile.name,
+        };
+        
+        onSave(newDocument);
+        setIsUploading(false);
+        onClose();
+      }, 1500);
+    }
+  };
