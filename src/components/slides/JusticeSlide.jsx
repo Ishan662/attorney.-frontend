@@ -14,7 +14,7 @@ const JusticeSlide = ({ isActive }) => {
             {/* Hero Image */}
             <div className={`absolute right-1/4 top-1/4 transform -translate-y-1/2 z-10 transition-all duration-1000 ${isActive ? 'animate-fade-in-up opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
                 }`}>
-                <div className="w-96 h-auto group cursor-pointer">
+                <div className="w-[330px] h-auto group cursor-pointer">
                     <img
                         src={justiceImage}
                         alt="Classical Justice Statue"
