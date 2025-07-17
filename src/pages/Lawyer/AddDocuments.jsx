@@ -10,3 +10,28 @@ const LawyerAddDocuments = ({ isOpen, onClose, caseNumber, onSave }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileError, setFileError] = useState('');
   const [nameError, setNameError] = useState('');
+
+    if (!isOpen) return null;
+
+  const documentTypes = [
+    { value: 'legal', label: 'Legal Document' },
+    { value: 'evidence', label: 'Evidence' },
+    { value: 'court', label: 'Court Filing' },
+    { value: 'contract', label: 'Contract' },
+    { value: 'correspondence', label: 'Correspondence' },
+    { value: 'other', label: 'Other' },
+  ];
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setSelectedFile(file);
+    
+    if (file) {
+      setFileError('');
+      // Auto-fill document name with file name (without extension)
+      if (!documentName) {
+        const fileName = file.name.split('.').slice(0, -1).join('.');
+        setDocumentName(fileName);
+      }
+    }
+  };
