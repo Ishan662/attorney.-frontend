@@ -53,7 +53,6 @@ export default function App() {
       <div className="App">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="admin/dashboard" element={<Dashboard />} />
           {/* <Route path="signup" element={<SignUp />} />  */}
           <Route path="admin/dashboard" element={<AdminDashboard />} />
           <Route path="junior/dashboard" element={<JuniorDashboard/>} />
@@ -91,14 +90,13 @@ export default function App() {
           <Route path="admin/viewmessages" element={<ViewMessages />} />
           <Route path="admin/viewanalytics" element={<AdminAnalytics />} />
           <Route path="client/caseprofiles" element={<Clientcaseprofiles />} />
-          <Route path="/invitation/:inviteToken" element={<ClientInvitation />} />  
-
-          <Route path="lawyer/dashboard" element={<ProtectedRoute allowedRoles={['LAWYER']}>
+          <Route path="/invitation/:inviteToken" element={<ClientInvitation />} /> 
+          {/* <Route path="lawyer/dashboard" element={<ProtectedRoute allowedRoles={['LAWYER']}>
             <Dashboard />
           </ProtectedRoute>} />
           <Route path="lawyer/addnewclient" element={<ProtectedRoute allowedRoles={['LAWYER']}>
             <AddClient />
-          </ProtectedRoute>} />
+          </ProtectedRoute>} /> */}
 
           {/* testing routes */}
           <Route path="layer/dashboard" element={<LawyerDashboard />} />
