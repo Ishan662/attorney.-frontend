@@ -70,6 +70,10 @@ const CaseDetails = () => {
   
   // State for modal visibility
   const [showHearingModal, setShowHearingModal] = useState(false);
+  const [showDocumentModal, setShowDocumentModal] = useState(false); 
+
+  const [documents, setDocuments] = useState(caseData.documents); // Add this new state
+
 
   // Function to handle adding a new hearing
   const handleAddHearing = (newHearing) => {
@@ -80,6 +84,16 @@ const CaseDetails = () => {
     // Show success message (you could use toast notifications here)
     alert("New hearing date added successfully!");
   };
+
+  const handleAddDocument = (newDocument) => {
+    // Add the new document to the documents array
+    const updatedDocuments = [...documents, newDocument];
+    setDocuments(updatedDocuments);
+    
+    // Show success message
+    alert("Document uploaded successfully!");
+  };
+
 
   return (
     <PageLayout user={user}>
@@ -266,13 +280,24 @@ const CaseDetails = () => {
       <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
         <h2 className="text-xl font-semibold mb-6">Documents</h2>
         <ul className="list-disc pl-6 mb-4 text-blue-700">
-          {caseData.documents.map((doc, idx) => (
-            <li key={idx}>
-              <a href={doc.url} className="hover:underline" target="_blank" rel="noopener noreferrer">{doc.name}</a>
+          {documents.map((doc, idx) => (
+            <li key={idx} className="mb-1">
+              <a href={doc.url} className="hover:underline" target="_blank" rel="noopener noreferrer">
+                {doc.name}
+                {doc.uploadDate && (
+                  <span className="text-xs text-gray-500 ml-2">
+                    (Added: {new Date(doc.uploadDate).toLocaleDateString()})
+                  </span>
+                )}
+              </a>
             </li>
           ))}
         </ul>
-        <Button1 text="Add Documents" className="mt-2" />
+        <Button1 
+          text="Add Documents" 
+          className="mt-2" 
+          onClick={() => setShowDocumentModal(true)} // Open document modal on click
+        />
       </section>
 
       {/* Add Next Hearing Modal */}
@@ -282,6 +307,16 @@ const CaseDetails = () => {
           onClose={() => setShowHearingModal(false)}
           caseNumber={caseData.number}
           onSave={handleAddHearing}
+        />
+      )}
+
+      {/* Add Document Modal */}
+      {showDocumentModal && (
+        <LawyerAddDocuments
+          isOpen={showDocumentModal}
+          onClose={() => setShowDocumentModal(false)}
+          caseNumber={caseData.number}
+          onSave={handleAddDocument}
         />
       )}
     </PageLayout>
