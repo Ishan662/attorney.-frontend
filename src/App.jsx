@@ -39,6 +39,7 @@ import ClientCalendar from './pages/Client/Clientcalendar';
 import AddNextHearingModal from './pages/Lawyer/AddNextHearingDate';
 import ClientInvitation from './pages/Client/ClientInvitation';
 import UserOTP from './pages/Common/UserOTP';
+import LawyerAddDocuments from './pages/Lawyer/AddDocuments';
 
 export default function App() {
   return (
