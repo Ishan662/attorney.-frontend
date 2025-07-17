@@ -86,6 +86,7 @@ export default function App() {
           <Route path="client/caseprofiles" element={<Clientcaseprofiles />} />
           <Route path="/invitation/:inviteToken" element={<ClientInvitation />} /> 
           <Route path="lawyer/addnexthearing" element={<AddNextHearingModal />} />  
+          <Route path="lawyer/adddocuments" element={<LawyerAddDocuments />} />
         </Routes>
       </div>
     </Router>
