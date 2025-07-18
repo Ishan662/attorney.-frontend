@@ -69,7 +69,16 @@ const UserOTP = () => {
             // Success! The user is now fully active.
             // The AuthProvider will automatically pick up the new "ACTIVE" status on the next
             // session check or page reload. For an immediate effect, we just navigate.
-            navigate('/dashboard');
+            const rolePaths = {
+                LAWYER: '/lawyer/dashboard',
+                JUNIOR: '/junior/cases',
+                CLIENT: '/client/caseprofiles',
+                ADMIN: '/admin/systemsettings',
+                RESEARCHER: '/researcher/chatbot',
+            };
+
+            const path = rolePaths[currentUser.role] || '/';
+            navigate(path);
 
         } catch (err) {
             console.error("OTP Verification Error:", err);

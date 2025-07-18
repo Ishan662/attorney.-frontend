@@ -23,11 +23,11 @@ const AddClient = () => {
   const navigate = useNavigate();
   
   // --- ▼▼▼ ADD STATE AND HANDLERS FOR THE FORM ▼▼▼ ---
-  // const { caseId } = useParams();
+  const { caseId } = useParams();
 
   // const { caseId } = "aae06104-b80a-488e-9863-31013c067119";
   
-  const caseId = "aae06104-b80a-488e-9863-31013c067119";
+  // const caseId = "aae06104-b80a-488e-9863-31013c067119";
 
   const [formData, setFormData] = useState({
     fullName: '',

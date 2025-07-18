@@ -11,7 +11,7 @@ const AuthHeader = () => {
                         <img
                             src={logo}
                             alt="Attorney logo"
-                            className="h-10 hover:opacity-80 transition-opacity"
+                            className="h-8 hover:opacity-80 transition-opacity"
                             title="Go to home page"
                         />
                     </Link>

@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { logout } from '../../services/authService';
 
 const UserProfileDropdown = ({ user, expanded }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -12,8 +13,8 @@ const UserProfileDropdown = ({ user, expanded }) => {
 
     const handleLogout = () => {
         // Add your logout logic here
-        // e.g. clear localStorage, reset auth state, etc.
-        navigate('/login');
+        logout();
+        navigate('/user/login');
     };
 
     // Close dropdown when clicking outside

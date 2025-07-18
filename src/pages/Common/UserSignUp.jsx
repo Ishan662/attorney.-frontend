@@ -81,8 +81,6 @@ const UserSignUp = () => {
         return Object.keys(tempErrors).length === 0;
     };
 
-
-
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -93,22 +91,16 @@ const UserSignUp = () => {
                 const profileData = {
                     firstName: formData.firstName,
                     lastName: formData.lastName,
-                    // Format the phone number to international standard (E.164) if possible
-                    // This is crucial for Firebase Phone Auth. Adjust country code as needed.
                     phoneNumber: `+94${formData.phoneNumber.slice(-9)}`,
                 };
 
-                // The `signupNewLawyer` function now handles sending the email
-                // and logging the user out automatically.
                 await signupNewLawyer(formData.email, formData.password, profileData);
 
-                // Now, give the user clear instructions and send them to the login page.
                 alert('Account created! A verification link has been sent to your email. Please verify your email, then log in to continue.');
                 navigate('/user/login');
 
             } catch (error) {
                 console.error('Registration error:', error);
-                // The error message from authService will be more specific now.
                 setErrors({ form: error.message || 'Registration failed. Please try again.' });
             } finally {
                 setIsSubmitting(false);
@@ -121,7 +113,6 @@ const UserSignUp = () => {
         setIsSubmitting(true);
         setErrors({});
         try {
-            // This function from authService.js now correctly handles everything.
             const userDto = await loginWithGoogle(); 
             alert(`Welcome, ${userDto.fullName}!`);
             navigate('/dashboard');
