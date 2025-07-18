@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Sidebar from "./Sidebar";
+import { useAuth } from '../../context/AuthContext';
 
 /**
  * Page Layout component that includes sidebar and main content area
@@ -8,7 +9,6 @@ import Sidebar from "./Sidebar";
  * @param {boolean} defaultExpanded - Whether the sidebar is expanded by default
  */
 const PageLayout = ({ 
-    user, 
     children,
     defaultExpanded = true 
 }) => {
@@ -18,8 +18,17 @@ const PageLayout = ({
     const handleSidebarToggle = (expanded) => {
         setSidebarExpanded(expanded);
     };
+
+    const { currentUser, loading: authLoading } = useAuth();
+
+    const user = {
+        name: currentUser.fullName,
+        email: currentUser.email,
+        role:  currentUser.role.toLowerCase()
+    };
     
     return (
+
         <div className="flex min-h-screen bg-white">
             <Sidebar 
                 user={user}

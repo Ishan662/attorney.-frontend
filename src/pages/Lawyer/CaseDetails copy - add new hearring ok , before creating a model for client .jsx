@@ -6,9 +6,7 @@ import Button2 from '../../components/UI/Button2';
 import AddNextHearingModal from './AddNextHearingDate'; // Your modal component import
 import { useAuth } from '../../context/AuthContext';
 import { getCaseById, getHearingsForCase, createHearing } from '../../services/caseService';
-import AddClientModal from './AddNewClientModel';
-import EditHearingModal from './EditHearingModal'; // Import the new modal
-import { updateHearing, deleteHearing } from '../../services/caseService'; // Import the new functions
+
 // Placeholder user object. This should come from an Auth Context in a real app.
 
 
@@ -22,10 +20,9 @@ const staticDocuments = [
 const CaseDetails = () => {
     const { caseId } = useParams();
     const navigate = useNavigate();
-    const [showClientModal, setShowClientModal] = useState(false);
-    const [showEditHearingModal, setShowEditHearingModal] = useState(false);
-    const [selectedHearing, setSelectedHearing] = useState(null);
-    
+
+    // --- STATE MANAGEMENT ---
+    // This will hold the entire rich data object fetched from the backend
     const [caseData, setCaseData] = useState(null); 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
@@ -94,35 +91,6 @@ const CaseDetails = () => {
         }
     };
 
-    const handleOpenEditModal = (hearing) => {
-        setSelectedHearing(hearing);
-        setShowEditHearingModal(true);
-    };
-
-    const handleUpdateHearing = async (hearingId, formData) => {
-        try {
-            const updatedHearing = await updateHearing(hearingId, formData);
-            // Update the hearing in our local state for an immediate UI refresh
-            setHearings(prev => prev.map(h => (h.id === hearingId ? updatedHearing : h)));
-            setShowEditHearingModal(false); // Close modal on success
-        } catch (err) {
-            console.error("Failed to update hearing:", err);
-            alert("Error: Could not update the hearing.");
-        }
-    };
-
-    const handleDeleteHearing = async (hearingId) => {
-        try {
-            await deleteHearing(hearingId);
-            // Remove the hearing from our local state for an immediate UI refresh
-            setHearings(prev => prev.filter(h => h.id !== hearingId));
-            setShowEditHearingModal(false); // Close modal on success
-        } catch (err) {
-            console.error("Failed to delete hearing:", err);
-            alert("Error: Could not delete the hearing.");
-        }
-    };
-
     // --- DYNAMIC TIMELINE GENERATION ---
     // This now uses the 'hearings' state variable
     const timelineEvents = hearings
@@ -168,20 +136,14 @@ const CaseDetails = () => {
             <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold">Parties Involved</h2>
-                    <Button1 
-                        text="Add / Invite Client" 
-                        className="text-sm py-1 px-4" 
-                        onClick={() => setShowClientModal(true)} 
-                    />
+                    <Button1 text="Add Client" className="text-sm py-1 px-4" onClick={() => navigate(`/lawyer/${caseId}/addnewclient`)} />
                 </div>
                 <div className="flex flex-col md:flex-row">
                     <div className="flex-1 mb-6 md:mb-0">
                         <div className="font-semibold">Client:</div>
-                        <p className="mb-2">{caseData.clientName || 'Not yet assigned'}</p>
-                        <div className="font-semibold ">Client Phone:</div>
-                        <p className='mb-2'>{caseData.clientPhone || 'N/A'}</p>
-                        <div className="font-semibold ">Client Email:</div>
-                        <p>{caseData.clientEmail || 'N/A'}</p>
+                        <p className="mb-2">{caseData.clientName}</p>
+                        <div className="font-semibold">Client Phone:</div>
+                        <p>{caseData.clientPhone}</p>
                     </div>
                     <div className="flex-1 md:ml-12">
                         <div className="font-semibold">Opposing Party:</div>
@@ -212,12 +174,12 @@ const CaseDetails = () => {
             </section>
 
             {/* Hearings & Key Dates */}
-            {/* <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
+            <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
                 <h2 className="text-xl font-semibold mb-6">Hearings & Key Dates</h2>
                 <div className="flex flex-col md:flex-row md:justify-between">
                     <div className="flex-1 mb-6 md:mb-0 md:pr-4">
                         {hearings.slice(0, Math.ceil(hearings.length / 2)).map((h, idx) => (
-                            <div key={h.id || idx} className="mb-4" onClick={() => handleOpenEditModal(h)}>
+                            <div key={h.id || idx} className="mb-4">
                                 <div className="font-semibold">{h.title || h.label}:</div>
                                 <div className="mb-1">{h.hearingDate ? new Date(h.hearingDate).toLocaleDateString() : h.date}</div>
                                 {h.location && <><div className="font-semibold">Location:</div><div className="mb-1">{h.location}</div></>}
@@ -241,37 +203,7 @@ const CaseDetails = () => {
                 <div className="flex justify-center mt-4">
                     <Button1 text="Add Next Hearing Date" className="mt-2" onClick={() => setShowHearingModal(true)} />
                 </div>
-            </section> */}
-
-            <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
-                <h2 className="text-xl font-semibold mb-6">Hearings & Key Dates</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                    {/* We map over the sorted hearings array */}
-                    {hearings.map(hearing => (
-                        // --- ▼▼▼ THE CLICKABLE HEARING CARD ▼▼▼ ---
-                        <div 
-                            key={hearing.id} 
-                            className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors" 
-                            onClick={() => handleOpenEditModal(hearing)}
-                        >
-                            <div className="font-bold text-gray-800">{hearing.title}</div>
-                            <div className="text-sm text-gray-600 mb-2">{new Date(hearing.hearingDate).toLocaleString()}</div>
-                            {hearing.location && <p className="text-sm"><span className="font-semibold">Location:</span> {hearing.location}</p>}
-                            {hearing.note && <p className="text-sm mt-1"><span className="font-semibold">Note:</span> {hearing.note}</p>}
-                            <div className="mt-2">
-                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${hearing.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                                    {hearing.status}
-                                </span>
-                            </div>
-                        </div>
-                        // --- ▲▲▲ THE CLICKABLE HEARING CARD ▲▲▲ ---
-                    ))}
-                </div>
-                <div className="flex justify-center mt-6 pt-4 border-t">
-                    <Button1 text="Add New Hearing Date" className="mt-2" onClick={() => setShowHearingModal(true)} />
-                </div>
             </section>
-
 
             {/* Case Progress Timeline */}
             <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
@@ -300,20 +232,6 @@ const CaseDetails = () => {
                 <Button1 text="Add Documents" className="mt-2" />
             </section>
 
-            {showClientModal && (
-                <AddClientModal
-                    isOpen={showClientModal}
-                    onClose={() => setShowClientModal(false)}
-                    caseId={caseId}
-                    // Pass the existing client data from caseData to the modal
-                    existingClient={{
-                        clientName: caseData.clientName,
-                        clientEmail: caseData.clientEmail,
-                        clientPhone: caseData.clientPhone
-                    }}
-                />
-            )}
-
             {/* Add Next Hearing Modal */}
             {showHearingModal && (
                 <AddNextHearingModal 
@@ -321,15 +239,6 @@ const CaseDetails = () => {
                     onClose={() => setShowHearingModal(false)}
                     caseNumber={caseData.caseNumber}
                     onSave={handleAddHearing}
-                />
-            )}
-                        {showEditHearingModal && (
-                <EditHearingModal
-                    isOpen={showEditHearingModal}
-                    onClose={() => setShowEditHearingModal(false)}
-                    hearing={selectedHearing}
-                    onSave={handleUpdateHearing}
-                    onDelete={handleDeleteHearing}
                 />
             )}
         </PageLayout>

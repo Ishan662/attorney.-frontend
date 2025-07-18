@@ -8,6 +8,7 @@ import {
   signOut,
 } from 'firebase/auth';
 import { auth } from './firebase'; // Your firebase config file
+import { Navigate } from 'react-router-dom';
 
 // This helper function is the core of your API communication. It's self-contained and robust.
 export const authenticatedFetch = async (endpoint, options = {}) => {
@@ -78,12 +79,19 @@ export const signupNewLawyer = async (email, password, profileData) => {
  */
 export const loginWithEmail = async (email, password) => {
   const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  if (!userCredential.user.emailVerified) {
-    await sendEmailVerification(userCredential.user);
+  const user = userCredential.user;
+
+  const userStatus = await authenticatedFetch('/api/auth/status');
+
+  const requiresVerification = userStatus?.role === 'LAWYER';
+
+  if (!user.emailVerified && requiresVerification) {
+    await sendEmailVerification(user);
     await signOut(auth);
     throw new Error("Your email is not verified. Please check your inbox for the verification link.");
   }
-  return await authenticatedFetch('/api/auth/status');
+
+  return userStatus;
 };
 
 /**

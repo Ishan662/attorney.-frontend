@@ -45,23 +45,26 @@ const AddNextHearingModal = ({ isOpen, onClose, caseNumber, onSave }) => {
     return Object.keys(tempErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (validate()) {
-      setIsSubmitting(true);
+  const handleSubmit = async (e) => {
+      e.preventDefault();
       
-      // Simulate API call
-      setTimeout(() => {
-        onSave({
-          ...formData,
-          date: formData.date + (formData.time ? ` ${formData.time}` : '')
-        });
-        
-        setIsSubmitting(false);
-        onClose();
-      }, 800);
-    }
+      if (validate()) {
+          setIsSubmitting(true);
+          
+          try {
+              // 'onSave' is now an async function that makes an API call.
+              // We await its completion.
+              await onSave(formData);
+              
+              // The parent component (CaseDetails) will now handle closing the modal.
+              // We don't call onClose() here anymore on success.
+          } catch (error) {
+              // The parent will show an alert, but we should stop the loading spinner.
+              console.error("onSave failed:", error);
+          } finally {
+              setIsSubmitting(false);
+          }
+      }
   };
 
   return (

@@ -8,8 +8,6 @@ import { authenticatedFetch } from './authService';
  * @param {object} invitationData - { email, fullName, role, caseId }
  */
 export const sendInvitation = async (invitationData) => {
-  // This uses the authenticatedFetch helper, ensuring only a logged-in
-  // user can call this. The backend will verify they have the 'LAWYER' role.
   return await authenticatedFetch('/api/invitations/create-invitation', {
     method: 'POST',
     body: JSON.stringify(invitationData),
@@ -25,15 +23,12 @@ export const sendInvitation = async (invitationData) => {
  * @param {object} profileData - { firstName, lastName }
  */
 export const finalizeInvitation = async (email, password, invitationToken, profileData) => {
-  // We need to re-import the necessary Firebase functions here
   const { createUserWithEmailAndPassword } = await import('firebase/auth');
   const { auth } = await import('./firebase');
 
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const firebaseIdToken = await userCredential.user.getIdToken();
 
-  // This is a special, PUBLIC API call to link the accounts.
-  // It does not use authenticatedFetch.
   const response = await fetch('http://localhost:8080/api/invitations/finalize', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -50,12 +45,8 @@ export const finalizeInvitation = async (email, password, invitationToken, profi
     throw new Error(errorText || 'Failed to finalize invitation.');
   }
 
-  // After finalizing, we must log the user in properly by fetching their session info.
-  // We can call the authenticatedFetch directly for this final step.
   const backendUser = await authenticatedFetch('/api/auth/session');
   
-  // You would typically update your global state here.
-  // For now, we just return the user profile.
   return backendUser;
 };
 
