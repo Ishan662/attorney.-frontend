@@ -7,7 +7,6 @@ import Input1 from '../../components/UI/Input1';
 import { sendInvitation } from '../../services/invitationService'; // Adjust path if needed
 
 const AddClientModal = ({ isOpen, onClose, caseId, existingClient }) => {
-    // --- STATE MANAGEMENT FOR THE FORM ---
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',

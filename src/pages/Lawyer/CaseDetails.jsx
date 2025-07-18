@@ -32,11 +32,17 @@ const CaseDetails = () => {
 
     const { currentUser, loading: authLoading } = useAuth();
 
+    // const user = {
+    //     name: currentUser.fullName,
+    //     email: currentUser.email,
+    //     role:  currentUser.role.toLowerCase()
+    // };
+
     const user = {
-        name: currentUser.fullName,
-        email: currentUser.email,
-        role:  currentUser.role.toLowerCase()
-    };
+        name: "nishagi jewantha",
+        email: "jewanthadheerath@gmail.com",
+        role:  "lawyer"
+    }
 
     // This state is for managing the modal's visibility
     const [showHearingModal, setShowHearingModal] = useState(false);
@@ -248,7 +254,6 @@ const CaseDetails = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
                     {/* We map over the sorted hearings array */}
                     {hearings.map(hearing => (
-                        // --- ▼▼▼ THE CLICKABLE HEARING CARD ▼▼▼ ---
                         <div 
                             key={hearing.id} 
                             className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors" 
@@ -264,7 +269,6 @@ const CaseDetails = () => {
                                 </span>
                             </div>
                         </div>
-                        // --- ▲▲▲ THE CLICKABLE HEARING CARD ▲▲▲ ---
                     ))}
                 </div>
                 <div className="flex justify-center mt-6 pt-4 border-t">

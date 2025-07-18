@@ -83,9 +83,8 @@ const UserLogin = () => {
             try {
                 
                 await loginWithEmail(formData.email, formData.password);
-            
-                // navigate('/lawyer/dashboard');
-                navigateUserByRole(currentUser);
+                const userProfile = await getFullSession();
+                navigateUserByRole(userProfile);
 
             } catch (error) {
                 setErrors({ form: error.message });

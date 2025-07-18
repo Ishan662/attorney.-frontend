@@ -14,11 +14,11 @@ import PageLayout from '../../components/layout/PageLayout';
 // We will replace mockCases with a real data fetch.
 // const mockCases = [ ... ];
 
-const user = {
-  name: 'Nishagi Jewantha',
-  email: 'jewanthadheerath@gmail.com',
-  role: 'lawyer',
-};
+// const user = {
+//   name: 'Nishagi Jewantha',
+//   email: 'jewanthadheerath@gmail.com',
+//   role: 'lawyer',
+// };
 
 const CaseProfiles = () => {
   const navigate = useNavigate();

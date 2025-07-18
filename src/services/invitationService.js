@@ -14,14 +14,6 @@ export const sendInvitation = async (invitationData) => {
   });
 };
 
-/**
- * Finalizes the invitation process for an invited user.
- * This links their new Firebase account to the pre-provisioned user record.
- * @param {string} email
- * @param {string} password
- * @param {string} invitationToken
- * @param {object} profileData - { firstName, lastName }
- */
 export const finalizeInvitation = async (email, password, invitationToken, profileData) => {
   const { createUserWithEmailAndPassword } = await import('firebase/auth');
   const { auth } = await import('./firebase');
@@ -42,19 +34,21 @@ export const finalizeInvitation = async (email, password, invitationToken, profi
 
   if (!response.ok) {
     const errorText = await response.text();
+    console.error('Finalize invitation backend error:', errorText);
     throw new Error(errorText || 'Failed to finalize invitation.');
   }
 
-  const backendUser = await authenticatedFetch('/api/auth/session');
-  
-  return backendUser;
+  // Fetch the session using the ID token directly, not authenticatedFetch.
+  const sessionResponse = await fetch('http://localhost:8080/api/auth/session', {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${firebaseIdToken}`,
+    },
+  });
+  if (!sessionResponse.ok) throw new Error(await sessionResponse.text());
+  return sessionResponse.json();
 };
 
-/**
- * Optional: A function to get details about a pending invitation.
- * This can be used by the AcceptInvitationPage to pre-fill the email and name.
- * @param {string} invitationToken
- */
 export const getInvitationDetails = async (invitationToken) => {
     // This would be a new public endpoint on your backend, e.g., GET /api/invitations/details?token=...
     const response = await fetch(`http://localhost:8080/api/invitations/details?token=${invitationToken}`);

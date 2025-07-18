@@ -171,12 +171,19 @@ export const finalizeInvitation = async (email, password, invitationToken, profi
   });
 
   if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(errorBody || "Failed to finalize invitation.");
+    const errorBody = await response.text();
+    throw new Error(errorBody || 'Failed to finalize invitation.');
   }
 
-  // After finalizing, fetch their full session to log them in.
-  return await authenticatedFetch('/api/auth/session');
+  // Fetch the session using the ID token directly, not authenticatedFetch.
+  const sessionResponse = await fetch('http://localhost:8080/api/auth/session', {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${firebaseIdToken}`,
+    },
+  });
+  if (!sessionResponse.ok) throw new Error(await sessionResponse.text());
+  return sessionResponse.json();
 };
 
 
@@ -191,3 +198,15 @@ export const finalizeInvitation = async (email, password, invitationToken, profi
 export const getFullSession = async () => {
     return await authenticatedFetch('/api/auth/session');
 };
+
+// Wait for auth.currentUser to be set (simple polling)
+export const waitForAuthUser = () =>
+  new Promise((resolve, reject) => {
+    let attempts = 0;
+    const check = () => {
+      if (auth.currentUser) return resolve(auth.currentUser);
+      if (++attempts > 50) return reject(new Error("User not set in time"));
+      setTimeout(check, 100);
+    };
+    check();
+  });
