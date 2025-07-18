@@ -8,6 +8,9 @@ import DefendSlide from '../../components/slides/DefendSlide';
 import JusticeSlide from '../../components/slides/JusticeSlide';
 import ProtectSlide from '../../components/slides/ProtectSlide';
 import Pricings from '../../components/pricing/Pricings';
+import Overview from '../../components/overview/Overview';
+import FAQ from '../../components/overview/FAQ';
+import Contact from '../../components/overview/Contact';
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -36,6 +39,16 @@ const Home = () => {
     setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
   };
 
+  const scrollToContact = () => {
+    const element = document.getElementById('contact');
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
+
   return (
     <div className="flex h-screen">
       {/* Main content area */}
@@ -44,7 +57,7 @@ const Home = () => {
 
         <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gradient-to-br from-black via-gray-900 to-gray-800 relative snap-y snap-mandatory">
           {/* Hero Section Carousel */}
-          <div className="h-screen flex items-center justify-center relative -mt-40 snap-start overflow-hidden">
+          <div id="home" className="h-screen flex items-center justify-center relative -mt-40 snap-start overflow-hidden">
 
             {/* Slides Container */}
             <div className="w-full h-full relative overflow-hidden">
@@ -103,7 +116,10 @@ const Home = () => {
               </div>
 
               {/* Email Icon */}
-              <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white hover:bg-gray-700 transition-colors cursor-pointer group">
+              <div
+                className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center text-white hover:bg-gray-700 transition-colors cursor-pointer group"
+                onClick={scrollToContact}
+              >
                 <div className="relative w-6 h-6 [perspective:1000px]">
                   <div className="absolute inset-0 w-full h-full transition-transform duration-500 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
                     {/* Front - Email Icon */}
@@ -156,10 +172,28 @@ const Home = () => {
             </div>
           </div>
 
+          {/* Overview Section */}
+          <div id="overview" className="mt-24 min-h-screen snap-start bg-gray-50  relative z-10 overflow-hidden">
+            <Overview />
+          </div>
+
           {/* Pricing Section - Slides on top with snap */}
-          <div className="mt-24 min-h-screen snap-start bg-gray-50  relative z-10 overflow-hidden">
+          <div id="plans-pricing" className="min-h-screen snap-start bg-gray-50  relative z-10 overflow-hidden">
             <Pricings />
           </div>
+
+
+          {/* FAQ Section */}
+          <div id="help" className="mt-24 min-h-screen snap-start bg-gray-50  relative z-10 overflow-hidden">
+            <FAQ />
+          </div>
+
+          {/* Contact Section */}
+          <div id="contact" className="snap-start relative z-10 overflow-hidden">
+            <Contact />
+          </div>
+
+
 
         </main>
       </div>

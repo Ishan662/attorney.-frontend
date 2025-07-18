@@ -69,15 +69,15 @@ const Pricings = () => {
     ];
 
     return (
-        <div className="bg-gray-50 py-16 px-4 relative bg-gradient-to-br from-white via-gray-200 to-gray-400">
+        <div className="bg-gray-50 py-16 px-4 relative bg-gradient-to-br from-white via-gray-200 to-gray-600">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12">
                     <div className="flex items-center justify-center mb-4">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                        <div className="w-2 h-2 bg-[#ff8800] rounded-full mr-2"></div>
                         <span className="text-gray-600 text-sm">Transparent Pricing, No Surprises</span>
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-4">
+                    <h2 className="text-5xl md:text-6xl font-light text-gray-900 mb-6">
                         Flexible Plans for All
                     </h2>
                     <p className="text-gray-600 text-lg max-w-2xl mx-auto">
@@ -105,7 +105,7 @@ const Pricings = () => {
                                 }`}
                         >
                             Yearly
-                            <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                            <span className="absolute -top-3 -right-6 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
                                 Save 20%
                             </span>
                         </button>
@@ -116,9 +116,9 @@ const Pricings = () => {
                 <div className="grid md:grid-cols-3 gap-8 mb-12 relative group">
                     {/* Corner Image */}
                     <div
-                        className="absolute -top-72 -right-32 z-10 w-[400px] h-[400px] md:w-[400px] md:h-[400px] pointer-events-none select-none transition-all duration-700 hover:scale-110"
+                        className="absolute -top-96 -right-44 z-10 w-[450px] h-[450px] md:w-[450px] md:h-[450px] pointer-events-none select-none transition-all duration-700 hover:scale-110"
                         style={{
-                            transform: `translateY(${scrollY * 0.15}px)`,
+                            transform: `translateY(${scrollY * 0.1}px)`,
                             transition: 'transform 0.1s ease-out'
                         }}
                     >
@@ -129,19 +129,27 @@ const Pricings = () => {
                         />
                     </div>
 
+                    {/* Bottom-Left Corner Image */}
+                    <div
+                        className="absolute -left-32 bottom-6 pb-12  z-10 w-[300px] h-[300px] md:w-[300px] md:h-[300px] pointer-events-none select-none transition-all duration-700 hover:scale-110 mt-8"
+                        style={{
+                            transform: `translateY(${scrollY * 0.1}px)`,
+                            transition: 'transform 0.1s ease-out'
+                        }}
+                    >
+                        <img
+                            src={classicalStatue2}
+                            alt="Legal Corner Decoration"
+                            className="w-full h-full object-contain filter -brightness-100 -contrast-110 drop-shadow-3xl transition-transform duration-500 group-hover:scale-110"
+                        />
+                    </div>
+
                     {plans.map((plan, index) => (
                         <div
                             key={index}
                             className={`bg-white rounded-xl shadow-lg p-8 relative ${plan.popular ? 'border-2 border-gray-900' : 'border border-gray-200'
                                 }`}
                         >
-                            {plan.popular && (
-                                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                                    <span className="bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-medium">
-                                        Popular
-                                    </span>
-                                </div>
-                            )}
 
                             <div className="mb-6">
                                 <h3 className="text-lg font-medium text-gray-900 mb-2">{plan.name}</h3>
@@ -172,20 +180,6 @@ const Pricings = () => {
                             </div>
                         </div>
                     ))}
-                </div>
-                {/* Bottom-Left Corner Image */}
-                <div
-                    className="absolute bottom-24 -left-6 z-10 w-[280px] h-[280px] md:w-[280px] md:h-[280px] pointer-events-none select-none transition-all duration-700 hover:scale-110 mt-8"
-                    style={{
-                        transform: `translateY(${scrollY * 0.1}px)`,
-                        transition: 'transform 0.1s ease-out'
-                    }}
-                >
-                    <img
-                        src={classicalStatue2}  // You can reuse the same or a different image
-                        alt="Legal Corner Decoration"
-                        className="w-full h-full object-contain filter -brightness-100 contrast-110 drop-shadow-3xl transition-transform duration-500 group-hover:scale-110"
-                    />
                 </div>
 
                 {/* Bottom Message */}

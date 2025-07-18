@@ -18,7 +18,7 @@ const DefendSlide = ({ isActive }) => {
                     <img
                         src={heroImage}
                         alt="Classical Justice Statue"
-                        className="w-full h-full object-contain filter brightness-110 contrast-110 drop-shadow-2xl transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-contain filter brightness-100 contrast-110 drop-shadow-2xl transition-transform duration-500 group-hover:scale-110"
                     />
                 </div>
             </div>
