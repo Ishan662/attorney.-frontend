@@ -99,7 +99,7 @@ export default function App() {
           </ProtectedRoute>} /> */}
 
           {/* testing routes */}
-          <Route path="layer/dashboard" element={<LawyerDashboard />} />
+          <Route path="lawyer/dashboard" element={<Dashboard />} />
           <Route path="accept-invitation/:token" element={<AcceptInvitationPage />} />
  
           <Route path="/invitation/:inviteToken" element={<ClientInvitation />} /> 

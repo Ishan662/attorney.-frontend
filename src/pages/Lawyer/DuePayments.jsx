@@ -23,7 +23,7 @@ const DuePayments = () => {
         setSidebarExpanded(expanded);
     };
 
-    // Sample payment due data
+    // Enhanced sample payment due data with court and case number
     const duePayments = [
         {
             id: 1,
@@ -32,6 +32,8 @@ const DuePayments = () => {
                 name: "Anura De Mel",
                 color: "bg-green-100 text-green-800"
             },
+            caseNumber: "CIV-2025-0142",
+            court: "Colombo District Court",
             dueDate: "2025-07-01",
             amount: 2500.00,
             status: "Outstanding"
@@ -43,6 +45,8 @@ const DuePayments = () => {
                 name: "S. Fernando",
                 color: "bg-blue-100 text-blue-800"
             },
+            caseNumber: "CIV-2025-0189",
+            court: "High Court of Kandy",
             dueDate: "2025-08-12",
             amount: 3500.00,
             status: "Overdue"
@@ -54,6 +58,8 @@ const DuePayments = () => {
                 name: "Kamal J.",
                 color: "bg-indigo-100 text-indigo-800"
             },
+            caseNumber: "CRIM-2025-0076",
+            court: "Colombo Magistrate's Court",
             dueDate: "2025-07-21",
             amount: 2180.00,
             status: "Outstanding"
@@ -65,6 +71,8 @@ const DuePayments = () => {
                 name: "Ruwan Perera",
                 color: "bg-purple-100 text-purple-800"
             },
+            caseNumber: "FAM-2025-0058",
+            court: "Family Court of Gampaha",
             dueDate: "2025-08-01",
             amount: 1150.00,
             status: "Overdue"
@@ -141,6 +149,18 @@ const DuePayments = () => {
                                         </th>
                                         <th 
                                             className="px-6 py-4 text-left text-sm font-medium text-gray-600 cursor-pointer"
+                                            onClick={() => handleSort('caseNumber')}
+                                        >
+                                            CASE NUMBER
+                                        </th>
+                                        <th 
+                                            className="px-6 py-4 text-left text-sm font-medium text-gray-600 cursor-pointer"
+                                            onClick={() => handleSort('court')}
+                                        >
+                                            COURT
+                                        </th>
+                                        <th 
+                                            className="px-6 py-4 text-left text-sm font-medium text-gray-600 cursor-pointer"
                                             onClick={() => handleSort('dueDate')}
                                         >
                                             DUE DATE
@@ -174,6 +194,12 @@ const DuePayments = () => {
                                                     <span>{payment.client.name}</span>
                                                 </div>
                                             </td>
+                                            <td className="px-6 py-4 text-sm font-medium">
+                                                {payment.caseNumber}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm">
+                                                {payment.court}
+                                            </td>
                                             <td className="px-6 py-4 text-sm">
                                                 {formatDate(payment.dueDate)}
                                             </td>
@@ -194,7 +220,7 @@ const DuePayments = () => {
                                                 <div className="flex justify-end gap-2">
                                                     <Button1 
                                                         text="Mark Paid" 
-                                                        className=" text-white text-xs py-1 px-2"
+                                                        className="text-white text-xs py-1 px-2"
                                                         onClick={() => handlePaymentAction(payment.id, 'mark-paid')}
                                                     />
                                                 </div>
