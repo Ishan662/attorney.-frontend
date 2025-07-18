@@ -3,6 +3,8 @@ import Sidebar from "../../components/layout/Sidebar";
 import PageHeader from "../../components/layout/PageHeader";
 import Button1 from "../../components/UI/Button1";
 import Button2 from "../../components/UI/Button2";
+import SendRemindersModal from "./SendRemindersModal";
+import EditPaymentActions from "./EditPaymentActions";
 
 const DuePayments = () => {
     const user = {
@@ -12,6 +14,9 @@ const DuePayments = () => {
 
     const [notificationCount, setNotificationCount] = useState(1);
     const [sidebarExpanded, setSidebarExpanded] = useState(true);
+    const [showRemindersModal, setShowRemindersModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [selectedPayment, setSelectedPayment] = useState(null);
     
     // Handle notification click
     const handleNotificationClick = () => {
@@ -24,7 +29,7 @@ const DuePayments = () => {
     };
 
     // Enhanced sample payment due data with court and case number
-    const duePayments = [
+    const [duePayments, setDuePayments] = useState([
         {
             id: 1,
             client: {
@@ -77,7 +82,7 @@ const DuePayments = () => {
             amount: 1150.00,
             status: "Overdue"
         }
-    ];
+    ]);
 
     // Format date for display
     const formatDate = (dateString) => {
@@ -95,8 +100,38 @@ const DuePayments = () => {
 
     // Handle payment action
     const handlePaymentAction = (id, action) => {
-        console.log(`${action} payment ${id}`);
-        // In a real app, you'd implement the appropriate action
+        if (action === 'mark-paid') {
+            // Update payment status to Paid
+            setDuePayments(prevPayments => 
+                prevPayments.map(payment => 
+                    payment.id === id ? { ...payment, status: 'Paid' } : payment
+                )
+            );
+        } else if (action === 'edit') {
+            // Find the payment to edit
+            const paymentToEdit = duePayments.find(p => p.id === id);
+            if (paymentToEdit) {
+                setSelectedPayment(paymentToEdit);
+                setShowEditModal(true);
+            }
+        }
+    };
+
+    // Handle updated payment from edit modal
+    const handlePaymentUpdate = (updatedPayment) => {
+        if (!updatedPayment) {
+            setShowEditModal(false);
+            return;
+        }
+        
+        // Update the payment in state
+        setDuePayments(prevPayments => 
+            prevPayments.map(payment => 
+                payment.id === updatedPayment.id ? updatedPayment : payment
+            )
+        );
+        
+        setShowEditModal(false);
     };
 
     // Handle sort
@@ -211,6 +246,8 @@ const DuePayments = () => {
                                                     <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block
                                                         ${payment.status === 'Outstanding' ? 'bg-gray-100 text-gray-800' : ''}
                                                         ${payment.status === 'Overdue' ? 'bg-red-100 text-red-800' : ''}
+                                                        ${payment.status === 'Paid' ? 'bg-green-100 text-green-800' : ''}
+                                                        ${payment.status === 'Partial' ? 'bg-yellow-100 text-yellow-800' : ''}
                                                     `}>
                                                         {payment.status}
                                                     </span>
@@ -218,11 +255,24 @@ const DuePayments = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex justify-end gap-2">
-                                                    <Button1 
-                                                        text="Mark Paid" 
-                                                        className="text-white text-xs py-1 px-2"
-                                                        onClick={() => handlePaymentAction(payment.id, 'mark-paid')}
-                                                    />
+                                                    {payment.status !== 'Paid' && (
+                                                        <>
+                                                            <Button1 
+                                                                text="Mark Paid" 
+                                                                className="text-white text-xs py-1 px-2"
+                                                                onClick={() => handlePaymentAction(payment.id, 'mark-paid')}
+                                                            />
+                                                            <button
+                                                                className="text-gray-400 hover:text-orange-500"
+                                                                onClick={() => handlePaymentAction(payment.id, 'edit')}
+                                                                title="Edit"
+                                                            >
+                                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                </svg>
+                                                            </button>
+                                                        </>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -249,7 +299,9 @@ const DuePayments = () => {
                         <div className="flex justify-between items-center">
                             <h2 className="text-xl font-medium">Total Due Payments</h2>
                             <div className="text-2xl font-bold text-orange-600">
-                                {formatCurrency(duePayments.reduce((sum, payment) => sum + payment.amount, 0))}
+                                {formatCurrency(duePayments
+                                    .filter(p => p.status !== 'Paid')
+                                    .reduce((sum, payment) => sum + payment.amount, 0))}
                             </div>
                         </div>
                     </div>
@@ -259,11 +311,36 @@ const DuePayments = () => {
                         <Button2 
                             text="Send Reminders" 
                             className="py-2 px-4"
+                            onClick={() => setShowRemindersModal(true)}
                         />
                         <Button1 
-                            text="Create New Payment" 
+                            text="Edit Actions" 
+                            onClick={() => {
+                                // You can pre-select the first unpaid payment here if you want
+                                const firstUnpaid = duePayments.find(p => p.status !== 'Paid');
+                                if (firstUnpaid) {
+                                    setSelectedPayment(firstUnpaid);
+                                    setShowEditModal(true);
+                                } else {
+                                    alert('No payments to edit');
+                                }
+                            }}
                         />
                     </div>
+
+                    {/* Send Reminders Modal */}
+                    <SendRemindersModal 
+                        isOpen={showRemindersModal}
+                        onClose={() => setShowRemindersModal(false)}
+                        allPayments={duePayments.filter(p => p.status !== 'Paid')}
+                    />
+
+                    {/* Edit Payment Actions Modal */}
+                    <EditPaymentActions 
+                        isOpen={showEditModal}
+                        onClose={handlePaymentUpdate}
+                        payment={selectedPayment}
+                    />
                 </div>
             </div>
         </div>
