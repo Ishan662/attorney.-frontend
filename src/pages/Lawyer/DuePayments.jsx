@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import Sidebar from "../../components/layout/Sidebar";
-import PageHeader from "../../components/layout/PageHeader";
+import PageLayout from "../../components/layout/PageLayout";
 import Button1 from "../../components/UI/Button1";
 import Button2 from "../../components/UI/Button2";
 import SendRemindersModal from "./SendRemindersModal";
 import EditPaymentActions from "./EditPaymentActions";
 
 const DuePayments = () => {
+    // Updated user data with correct role format
     const user = {
         name: 'Nishagi Jewantha',
         email: 'jeewanthadeherath@gmail.com',
+        role: 'lawyer' // Changed from 'Lawyer' to 'lawyer' for consistency
     };
 
     const [notificationCount, setNotificationCount] = useState(1);
@@ -141,209 +143,189 @@ const DuePayments = () => {
     };
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
-            <Sidebar 
-                user={user}
-                onToggle={handleSidebarToggle}
-            />
-            <div 
-                className="flex-grow overflow-y-auto transition-all duration-300"
-                style={{ 
-                    marginLeft: sidebarExpanded ? '16rem' : '5rem'
-                }}
-            >
-                <div className="p-6">
-                    {/* PageHeader component */}
-                    <div className="mb-8">
-                        <PageHeader 
-                            user={user} 
-                            notificationCount={notificationCount}
-                            onNotificationClick={handleNotificationClick}
-                        />
+        <PageLayout user={user}>
+            <div className="p-6">
+                {/* Due Payments Header */}
+                <div className="flex justify-between items-center mb-8">
+                    <h1 className="text-2xl font-bold">Due Payments</h1>
+                    <div className="flex items-center gap-2">
+                        <Button2 text="Print" className="text-sm py-1 px-4" />
                     </div>
-                    
-                    {/* Due Payments Header */}
-                    <div className="flex justify-between items-center mb-8">
-                        <h1 className="text-2xl font-bold">Due Payments</h1>
-                        <div className="flex items-center gap-2">
-                            <Button2 text="Print" className="text-sm py-1 px-4" />
-                        </div>
-                    </div>
+                </div>
 
-                    {/* Due Payments Table */}
-                    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="border-b">
-                                        <th 
-                                            className="px-6 py-4 text-left text-sm font-medium text-gray-600 cursor-pointer"
-                                            onClick={() => handleSort('client')}
-                                        >
-                                            CLIENT NAME
-                                        </th>
-                                        <th 
-                                            className="px-6 py-4 text-left text-sm font-medium text-gray-600 cursor-pointer"
-                                            onClick={() => handleSort('caseNumber')}
-                                        >
-                                            CASE NUMBER
-                                        </th>
-                                        <th 
-                                            className="px-6 py-4 text-left text-sm font-medium text-gray-600 cursor-pointer"
-                                            onClick={() => handleSort('court')}
-                                        >
-                                            COURT
-                                        </th>
-                                        <th 
-                                            className="px-6 py-4 text-left text-sm font-medium text-gray-600 cursor-pointer"
-                                            onClick={() => handleSort('dueDate')}
-                                        >
-                                            DUE DATE
-                                        </th>
-                                        <th 
-                                            className="px-6 py-4 text-right text-sm font-medium text-gray-600 cursor-pointer"
-                                            onClick={() => handleSort('amount')}
-                                        >
-                                            AMOUNT DUE
-                                        </th>
-                                        <th 
-                                            className="px-6 py-4 text-center text-sm font-medium text-gray-600 cursor-pointer"
-                                            onClick={() => handleSort('status')}
-                                        >
-                                            STATUS
-                                        </th>
-                                        <th className="px-6 py-4"></th>
+                {/* Due Payments Table */}
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b">
+                                    <th 
+                                        className="px-6 py-4 text-left text-sm font-medium text-gray-600 cursor-pointer"
+                                        onClick={() => handleSort('client')}
+                                    >
+                                        CLIENT NAME
+                                    </th>
+                                    <th 
+                                        className="px-6 py-4 text-left text-sm font-medium text-gray-600 cursor-pointer"
+                                        onClick={() => handleSort('caseNumber')}
+                                    >
+                                        CASE NUMBER
+                                    </th>
+                                    <th 
+                                        className="px-6 py-4 text-left text-sm font-medium text-gray-600 cursor-pointer"
+                                        onClick={() => handleSort('court')}
+                                    >
+                                        COURT
+                                    </th>
+                                    <th 
+                                        className="px-6 py-4 text-left text-sm font-medium text-gray-600 cursor-pointer"
+                                        onClick={() => handleSort('dueDate')}
+                                    >
+                                        DUE DATE
+                                    </th>
+                                    <th 
+                                        className="px-6 py-4 text-right text-sm font-medium text-gray-600 cursor-pointer"
+                                        onClick={() => handleSort('amount')}
+                                    >
+                                        AMOUNT DUE
+                                    </th>
+                                    <th 
+                                        className="px-6 py-4 text-center text-sm font-medium text-gray-600 cursor-pointer"
+                                        onClick={() => handleSort('status')}
+                                    >
+                                        STATUS
+                                    </th>
+                                    <th className="px-6 py-4"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {duePayments.map((payment) => (
+                                    <tr 
+                                        key={payment.id} 
+                                        className="border-b last:border-b-0 hover:bg-gray-50"
+                                    >
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center">
+                                                <div className={`w-8 h-8 rounded-full ${payment.client.color} flex items-center justify-center mr-3 text-xs font-medium`}>
+                                                    {payment.client.initials}
+                                                </div>
+                                                <span>{payment.client.name}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm font-medium">
+                                            {payment.caseNumber}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm">
+                                            {payment.court}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm">
+                                            {formatDate(payment.dueDate)}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            {formatCurrency(payment.amount)}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex justify-center">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block
+                                                    ${payment.status === 'Outstanding' ? 'bg-gray-100 text-gray-800' : ''}
+                                                    ${payment.status === 'Overdue' ? 'bg-red-100 text-red-800' : ''}
+                                                    ${payment.status === 'Paid' ? 'bg-green-100 text-green-800' : ''}
+                                                    ${payment.status === 'Partial' ? 'bg-yellow-100 text-yellow-800' : ''}
+                                                `}>
+                                                    {payment.status}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex justify-end gap-2">
+                                                {payment.status !== 'Paid' && (
+                                                    <>
+                                                        <Button1 
+                                                            text="Mark Paid" 
+                                                            className="text-white text-xs py-1 px-2"
+                                                            onClick={() => handlePaymentAction(payment.id, 'mark-paid')}
+                                                        />
+                                                        <button
+                                                            className="text-gray-400 hover:text-orange-500"
+                                                            onClick={() => handlePaymentAction(payment.id, 'edit')}
+                                                            title="Edit"
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                            </svg>
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {duePayments.map((payment) => (
-                                        <tr 
-                                            key={payment.id} 
-                                            className="border-b last:border-b-0 hover:bg-gray-50"
-                                        >
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center">
-                                                    <div className={`w-8 h-8 rounded-full ${payment.client.color} flex items-center justify-center mr-3 text-xs font-medium`}>
-                                                        {payment.client.initials}
-                                                    </div>
-                                                    <span>{payment.client.name}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm font-medium">
-                                                {payment.caseNumber}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm">
-                                                {payment.court}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm">
-                                                {formatDate(payment.dueDate)}
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                {formatCurrency(payment.amount)}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex justify-center">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block
-                                                        ${payment.status === 'Outstanding' ? 'bg-gray-100 text-gray-800' : ''}
-                                                        ${payment.status === 'Overdue' ? 'bg-red-100 text-red-800' : ''}
-                                                        ${payment.status === 'Paid' ? 'bg-green-100 text-green-800' : ''}
-                                                        ${payment.status === 'Partial' ? 'bg-yellow-100 text-yellow-800' : ''}
-                                                    `}>
-                                                        {payment.status}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex justify-end gap-2">
-                                                    {payment.status !== 'Paid' && (
-                                                        <>
-                                                            <Button1 
-                                                                text="Mark Paid" 
-                                                                className="text-white text-xs py-1 px-2"
-                                                                onClick={() => handlePaymentAction(payment.id, 'mark-paid')}
-                                                            />
-                                                            <button
-                                                                className="text-gray-400 hover:text-orange-500"
-                                                                onClick={() => handlePaymentAction(payment.id, 'edit')}
-                                                                title="Edit"
-                                                            >
-                                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                                </svg>
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {/* Pagination or Additional Info */}
+                <div className="mt-6 text-center text-sm text-gray-600">
+                    <div className="flex justify-between items-center">
+                        <div>Showing {duePayments.length} items</div>
+                        <div className="flex items-center gap-2">
+                            <Button2 text="Previous" className="text-xs py-1 px-2" />
+                            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white">1</span>
+                            <Button2 text="Next" className="text-xs py-1 px-2" />
                         </div>
                     </div>
+                </div>
 
-                    {/* Pagination or Additional Info */}
-                    <div className="mt-6 text-center text-sm text-gray-600">
-                        <div className="flex justify-between items-center">
-                            <div>Showing {duePayments.length} items</div>
-                            <div className="flex items-center gap-2">
-                                <Button2 text="Previous" className="text-xs py-1 px-2" />
-                                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white">1</span>
-                                <Button2 text="Next" className="text-xs py-1 px-2" />
-                            </div>
+                {/* Total Due */}
+                <div className="mt-8 bg-white rounded-lg shadow-md p-6">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-xl font-medium">Total Due Payments</h2>
+                        <div className="text-2xl font-bold text-orange-600">
+                            {formatCurrency(duePayments
+                                .filter(p => p.status !== 'Paid')
+                                .reduce((sum, payment) => sum + payment.amount, 0))}
                         </div>
                     </div>
+                </div>
 
-                    {/* Total Due */}
-                    <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-medium">Total Due Payments</h2>
-                            <div className="text-2xl font-bold text-orange-600">
-                                {formatCurrency(duePayments
-                                    .filter(p => p.status !== 'Paid')
-                                    .reduce((sum, payment) => sum + payment.amount, 0))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="mt-8 flex justify-end gap-4">
-                        <Button2 
-                            text="Send Reminders" 
-                            className="py-2 px-4"
-                            onClick={() => setShowRemindersModal(true)}
-                        />
-                        <Button1 
-                            text="Edit Actions" 
-                            onClick={() => {
-                                // You can pre-select the first unpaid payment here if you want
-                                const firstUnpaid = duePayments.find(p => p.status !== 'Paid');
-                                if (firstUnpaid) {
-                                    setSelectedPayment(firstUnpaid);
-                                    setShowEditModal(true);
-                                } else {
-                                    alert('No payments to edit');
-                                }
-                            }}
-                        />
-                    </div>
-
-                    {/* Send Reminders Modal */}
-                    <SendRemindersModal 
-                        isOpen={showRemindersModal}
-                        onClose={() => setShowRemindersModal(false)}
-                        allPayments={duePayments.filter(p => p.status !== 'Paid')}
+                {/* Actions */}
+                <div className="mt-8 flex justify-end gap-4">
+                    <Button2 
+                        text="Send Reminders" 
+                        className="py-2 px-4"
+                        onClick={() => setShowRemindersModal(true)}
                     />
-
-                    {/* Edit Payment Actions Modal */}
-                    <EditPaymentActions 
-                        isOpen={showEditModal}
-                        onClose={handlePaymentUpdate}
-                        payment={selectedPayment}
+                    <Button1 
+                        text="Edit Actions" 
+                        onClick={() => {
+                            // You can pre-select the first unpaid payment here if you want
+                            const firstUnpaid = duePayments.find(p => p.status !== 'Paid');
+                            if (firstUnpaid) {
+                                setSelectedPayment(firstUnpaid);
+                                setShowEditModal(true);
+                            } else {
+                                alert('No payments to edit');
+                            }
+                        }}
                     />
                 </div>
+
+                {/* Send Reminders Modal */}
+                <SendRemindersModal 
+                    isOpen={showRemindersModal}
+                    onClose={() => setShowRemindersModal(false)}
+                    allPayments={duePayments.filter(p => p.status !== 'Paid')}
+                />
+
+                {/* Edit Payment Actions Modal */}
+                <EditPaymentActions 
+                    isOpen={showEditModal}
+                    onClose={handlePaymentUpdate}
+                    payment={selectedPayment}
+                />
             </div>
-        </div>
+        </PageLayout>
     );
 };
 
