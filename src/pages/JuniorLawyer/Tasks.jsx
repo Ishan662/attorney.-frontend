@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PageHeader from "../../components/layout/PageHeader";
 import PageLayout from "../../components/layout/PageLayout";
+import Button1 from "../../components/UI/Button1";
 
 const user = {
     name: 'Sujan Darshana',
@@ -37,6 +38,7 @@ const Tasks = () => {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Documents</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -53,6 +55,7 @@ const Tasks = () => {
                                         {task.status}
                                     </span>
                                 </td>
+                                <td className="px-6 py-4 whitespace-nowrap"><Button1 text="Add Documents" className="mt-2" /></td> 
                             </tr>
                         ))}
                     </tbody>
