@@ -1,17 +1,18 @@
 import { useState } from "react";
-import Sidebar from "../../components/layout/Sidebar";
+import PageLayout from "../../components/layout/PageLayout";
 import Button1 from "../../components/UI/Button1";
 import Input1 from "../../components/UI/Input1";
 import { FaBriefcase, FaClock, FaCog } from "react-icons/fa";
 
 const Lawyercalender = () => {
+  // Updated user object with role property
   const user = {
     name: "Thusitha",
     email: "jeewanthadeherath@gmail.com",
+    role: "lawyer" // Added role for consistent sidebar display
   };
 
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [viewMode, setViewMode] = useState("month");
 
   // Popup state
@@ -267,17 +268,8 @@ const Lawyercalender = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar
-        user={user}
-        onToggle={(expanded) => setSidebarExpanded(expanded)}
-      />
-      <div
-        className="flex-grow p-6 overflow-y-auto transition-all duration-300"
-        style={{
-          marginLeft: sidebarExpanded ? "16rem" : "5rem", // 16rem = 256px (w-64), 5rem = 80px (w-20)
-        }}
-      >
+    <PageLayout user={user}>
+      <div className="p-6">
         <div className="flex gap-6">
           {/* Left Panel */}
           <div className="w-80 bg-white rounded-lg shadow-md p-6 flex flex-col h-screen overflow-y-auto">
@@ -289,18 +281,8 @@ const Lawyercalender = () => {
                   year: "numeric",
                 })}
               </div>
-              {/* <button
-                aria-label="Settings"
-                className="text-gray-6000 hover:text-gray-900 cursor-pointer p-1 rounded"
-                onClick={() => {
-                  // Placeholder for settings click handler
-                  alert("Settings clicked");
-                }}
-              >
-                <FaCog size={20} />
-              </button> */}
             </div>
-<Button1 text="Add Hearing" className="mb-6" onClick={() => { setSelectedTimeSlot(""); setShowPopup(true); }} />
+            <Button1 text="Add Hearing" className="mb-6" onClick={() => { setSelectedTimeSlot(""); setShowPopup(true); }} />
 
             <div className="grid grid-cols-7 text-center text-xs font-medium text-gray-500 mb-2">
               {weekDays.map((day, idx) => (
@@ -310,44 +292,44 @@ const Lawyercalender = () => {
             <div className="grid grid-cols-7 gap-1 mb-6 h-[300px] overflow-y-auto">
               {generateCalendarDays().map((date, idx) =>
                 date ? (
-<button
-  key={idx}
-  onClick={() => setSelectedDate(date)}
-  className={`flex flex-col items-center justify-start text-xs pt-1 rounded ${
-    date.toDateString() === selectedDate.toDateString()
-      ? "bg-black-600 text-white"
-      : "hover:bg-black-100"
-  }`}
-  style={{ height: "3rem" }}
->
-  <div className="self-start pl-1">
-    {date.getDate()}
-  </div>
-</button>
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedDate(date)}
+                    className={`flex flex-col items-center justify-start text-xs pt-1 rounded ${
+                      date.toDateString() === selectedDate.toDateString()
+                        ? "bg-black-600 text-white"
+                        : "hover:bg-black-100"
+                    }`}
+                    style={{ height: "3rem" }}
+                  >
+                    <div className="self-start pl-1">
+                      {date.getDate()}
+                    </div>
+                  </button>
                 ) : (
                   <div key={idx}></div>
                 )
               )}
             </div>
 
-          {/* Hearings */}
-          <div className="mb-6">
-            <h3 className="font-semibold mb-2">Hearings</h3>
-            {hearings.map((hearing, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-3 mb-2 text-gray-700"
-              >
-                <div className="p-2 bg-gray-200 rounded">
-                  <FaBriefcase />
+            {/* Hearings */}
+            <div className="mb-6">
+              <h3 className="font-semibold mb-2">Hearings</h3>
+              {hearings.map((hearing, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-3 mb-2 text-gray-700"
+                >
+                  <div className="p-2 bg-gray-200 rounded">
+                    <FaBriefcase />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium">{hearing.time}</div>
+                    <div className="text-xs text-gray-500">{hearing.location}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-sm font-medium">{hearing.time}</div>
-                  <div className="text-xs text-gray-500">{hearing.location}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
             {/* Free Time Slots */}
             <div className="overflow-y-auto flex-grow">
@@ -408,24 +390,24 @@ const Lawyercalender = () => {
             ) : (
               <>
                 {/* Month view with weekday headers and calendar days */}
-            <div className="flex justify-between items-center text-lg font-semibold mb-4">
-              <div>
-                {selectedDate.toLocaleDateString("en-US", {
-                  month: "long",
-                  year: "numeric",
-                })}
-              </div>
-              <button
-                aria-label="Settings"
-                className="text-gray-600 hover:text-gray-900 cursor-pointer p-1 rounded-full -mt-1"
-                onClick={() => {
-                  // Placeholder for settings click handler
-                  alert("Settings clicked");
-                }}
-              >
-                <FaCog size={26} />
-              </button>
-            </div>
+                <div className="flex justify-between items-center text-lg font-semibold mb-4">
+                  <div>
+                    {selectedDate.toLocaleDateString("en-US", {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </div>
+                  <button
+                    aria-label="Settings"
+                    className="text-gray-600 hover:text-gray-900 cursor-pointer p-1 rounded-full -mt-1"
+                    onClick={() => {
+                      // Placeholder for settings click handler
+                      alert("Settings clicked");
+                    }}
+                  >
+                    <FaCog size={26} />
+                  </button>
+                </div>
                 <div className="grid grid-cols-7 text-center text-xs font-medium text-gray-500 mb-2">
                   {weekDays.map((day, idx) => (
                     <div key={idx}>{day}</div>
@@ -471,7 +453,7 @@ const Lawyercalender = () => {
         </div>
       </div>
       {showPopup && <Popup />}
-    </div>
+    </PageLayout>
   );
 };
 
