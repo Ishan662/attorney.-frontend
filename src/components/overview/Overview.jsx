@@ -1,4 +1,5 @@
 import React from 'react';
+import overviewImage from '../../assets/images/contact2.jpeg';
 
 const Overview = () => {
     const features = [
@@ -86,8 +87,20 @@ const Overview = () => {
     ];
 
     return (
-        <div className="bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 py-20 px-4">
-            <div className="max-w-7xl mx-auto">
+        <div className="bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 py-20 px-4 relative overflow-hidden">
+            {/* Background Image */}
+            <div className="absolute inset-0 z-0">
+                <div
+                    className="w-full h-full bg-cover bg-center bg-no-repeat opacity-90"
+                    style={{
+                        backgroundImage: `url(${overviewImage})`
+                    }}
+                ></div>
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-100/10 via-gray-200/90 to-gray-300/90"></div>
+            </div>
+            
+            <div className="max-w-7xl mx-auto relative z-10">
                 {/* Header */}
                 <div className="text-center mb-16">
                     <div className="flex items-center justify-center mb-6">
