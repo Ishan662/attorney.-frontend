@@ -100,13 +100,14 @@ export default function App() {
           {/* <Route path="client/caseprofiles" element={<Clientcaseprofiles />} /> */}
           {/* <Route path="/invitation/:inviteToken" element={<ClientInvitation />} />   */}
 
-          <Route path="lawyer/dashboard" element={<ProtectedRoute allowedRoles={['LAWYER']}>
+          <Route path="lawyer/dashboard" element={ 
             <Dashboard />
-          </ProtectedRoute>} />
+          } />
+      
           <Route path="lawyer/:caseId/addnewclient" element={<ProtectedRoute allowedRoles={['LAWYER']}>
             <AddClient />
 
-          </ProtectedRoute>} />
+2          </ProtectedRoute>} />
 
           {/* testing routes */}
           <Route path="lawyer/dashboard" element={<Dashboard />} />
