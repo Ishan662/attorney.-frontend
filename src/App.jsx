@@ -45,6 +45,7 @@ import AcceptInvitationPage from './pages/Common/AcceptInvitationPage';
 
 import ClientInvitation from './pages/Client/ClientInvitation';
 import UserOTP from './pages/Common/UserOTP';
+import LawyerAddDocuments from './pages/Lawyer/AddDocuments';
 
 export default function App() {
   return (
@@ -52,7 +53,6 @@ export default function App() {
       <div className="App">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="admin/dashboard" element={<Dashboard />} />
           {/* <Route path="signup" element={<SignUp />} />  */}
           <Route path="admin/dashboard" element={<AdminDashboard />} />
           <Route path="junior/dashboard" element={<JuniorDashboard/>} />
@@ -99,10 +99,10 @@ export default function App() {
           </ProtectedRoute>} />
           <Route path="lawyer/:caseId/addnewclient" element={<ProtectedRoute allowedRoles={['LAWYER']}>
             <AddClient />
-          </ProtectedRoute>} />
+          </ProtectedRoute>} /> */}
 
           {/* testing routes */}
-          <Route path="layer/dashboard" element={<LawyerDashboard />} />
+          <Route path="lawyer/dashboard" element={<Dashboard />} />
           <Route path="accept-invitation/:token" element={<AcceptInvitationPage />} />
  
           <Route path="/invitation/:inviteToken" element={<ClientInvitation />} /> 

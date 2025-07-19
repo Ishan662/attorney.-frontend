@@ -13,6 +13,7 @@ const Dashboard = () => {
     const user = {
         name: 'Nishagi Jewantha',
         email: 'jeewanthadeherath@gmail.com',
+        role: 'LAWYER',
     };
 
     const handleNotificationClick = () => {
