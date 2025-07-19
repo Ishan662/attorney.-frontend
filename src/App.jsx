@@ -52,6 +52,7 @@ import UserOTP from './pages/Common/UserOTP';
 import LawyerAddDocuments from './pages/Lawyer/AddDocuments';
 import EditCasePage from './pages/Lawyer/EditCasePage';
 import ClientMessages from './pages/Client/ClientMessages';
+import Clientpayments from './pages/Client/Clientpayments';
 
 export default function App() {
   return (
@@ -117,6 +118,7 @@ export default function App() {
             
           <Route path="/lawyer/case/:caseId/edit" element={<EditCasePage />} />
           <Route path="/client/chat" element={<ClientMessages />} />
+          <Route path="/client/payments" element={<Clientpayments />} />
 
         </Routes>
       </div>
