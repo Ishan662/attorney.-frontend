@@ -10,9 +10,27 @@ const user = {
 };
 
 const initialTasks = [
-    { id: 1, title: "Draft Affidavit", due: "2024-07-11", des: "adddd", case: "23E4" },
-    { id: 2, title: "Prepare Evidence", due: "2024-07-13", des: "edwedbwe", case: "23E4" },
-    { id: 3, title: "File Court Documents", due: "2024-07-15", des: "ghjhghjg", case: "23E4" },
+    { 
+  id: 1, 
+  title: "Draft Affidavit", 
+  due: "2024-07-11", 
+  des: "Prepare the initial affidavit outlining the client's statement..", 
+  case: "33E4" 
+},
+{ 
+  id: 2, 
+  title: "Prepare Evidence", 
+  due: "2024-07-13", 
+  des: "Gather, review, and organize all relevant documents.", 
+  case: "19N2" 
+},
+{ 
+  id: 3, 
+  title: "File Court Documents", 
+  due: "2024-07-15", 
+  des: " Confirm receipt and docketing.", 
+  case: "25H7" 
+}
 ];
 
 const Tasks = () => {
