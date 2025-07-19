@@ -98,7 +98,7 @@ const JuniorDashboard = () => {
 
             {/* Hearings Section */}
             <div className="mb-8">
-                <h2 className="text-xl font-bold mb-4">Your Hearings</h2>
+                <h2 className="text-xl font-bold mb-4">Your Upcoming Cases</h2>
                 <div className="bg-white rounded-lg shadow-md overflow-hidden">
                     {hearings.map((hearing, index) => (
                         <div key={index} className="flex justify-between items-center p-4 border-b last:border-b-0">

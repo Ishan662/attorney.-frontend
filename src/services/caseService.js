@@ -80,6 +80,19 @@ export const getHearingsForCase = async (caseId) => {
     return await authenticatedFetch(`/api/hearings/by-case/${caseId}`);
 };
 
+/**
+ * Sends an update request for a specific case to the backend.
+ * @param {string} caseId - The UUID of the case to update.
+ * @param {object} caseData - An object containing the fields to update.
+ * @returns {Promise<object>} The updated case data from the backend.
+ */
+export const updateCase = async (caseId, caseData) => {
+    return await authenticatedFetch(`/api/cases/${caseId}`, {
+        method: 'PUT',
+        body: JSON.stringify(caseData),
+    });
+};
+
 export const createHearing = async (caseId, hearingFormData) => {
     // Combine the date and time from the modal's form into a single
     // ISO 8601 formatted string, which is what the backend's Instant type expects.

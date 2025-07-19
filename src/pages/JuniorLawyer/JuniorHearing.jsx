@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../../components/layout/PageHeader";
 import PageLayout from "../../components/layout/PageLayout";
+import Button1 from "../../components/UI/Button1";
 
 const JuniorHearings = () => {
     const navigate = useNavigate();

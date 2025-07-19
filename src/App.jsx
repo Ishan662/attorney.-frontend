@@ -10,7 +10,7 @@ import Timeline from './pages/Lawyer/Timeline';
 import Incomes from './pages/Lawyer/Incomes';
 // import DaySummary from './pages/Lawyer/DaySummary';
 import AddClient from './pages/Lawyer/AddNewClient';
-// import Meetings from './pages/Lawyer/MeetingRequest';
+import Meetings from './pages/Lawyer/MeetingRequest';
 import Clients from './pages/Lawyer/Clients';
 import ScheduleMeeting from './pages/Client/ScheduleMeeting';
 import Lawyercalander from './pages/Lawyer/Lawyercalender';
@@ -37,15 +37,20 @@ import UserManagement from './pages/Admin/UserManagement';
 import ViewMessages from './pages/Admin/ViewMessages';
 import AdminAnalytics from './pages/Admin/ViewAnalytics';
 import ClientDashboard from './pages/Client/Clientdashboard';
+
 import Clientcaseprofiles from './pages/Client/Clientcaseprofiles';
+
 import ClientCalendar from './pages/Client/Clientcalendar';
 import AddNextHearingModal from './pages/Lawyer/AddNextHearingDate';
 import LawyerDashboard from './pages/Lawyer/LawyerDashboard';
 import AcceptInvitationPage from './pages/Common/AcceptInvitationPage';
 
+import ClientCaseDetails from './pages/Client/ClientCaseDetails';
+
 import ClientInvitation from './pages/Client/ClientInvitation';
 import UserOTP from './pages/Common/UserOTP';
 import LawyerAddDocuments from './pages/Lawyer/AddDocuments';
+import EditCasePage from './pages/Lawyer/EditCasePage';
 
 export default function App() {
   return (
@@ -63,11 +68,12 @@ export default function App() {
           <Route path="lawyer/timeline" element={<Timeline />} />
           <Route path="lawyer/incomes" element={<Incomes />} />
           {/* <Route path="lawyer/day-summary" element={<DaySummary />} /> */}
-          {/* <Route path="lawyer/meetingrequest" element={<Meetings />} /> */}
+          <Route path="lawyer/meetingrequest" element={<Meetings />} />
           <Route path="lawyer/clients" element={<Clients />} />
           <Route path="client/schedulemeeting" element={<ScheduleMeeting />} />
           {/* client case profiles  */}
-          <Route path="client/caseprofiles" element={<CaseProfiles />} />
+          <Route path="client/caseprofiles" element={<Clientcaseprofiles />} />
+          <Route path="client/case/:caseId" element={<ClientCaseDetails />} />
           <Route path="client/clientcalendar" element={<ClientCalendar />} />
           <Route path='/lawyer/messages' element={<Messages />} />
           <Route path="user/signup" element={<UserSignUp />} />
@@ -94,19 +100,23 @@ export default function App() {
           {/* <Route path="client/caseprofiles" element={<Clientcaseprofiles />} /> */}
           {/* <Route path="/invitation/:inviteToken" element={<ClientInvitation />} />   */}
 
-          <Route path="lawyer/dashboard" element={<ProtectedRoute allowedRoles={['LAWYER']}>
+          <Route path="lawyer/dashboard" element={ 
             <Dashboard />
-          </ProtectedRoute>} />
+          } />
+      
           <Route path="lawyer/:caseId/addnewclient" element={<ProtectedRoute allowedRoles={['LAWYER']}>
             <AddClient />
-          </ProtectedRoute>} /> */}
+
+2          </ProtectedRoute>} />
 
           {/* testing routes */}
           <Route path="lawyer/dashboard" element={<Dashboard />} />
           <Route path="accept-invitation/:token" element={<AcceptInvitationPage />} />
  
           <Route path="/invitation/:inviteToken" element={<ClientInvitation />} /> 
-          <Route path="lawyer/addnexthearing" element={<AddNextHearingModal />} />  
+          <Route path="lawyer/addnexthearing" element={<AddNextHearingModal />} />
+            
+          <Route path="/lawyer/case/:caseId/edit" element={<EditCasePage />} />
 
         </Routes>
       </div>

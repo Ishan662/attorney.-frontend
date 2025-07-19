@@ -69,7 +69,7 @@ const Pricings = () => {
     ];
 
     return (
-        <div className="bg-gray-50 py-16 px-4 relative bg-gradient-to-br from-white via-gray-200 to-gray-600">
+        <div className="bg-gray-50 py-16 px-4 relative bg-gradient-to-br from-white via-gray-200 to-gray-400">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-12">
