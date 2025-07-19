@@ -70,6 +70,7 @@ export const signupNewLawyer = async (email, password, profileData) => {
   // Send verification email and force logout so they must verify before continuing.
   await sendEmailVerification(userCredential.user);
   await signOut(auth);
+  
 };
 
 /**
@@ -136,6 +137,18 @@ export const verifyTwilioOtpAndActivate = async (otpCode) => {
     body: JSON.stringify({ otpCode })
   });
 };
+
+// ========================================================================
+// --- DUMMY PHONE NUMBER VALIDATION ---
+// ========================================================================
+export const validatePhoneNumber = async (phoneNumber) => {
+  return await authenticatedFetch('/api/otp/verifynumber', {
+    method: 'POST',
+    body: JSON.stringify({ phoneNumber })
+  });
+};
+
+
 
 
 // ========================================================================
