@@ -84,6 +84,11 @@ const UserLogin = () => {
                 
                 await loginWithEmail(formData.email, formData.password);
                 const userProfile = await getFullSession();
+
+                if (userProfile.status === "PENDING_PHONE_VERIFICATION") {
+                    navigate('/user/otp', { state: { phoneNumber: userProfile.phoneNumber } });
+                    return;
+                }
                 navigateUserByRole(userProfile);
 
             } catch (error) {
@@ -113,8 +118,6 @@ const UserLogin = () => {
     };
 
     const handleAppleLogin = () => {
-        // Implement Apple login
-        // console.log('Apple login clicked');
     };
 
     return (
