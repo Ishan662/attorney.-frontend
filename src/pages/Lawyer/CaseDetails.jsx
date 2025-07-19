@@ -44,6 +44,9 @@ const CaseDetails = () => {
         role:  "lawyer"
     }
 
+    // console.log("Current User:", currentUser);
+    // console.log("User Role:", currentUser.role);
+
     // This state is for managing the modal's visibility
     const [showHearingModal, setShowHearingModal] = useState(false);
     
@@ -146,14 +149,32 @@ const CaseDetails = () => {
 
     return (
         <PageLayout user={user}>
-            <div className="mb-2">
-                <Button1 text="← Back" onClick={() => navigate('/lawyer/caseprofile')} className="mb-4" />
-            </div>
+            <div className="flex items-center justify-between mb-6">
+                {/* Left side: The "Back" button */}
+                <Button1 
+                    text="← Back" 
+                    onClick={() => navigate('/lawyer/caseprofile')} 
+                    // Let's assume Button2 is for secondary actions.
+                    variant="secondary" // Assuming your Button component has variants
+                />
+
+                {/* Right side: The "Edit Case" button, conditionally rendered */}
+                {currentUser && currentUser.role === 'LAWYER' && (
+                    <Button1
+                        text="Edit Case →" // Added the arrow as requested
+                        // className="text-sm py-2 px-4" // Adjusted padding for a better feel
+                        onClick={() => navigate(`/lawyer/case/${caseId}/edit`)}
+                    />
+                )}
+        </div>
             <h1 className="text-2xl font-bold mb-6">Case No = {caseData.caseNumber}</h1>
 
             {/* Case Overview */}
             <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
                 <h2 className="text-xl font-semibold mb-6">Case Overview</h2>
+
+
+
                 <div className="flex flex-col md:flex-row">
                     <div className="flex-1">
                         <div className="font-semibold">Case Name:</div>
@@ -278,7 +299,7 @@ const CaseDetails = () => {
 
 
             {/* Case Progress Timeline */}
-            <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+            {/* <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
                 <h2 className="text-xl font-semibold mb-6 text-center">Case Progress Timeline</h2>
                 <div className="flex items-center justify-between">
                     {timelineEvents.map((t, idx) => (
@@ -288,6 +309,20 @@ const CaseDetails = () => {
                                 <div className="text-xs mt-2 text-gray-700">{t.date}<br />{t.label}</div>
                             </div>
                             {idx < timelineEvents.length - 1 && <div className="flex-1 h-1 bg-orange-200 mx-2" />}
+                        </React.Fragment>
+                    ))}
+                </div>
+            </section> */}
+            <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+                <h2 className="text-xl font-semibold mb-6 text-center">Case Progress Timeline</h2>
+                <div className="flex items-center justify-between">
+                    {timelineEvents.map((t, idx) => (
+                        <React.Fragment key={idx}>
+                            <div className="flex flex-col items-center text-center">
+                                <div className={`w-8 h-8 rounded-full ${new Date(t.date) > new Date() ? 'bg-gray-300' : 'bg-orange-500'} text-white flex items-center justify-center font-bold`}>{idx + 1}</div>
+                                <div className="text-xs mt-2 text-gray-700">{t.date}<br />{t.label}</div>
+                            </div>
+                            {idx < timelineEvents.length - 1 && <div className="flex-1 h-1 bg-gray-200 mx-2" />}
                         </React.Fragment>
                     ))}
                 </div>
