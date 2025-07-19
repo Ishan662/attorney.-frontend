@@ -96,8 +96,8 @@ const Tasks = () => {
                 <div className="bg-gray-100 p-4 rounded mt-4">
                     <h4 className="font-semibold mb-2 text-sm text-gray-700">Attachments</h4>
                     <ul className="list-disc list-inside text-sm text-gray-800">
-                        <li>Affidavit_Draft.pdf</li>
-                        <li>Evidence_Photograph.jpg</li>
+                        <li><a href="" download  className="text-blue-600 hover:underline">Affidavit_Draft.pdf</a></li>
+                        <li><a href="" download  className="text-blue-600 hover:underline">Evidence_Photograph.jpg</a></li>
                     </ul>
                 </div>
             </div>
