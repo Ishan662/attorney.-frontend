@@ -51,6 +51,7 @@ import ClientInvitation from './pages/Client/ClientInvitation';
 import UserOTP from './pages/Common/UserOTP';
 import LawyerAddDocuments from './pages/Lawyer/AddDocuments';
 import EditCasePage from './pages/Lawyer/EditCasePage';
+import ClientMessages from './pages/Client/ClientMessages';
 
 export default function App() {
   return (
@@ -115,6 +116,7 @@ export default function App() {
           <Route path="lawyer/addnexthearing" element={<AddNextHearingModal />} />
             
           <Route path="/lawyer/case/:caseId/edit" element={<EditCasePage />} />
+          <Route path="/client/chat" element={<ClientMessages />} />
 
         </Routes>
       </div>
