@@ -118,7 +118,7 @@ const NewCaseProfile = () => {
       alert('Case profile created successfully!');
       
       // Navigate to the case details page or cases list
-      navigate(`/lawyer/cases/${newCaseId}`); // or navigate('/lawyer/cases')
+      navigate(`/lawyer/caseprofile`); 
       
     } catch (error) {
       console.error('Failed to create case:', error);
