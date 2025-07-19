@@ -99,7 +99,7 @@ export default function App() {
           </ProtectedRoute>} />
           <Route path="lawyer/:caseId/addnewclient" element={<ProtectedRoute allowedRoles={['LAWYER']}>
             <AddClient />
-          </ProtectedRoute>} /> */}
+          </ProtectedRoute>} /> 
 
           {/* testing routes */}
           <Route path="lawyer/dashboard" element={<Dashboard />} />
