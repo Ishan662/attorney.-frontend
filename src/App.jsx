@@ -10,7 +10,7 @@ import Timeline from './pages/Lawyer/Timeline';
 import Incomes from './pages/Lawyer/Incomes';
 // import DaySummary from './pages/Lawyer/DaySummary';
 import AddClient from './pages/Lawyer/AddNewClient';
-// import Meetings from './pages/Lawyer/MeetingRequest';
+import Meetings from './pages/Lawyer/MeetingRequest';
 import Clients from './pages/Lawyer/Clients';
 import ScheduleMeeting from './pages/Client/ScheduleMeeting';
 import Lawyercalander from './pages/Lawyer/Lawyercalender';
@@ -68,7 +68,7 @@ export default function App() {
           <Route path="lawyer/timeline" element={<Timeline />} />
           <Route path="lawyer/incomes" element={<Incomes />} />
           {/* <Route path="lawyer/day-summary" element={<DaySummary />} /> */}
-          {/* <Route path="lawyer/meetingrequest" element={<Meetings />} /> */}
+          <Route path="lawyer/meetingrequest" element={<Meetings />} />
           <Route path="lawyer/clients" element={<Clients />} />
           <Route path="client/schedulemeeting" element={<ScheduleMeeting />} />
           {/* client case profiles  */}
