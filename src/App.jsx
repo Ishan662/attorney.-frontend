@@ -45,6 +45,7 @@ import AcceptInvitationPage from './pages/Common/AcceptInvitationPage';
 
 import ClientInvitation from './pages/Client/ClientInvitation';
 import UserOTP from './pages/Common/UserOTP';
+import LawyerAddDocuments from './pages/Lawyer/AddDocuments';
 
 export default function App() {
   return (
@@ -52,7 +53,6 @@ export default function App() {
       <div className="App">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="admin/dashboard" element={<Dashboard />} />
           {/* <Route path="signup" element={<SignUp />} />  */}
           <Route path="admin/dashboard" element={<AdminDashboard />} />
           <Route path="junior/dashboard" element={<JuniorDashboard/>} />
@@ -66,6 +66,7 @@ export default function App() {
           {/* <Route path="lawyer/meetingrequest" element={<Meetings />} /> */}
           <Route path="lawyer/clients" element={<Clients />} />
           <Route path="client/schedulemeeting" element={<ScheduleMeeting />} />
+          {/* client case profiles  */}
           <Route path="client/caseprofiles" element={<CaseProfiles />} />
           <Route path="client/clientcalendar" element={<ClientCalendar />} />
           <Route path='/lawyer/messages' element={<Messages />} />
@@ -89,22 +90,24 @@ export default function App() {
           <Route path="admin/usermanagement" element={<UserManagement />} />
           <Route path="admin/viewmessages" element={<ViewMessages />} />
           <Route path="admin/viewanalytics" element={<AdminAnalytics />} />
-          <Route path="client/caseprofiles" element={<Clientcaseprofiles />} />
-          <Route path="/invitation/:inviteToken" element={<ClientInvitation />} />  
+          {/* client case profiles  */}
+          {/* <Route path="client/caseprofiles" element={<Clientcaseprofiles />} /> */}
+          {/* <Route path="/invitation/:inviteToken" element={<ClientInvitation />} />   */}
 
           <Route path="lawyer/dashboard" element={<ProtectedRoute allowedRoles={['LAWYER']}>
             <Dashboard />
           </ProtectedRoute>} />
-          <Route path="lawyer/addnewclient" element={<ProtectedRoute allowedRoles={['LAWYER']}>
+          <Route path="lawyer/:caseId/addnewclient" element={<ProtectedRoute allowedRoles={['LAWYER']}>
             <AddClient />
-          </ProtectedRoute>} />
+          </ProtectedRoute>} /> */}
 
           {/* testing routes */}
-          <Route path="layer/dashboard" element={<LawyerDashboard />} />
+          <Route path="lawyer/dashboard" element={<Dashboard />} />
           <Route path="accept-invitation/:token" element={<AcceptInvitationPage />} />
  
           <Route path="/invitation/:inviteToken" element={<ClientInvitation />} /> 
           <Route path="lawyer/addnexthearing" element={<AddNextHearingModal />} />  
+
         </Routes>
       </div>
     </Router>

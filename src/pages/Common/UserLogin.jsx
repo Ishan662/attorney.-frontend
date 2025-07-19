@@ -16,32 +16,28 @@ const UserLogin = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { currentUser } = useAuth();
-
     const navigateUserByRole = (currentUser) => {
-        if (!currentUser || !currentUser.role) {
-            throw new Error("Login succeeded but user profile is incomplete.");
+        // if (!currentUser || !currentUser.role) {
+        //     throw new Error("Login succeeded but user profile is incomplete.");
+        // }
+
+        if (currentUser.status === "PENDING_PHONE_VERIFICATION") {
+            navigate('/user/otp', { state: { phoneNumber: currentUser.phoneNumber } });
+            return;
         }
-        
-        switch (currentUser.role) {
-            case 'LAWYER':
-                navigate('/lawyer/dashboard');
-                break;
-            case 'JUNIOR':
-                navigate('/junior/cases');
-                break;
-            case 'CLIENT':
-                navigate('/client/caseprofiles');
-                break;
-            case 'ADMIN':
-                navigate('/admin/systemsettings');
-                break;
-            case 'RESEARCHER':
-                navigate('/researcher/chatbot');
-                break;
-            default:
-                navigate('/'); 
-        }
+
+        const rolePaths = {
+            LAWYER: '/lawyer/dashboard',
+            JUNIOR: '/junior/cases',
+            CLIENT: '/client/caseprofiles',
+            ADMIN: '/admin/systemsettings',
+            RESEARCHER: '/researcher/chatbot',
+        };
+
+        const path = rolePaths[currentUser.role] || '/';
+        navigate(path);
     };
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -87,9 +83,8 @@ const UserLogin = () => {
             try {
                 
                 await loginWithEmail(formData.email, formData.password);
-            
-                // navigate('/lawyer/dashboard');
-                navigateUserByRole(currentUser);
+                const userProfile = await getFullSession();
+                navigateUserByRole(userProfile);
 
             } catch (error) {
                 setErrors({ form: error.message });

@@ -8,7 +8,6 @@ import Button2 from '../../components/UI/Button2';
 import Input1 from '../../components/UI/Input1';
 import PageHeader from '../../components/layout/PageHeader';
 import { useNavigate } from 'react-router-dom';
-// --- ▼▼▼ ADD THIS IMPORT ▼▼▼ ---
 import { sendInvitation } from '../../services/invitationService'; // Adjust path if needed
 
 const AddJunior = () => {
@@ -28,7 +27,6 @@ const AddJunior = () => {
 
   const navigate = useNavigate();
 
-  // --- ▼▼▼ ADD STATE AND HANDLERS FOR THE FORM ▼▼▼ ---
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -73,7 +71,6 @@ const AddJunior = () => {
       setIsSubmitting(false);
     }
   };
-  // --- ▲▲▲ ADD STATE AND HANDLERS FOR THE FORM ▲▲▲ ---
 
   return (
     <div className="flex h-screen bg-white-50">
