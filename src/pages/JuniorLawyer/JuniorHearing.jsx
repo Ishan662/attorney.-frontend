@@ -149,48 +149,44 @@ const JuniorHearings = () => {
                     <h1 className="text-2xl font-bold text-gray-900">Upcoming Hearings</h1>
                     <p className="text-gray-600 mt-1">Manage your scheduled court hearings</p>
                 </div>
-                
+
             </div>
 
             {/* Filter Buttons */}
             <div className="flex flex-wrap gap-2 mb-6">
                 <button
                     onClick={() => setSelectedFilter("all")}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        selectedFilter === "all"
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedFilter === "all"
                             ? "bg-black-600 text-white"
                             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
+                        }`}
                 >
                     All Hearings ({hearings.length})
                 </button>
                 <button
                     onClick={() => setSelectedFilter("today")}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        selectedFilter === "today"
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedFilter === "today"
                             ? "bg-black-600 text-white"
                             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
+                        }`}
                 >
                     Today ({hearings.filter(h => h.status === "Today").length})
                 </button>
                 <button
                     onClick={() => setSelectedFilter("upcoming")}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        selectedFilter === "upcoming"
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedFilter === "upcoming"
                             ? "bg-black-600 text-white"
                             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
+                        }`}
                 >
                     Upcoming ({hearings.filter(h => h.status === "Upcoming").length})
                 </button>
                 <button
                     onClick={() => setSelectedFilter("thisweek")}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        selectedFilter === "thisweek"
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedFilter === "thisweek"
                             ? "bg-black-600 text-white"
                             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
+                        }`}
                 >
                     This Week ({hearings.filter(h => h.status === "This Week").length})
                 </button>
@@ -226,9 +222,27 @@ const JuniorHearings = () => {
                                 <div>
                                     <h4 className="text-sm font-medium text-gray-700 mb-2">Court Details</h4>
                                     <div className="space-y-1">
-                                        <p className="text-sm text-gray-600">📍 {hearing.court}</p>
-                                        <p className="text-sm text-gray-600">🏛️ {hearing.courtroom}</p>
-                                        <p className="text-sm text-gray-600">⚖️ {hearing.judge}</p>
+                                        
+                                        <p className="text-sm text-gray-600"> <svg className="w-4 h-4 mr-1 text-black-800" fill="none" stroke="currentColor" strokeWidth="1.5"
+                                            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path strokeLinecap="round" strokeLinejoin="round"
+                                                d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round"
+                                                d="M19.5 10.5c0 7.5-7.5 11.25-7.5 11.25S4.5 18 4.5 10.5a7.5 7.5 0 1115 0z" />
+                                        </svg> {hearing.court}</p>
+
+                                        <p className="text-sm text-gray-600"> <svg className="w-4 h-4 mr-1 text-black-800" fill="none" stroke="currentColor" strokeWidth="1.5"
+                                            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path strokeLinecap="round" strokeLinejoin="round"
+                                                d="M3 21h18M3 10l9-7 9 7M4 10h16v11H4z" />
+                                        </svg> {hearing.courtroom}</p>
+
+                                        <p className="text-sm text-gray-600"> <svg className="w-4 h-4 mr-1 text-black-800" fill="none" stroke="currentColor" strokeWidth="1.5"
+                                            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path strokeLinecap="round" strokeLinejoin="round"
+                                                d="M9 12h6m-6 4h6m-9 4h12M3 6h18l-1 8H4L3 6z" />
+                                        </svg> {hearing.judge}</p>
+
                                     </div>
                                 </div>
                                 <div>
@@ -276,7 +290,7 @@ const JuniorHearings = () => {
                 </div>
             )}
 
-            
+
         </PageLayout>
     );
 };
