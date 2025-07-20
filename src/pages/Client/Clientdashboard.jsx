@@ -35,6 +35,12 @@ const ClientDashboard = () => {
         { id: 2, lawyerName: "John Doe", date: "2023-07-18", status: "Pending" },
     ];
 
+    // Mock data for upcoming hearings
+    const upcomingHearings = [
+        { id: 1, caseTitle: "Land Case", court: "District Court, Colombo", date: "2023-07-15", time: "10:00 AM", status: "Scheduled" },
+        { id: 2, caseTitle: "House Case", court: "Supreme Court", date: "2023-07-20", time: "2:00 PM", status: "Confirmed" },
+    ];
+
     // Format date helper
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);
@@ -63,9 +69,9 @@ const ClientDashboard = () => {
             </div>
 
             {/* Dashboard Content */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                Due Payments Box
-                <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="grid grid-cols-1 gap-6">
+            
+                {/* <div className="bg-white rounded-lg shadow-md p-6">
                     <h2 className="text-xl font-bold mb-4">Due Payments</h2>
                     {duePayments.length === 0 ? (
                         <p className="text-gray-500">No due payments.</p>
@@ -88,22 +94,19 @@ const ClientDashboard = () => {
                             onClick={() => navigate("/client/payments")}
                         />
                     </div>
-                </div>
+                </div> */}
 
                 {/* Upcoming Meetings Box */}
-                <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="bg-white rounded-lg shadow-md p-2">
                     <h2 className="text-xl font-bold mb-4">Upcoming Meetings</h2>
                     {upcomingMeetings.length === 0 ? (
                         <p className="text-gray-500">No upcoming meetings.</p>
                     ) : (
-                        <ul>
+                        <div className="space-y-4">
                             {upcomingMeetings.map(meeting => (
-                                <li key={meeting.id} className="border-b last:border-b-0 py-3 flex justify-between items-center">
-                                    <div>
-                                        <div className="font-medium">Lawyer: {meeting.lawyerName}</div>
-                                        <div className="text-sm text-gray-500">{formatDate(meeting.date)}</div>
-                                    </div>
-                                    <div>
+                                <div key={meeting.id} className="bg-gray-50 rounded-lg border border-gray-200 p-4">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="font-medium text-gray-800">Lawyer: {meeting.lawyerName}</div>
                                         <span className={`
                                             px-3 py-1 rounded-full text-xs font-medium
                                             ${meeting.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : ''}
@@ -113,14 +116,51 @@ const ClientDashboard = () => {
                                             {meeting.status}
                                         </span>
                                     </div>
-                                </li>
+                                    <div className="text-sm text-gray-600">{formatDate(meeting.date)}</div>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
                     )}
                     <div className="mt-4">
                         <Button1 
                             text="Request Meeting"
-                            onClick={() => navigate("/client/meetingrequest")}
+                            onClick={() => navigate("/client/clientcalendar")}
+                        />
+                    </div>
+                </div>
+
+                {/* Upcoming Hearings Box */}
+                <div className="bg-white rounded-lg shadow-md p-2">
+                    <h2 className="text-xl font-bold mb-4">Upcoming Hearings</h2>
+                    {upcomingHearings.length === 0 ? (
+                        <p className="text-gray-500">No upcoming hearings.</p>
+                    ) : (
+                        <div className="space-y-4">
+                            {upcomingHearings.map(hearing => (
+                                <div key={hearing.id} className="bg-gray-50 rounded-lg border border-gray-200 p-4">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="font-medium text-gray-800">{hearing.caseTitle}</div>
+                                        <span className={`
+                                            px-3 py-1 rounded-full text-xs font-medium
+                                            ${hearing.status === 'Scheduled' ? 'bg-blue-100 text-blue-800' : ''}
+                                            ${hearing.status === 'Confirmed' ? 'bg-green-100 text-green-800' : ''}
+                                            ${hearing.status === 'Postponed' ? 'bg-red-100 text-red-800' : ''}
+                                        `}>
+                                            {hearing.status}
+                                        </span>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <div className="text-sm text-gray-600">Court: {hearing.court}</div>
+                                        <div className="text-sm text-gray-600">{formatDate(hearing.date)} at {hearing.time}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    <div className="mt-4">
+                        <Button1 
+                            text="View Calendar"
+                            onClick={() => navigate("/client/clientcalendar")}
                         />
                     </div>
                 </div>
