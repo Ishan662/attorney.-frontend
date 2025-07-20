@@ -475,14 +475,14 @@ const Clientcalender = () => {
             )}
           </div>
           
-          <div className="mt-3 pt-2 border-t border-gray-200">
+          {/* <div className="mt-3 pt-2 border-t border-gray-200">
             <button
               onClick={handleEditMeeting}
               className="w-full bg-black-500 hover:bg-black-600 text-white py-2 px-3 rounded text-sm font-medium transition-colors"
             >
               Edit Meeting
             </button>
-          </div>
+          </div> */}
         </div>
         
         {/* Arrow pointing down */}
@@ -505,7 +505,7 @@ const Clientcalender = () => {
       <div
         className="flex-grow p-6 overflow-y-auto transition-all duration-300"
         style={{
-          marginLeft: sidebarExpanded ? "16rem" : "5rem", // 16rem = 256px (w-64), 5rem = 80px (w-20)
+          marginLeft: sidebarExpanded ? "-1.5rem" : "5rem", // 16rem = 256px (w-64), 5rem = 80px (w-20)
         }}
       >
         <div className="flex gap-6">
