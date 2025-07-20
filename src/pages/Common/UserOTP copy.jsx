@@ -1,83 +1,137 @@
-import React, { useState } from 'react';
+// >> In your existing file: pages/UserOTP.jsx
+
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext'; // Import the new auth hook
+
+// Import the specific Twilio service functions
+import { sendTwilioOtp, verifyTwilioOtpAndActivate } from '../../services/authService';
+
+// Import your UI components
 import Button1 from '../../components/UI/Button1';
-import Button2 from '../../components/UI/Button2';
 import AuthHeader from '../../components/layout/AuthHeader';
+import Input1 from '../../components/UI/Input1';
 
 const UserOTP = () => {
-    const [emailOTP, setEmailOTP] = useState(['', '', '', '']);
-    const [phoneOTP, setPhoneOTP] = useState(['', '', '', '']);
-    // Refs for OTP inputs
-    const emailRefs = Array.from({ length: 4 }, () => React.createRef());
-    const phoneRefs = Array.from({ length: 4 }, () => React.createRef());
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { currentUser } = useAuth(); // Get the currently logged-in user from context
 
-    // Handle OTP input change
-    const handleOTPChange = (type, idx, value) => {
-        if (!/^[0-9]?$/.test(value)) return;
-        const otpArr = type === 'email' ? [...emailOTP] : [...phoneOTP];
-        otpArr[idx] = value;
-        if (type === 'email') setEmailOTP(otpArr);
-        else setPhoneOTP(otpArr);
-        // Move to next field if value entered
-        if (value && idx < 3) {
-            // Focus next input
-            if (type === 'email') {
-                emailRefs[idx + 1].current && emailRefs[idx + 1].current.focus();
-            } else {
-                phoneRefs[idx + 1].current && phoneRefs[idx + 1].current.focus();
-            }
+    const [otp, setOtp] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
+
+    // Get the phone number passed from the login page's navigation state
+    const phoneNumber = location.state?.phoneNumber;
+
+    // This function handles sending the initial SMS and the "Resend" functionality
+    const handleSendOtp = async () => {
+        setError(''); // Clear previous errors
+        try {
+            await sendTwilioOtp();
+            // Optionally, you can show a success message to the user
+            // alert('A new verification code has been sent.');
+        } catch (err) {
+            console.error("Failed to send OTP:", err);
+            setError('Failed to send verification code. Please try again later.');
         }
     };
 
-    // Focus management for OTP fields
-    const getInputProps = (type, idx) => ({
-        value: type === 'email' ? emailOTP[idx] : phoneOTP[idx],
-        onChange: e => handleOTPChange(type, idx, e.target.value),
-        maxLength: 1,
-        className: `w-10 h-10 text-lg text-center rounded-md border border-gray-300 focus:border-black focus:outline-none bg-gray-100 mx-1`,
-        inputMode: 'numeric',
-        key: `${type}-otp-${idx}`,
-        ref: type === 'email' ? emailRefs[idx] : phoneRefs[idx],
-    });
+    // This useEffect hook triggers the very first OTP send when the page loads
+    useEffect(() => {
+        // If we land on this page without a phone number or a logged-in user, something is wrong.
+        // Redirect back to login to be safe.
+        if (!phoneNumber || !currentUser) {
+            navigate('/user/login');
+            return;
+        }
+
+        handleSendOtp(); // Send the initial OTP
+    }, []); // The empty dependency array ensures this runs only once on mount
+
+    // This function handles the final verification and activation
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        
+        if (otp.length !== 6) {
+            setError('Please enter a valid 6-digit code.');
+            return;
+        }
+
+        setIsSubmitting(true);
+        setError('');
+
+        try {
+            // This function calls our backend to verify the code with Twilio
+            // and activate the user's account.
+            await verifyTwilioOtpAndActivate(otp);
+            
+            // Success! The user is now fully active.
+            // The AuthProvider will automatically pick up the new "ACTIVE" status on the next
+            // session check or page reload. For an immediate effect, we just navigate.
+            const rolePaths = {
+                LAWYER: '/lawyer/dashboard',
+                JUNIOR: '/junior/cases',
+                CLIENT: '/client/caseprofiles',
+                ADMIN: '/admin/systemsettings',
+                RESEARCHER: '/researcher/chatbot',
+            };
+
+            const path = rolePaths[currentUser.role] || '/';
+            navigate(path);
+
+        } catch (err) {
+            console.error("OTP Verification Error:", err);
+            setError('The code you entered is invalid or has expired.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-50 px-4 pt-20">
             <AuthHeader />
             <div className="flex-1 flex flex-col items-center justify-center ">
-                <div className="w-full max-w-4xl mx-auto flex flex-col items-center rounded-xl shadow-md py-16 px-8 bg-white">
-                    <h2 className="text-3xl font-bold mb-6 text-center">Enter the 4-digit code sent via SMS and Email</h2>
+                <div className="w-full max-w-md mx-auto flex flex-col items-center rounded-xl shadow-md py-16 px-8 bg-white">
+                    <h2 className="text-3xl font-bold mb-6 text-center">Verify Your Phone Number</h2>
+                    
                     <p className="mb-8 text-center text-lg text-black">
-                        SMS sent to <span className="font-bold">*******72</span> & Email sent to <span className="font-bold">j***@gmail.com</span>
+                        Enter the 6-digit code sent via SMS to <span className="font-bold">{phoneNumber || 'your phone'}</span>
                     </p>
-                    <div className="mb-6 text-blue-400 text-center">
-                        <a href="#" className="underline text-sm">Changed your mobile number?</a>
-                    </div>
-
-                    {/* Phone OTP */}
-                    <div className="mb-8 flex flex-col items-center">
-                        <label className="mb-2 font-semibold text-black text-base">Phone OTP</label>
-                        <div className="flex justify-center mb-2">
-                            {[0, 1, 2, 3].map(idx => (
-                                <input {...getInputProps('phone', idx)} />
-                            ))}
+                    
+                    <form className="w-full flex flex-col items-center" onSubmit={handleSubmit}>
+                        <div className="mb-8 flex flex-col items-center">
+                            <label className="mb-2 font-semibold text-black text-base">Verification Code</label>
+                            
+                            <Input1
+                                type="tel"
+                                name="otp"
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value)}
+                                placeholder="123456"
+                                required={true}
+                                maxLength="6"
+                                error={error ? " " : ""}
+                                className="w-48 h-12 text-2xl text-center tracking-[.5em]"
+                                inputMode="numeric"
+                            />
+                            
+                            <button type="button" className="mt-2 text-xs text-blue-500 hover:underline" onClick={handleSendOtp}>
+                                Didn't receive a code? Resend
+                            </button>
                         </div>
-                        <Button1 text={<span>Resend code by SMS &rarr;</span>} inverted={false} className="mt-1 text-xs py-1 px-3" onClick={() => alert('Resend SMS OTP')} />
-                    </div>
+                        
+                        {error && <p className="text-red-600 text-center mb-4">{error}</p>}
 
-                    {/* Email OTP */}
-                    <div className="mb-8 flex flex-col items-center">
-                        <label className="mb-2 font-semibold text-black text-base">Email OTP</label>
-                        <div className="flex justify-center mb-2">
-                            {[0, 1, 2, 3].map(idx => (
-                                <input {...getInputProps('email', idx)} />
-                            ))}
+                        <div className="flex justify-center w-full mt-10">
+                            <Button1
+                                type="submit"
+                                text={isSubmitting ? "Verifying..." : "Verify & Continue"}
+                                className="w-full max-w-xs h-12 flex items-center justify-center text-base"
+                                disabled={isSubmitting}
+                            />
                         </div>
-                        <Button1 text={<span>Resend code by Email &rarr;</span>} inverted={false} className="mt-1 text-xs py-1 px-3 " onClick={() => alert('Resend Email OTP')} />
-                    </div>
-
-                    <div className="flex justify-between w-full mt-10">
-                        <Button1 text={<span>&larr;</span>} className="w-8 h-8 flex items-center justify-center text-xs" onClick={() => alert('Back')} />
-                        <Button1 text={<span>Next &rarr;</span>} className="w-20 h-8 flex items-center justify-center text-xs" onClick={() => alert('Next')} />
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>

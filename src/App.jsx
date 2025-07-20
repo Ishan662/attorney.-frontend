@@ -44,9 +44,7 @@ import ClientCalendar from './pages/Client/Clientcalendar';
 import AddNextHearingModal from './pages/Lawyer/AddNextHearingDate';
 import LawyerDashboard from './pages/Lawyer/LawyerDashboard';
 import AcceptInvitationPage from './pages/Common/AcceptInvitationPage';
-
 import ClientCaseDetails from './pages/Client/ClientCaseDetails';
-
 import ClientInvitation from './pages/Client/ClientInvitation';
 import UserOTP from './pages/Common/UserOTP';
 import LawyerAddDocuments from './pages/Lawyer/AddDocuments';
@@ -54,6 +52,11 @@ import EditCasePage from './pages/Lawyer/EditCasePage';
 import Settings from './pages/JuniorLawyer/Settings';
 import clientSettings from './pages/Client/Settings';
 import lawyerSettings from './pages/Lawyer/Settings';
+
+import DaySummary from './pages/Lawyer/Daysummary';
+import ClientMessages from './pages/Client/ClientMessages';
+import Clientpayments from './pages/Client/Clientpayments';
+
 
 export default function App() {
   return (
@@ -70,7 +73,7 @@ export default function App() {
           {/* <Route path="lawyer/dashboard" element={<Dashboard />} /> */}
           <Route path="lawyer/timeline" element={<Timeline />} />
           <Route path="lawyer/incomes" element={<Incomes />} />
-          {/* <Route path="lawyer/day-summary" element={<DaySummary />} /> */}
+          <Route path="lawyer/day-summary" element={<DaySummary />} />
           <Route path="lawyer/meetingrequest" element={<Meetings />} />
           <Route path="lawyer/clients" element={<Clients />} />
           <Route path="client/schedulemeeting" element={<ScheduleMeeting />} />
@@ -103,14 +106,16 @@ export default function App() {
           {/* <Route path="client/caseprofiles" element={<Clientcaseprofiles />} /> */}
           {/* <Route path="/invitation/:inviteToken" element={<ClientInvitation />} />   */}
 
-          <Route path="lawyer/dashboard" element={ 
+
+          {/* <Route path="lawyer/dashboard" element={<ProtectedRoute allowedRoles={['LAWYER']}>
             <Dashboard />
-          } />
-      
+          </ProtectedRoute>} /> */}
+          <Route path="lawyer/dashboard" element={<Dashboard />} />
+            
           <Route path="lawyer/:caseId/addnewclient" element={<ProtectedRoute allowedRoles={['LAWYER']}>
             <AddClient />
 
-2          </ProtectedRoute>} />
+         </ProtectedRoute>} />
 
           {/* testing routes */}
           <Route path="lawyer/dashboard" element={<Dashboard />} />
@@ -120,9 +125,14 @@ export default function App() {
           <Route path="lawyer/addnexthearing" element={<AddNextHearingModal />} />
             
           <Route path="/lawyer/case/:caseId/edit" element={<EditCasePage />} />
+
           <Route path="/junior/setting" element={<Settings />} />
           <Route path="/client/setting" element={<clientSettings />} />
           <Route path="/lawyer/setting" element={<lawyerSettings />} />
+
+          <Route path="/client/chat" element={<ClientMessages />} />
+          <Route path="/client/payments" element={<Clientpayments />} />
+
 
         </Routes>
       </div>

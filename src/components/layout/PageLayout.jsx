@@ -30,7 +30,7 @@ const PageLayout = ({
         const user = {
         name: "nishagi jewantha",
         email: "jewanthadheerath@gmail.com",
-        role:  "junior_lawyer"
+        role:  "client"
     }
     
     return (
