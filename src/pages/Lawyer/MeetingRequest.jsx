@@ -40,6 +40,7 @@ const meetingRequests = [
 const user = {
   name: 'Nishagi Jewantha',
   email: 'jewanthadheerath@gmail.com',
+  role: 'lawyer',
 };
 
 const Meetings = () => {
