@@ -49,9 +49,14 @@ import ClientInvitation from './pages/Client/ClientInvitation';
 import UserOTP from './pages/Common/UserOTP';
 import LawyerAddDocuments from './pages/Lawyer/AddDocuments';
 import EditCasePage from './pages/Lawyer/EditCasePage';
+import Settings from './pages/JuniorLawyer/Settings';
+import clientSettings from './pages/Client/Settings';
+import lawyerSettings from './pages/Lawyer/Settings';
+
 import DaySummary from './pages/Lawyer/Daysummary';
 import ClientMessages from './pages/Client/ClientMessages';
 import Clientpayments from './pages/Client/Clientpayments';
+
 
 export default function App() {
   return (
@@ -120,8 +125,14 @@ export default function App() {
           <Route path="lawyer/addnexthearing" element={<AddNextHearingModal />} />
             
           <Route path="/lawyer/case/:caseId/edit" element={<EditCasePage />} />
+
+          <Route path="/junior/setting" element={<Settings />} />
+          <Route path="/client/setting" element={<clientSettings />} />
+          <Route path="/lawyer/setting" element={<lawyerSettings />} />
+
           <Route path="/client/chat" element={<ClientMessages />} />
           <Route path="/client/payments" element={<Clientpayments />} />
+
 
         </Routes>
       </div>

@@ -66,13 +66,13 @@ const JuniorMessages = () => {
 
   return (
     <PageLayout user={user}>
-      <div className='mb-8'>
+      {/* <div className='mb-8'>
         <PageHeader
           user={user}
           notificationCount={notificationCount}
           onNotificationClick={handleNotificationClick}
         />
-      </div>
+      </div> */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold">Messages</h1>
