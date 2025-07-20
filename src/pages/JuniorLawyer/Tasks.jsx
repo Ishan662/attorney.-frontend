@@ -93,8 +93,11 @@ const Tasks = () => {
             </div>
 
             {selectedTask && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40">
-                    <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-2xl h-[80vh] overflow-y-auto relative">
+                <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40"
+                    onClick={closeModal}>
+                    <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-2xl h-[80vh] overflow-y-auto relative"
+                        onClick={(e) => e.stopPropagation()}>
+
                         <h2 className="text-2xl font-semibold mb-4 border-b pb-2">Task Details</h2>
 
                         {/* Task Info */}
@@ -143,7 +146,7 @@ const Tasks = () => {
                         {/* Close Button */}
                         <div className="mt-6 text-right">
                             <Button1
-                                className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-900"
+                                className="mt-4"
                                 onClick={closeModal}
                             >
                                 Close
