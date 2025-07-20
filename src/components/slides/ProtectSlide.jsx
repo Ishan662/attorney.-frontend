@@ -31,8 +31,8 @@ const ProtectSlide = ({ isActive }) => {
                     </h2>
                     <p className="text-lg md:text-xl text-gray-300 leading-relaxed mb-8">
                         Streamline your legal practice with<br />
-                        advanced technology and comprehensive<br />
-                        case tracking systems.
+                        cutting-edge technology and<br />
+                        powerful case management tools.
                     </p>
                     <div className="inline-block border border-gray-400 px-8 py-3 rounded-lg text-gray-300 hover:bg-white hover:text-black transition-all duration-300 cursor-pointer">
                         START TODAY

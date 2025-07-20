@@ -35,6 +35,8 @@ const Dashboard = () => {
         else if(title === "Due Payments") {
             navigate("/lawyer/duepayments");
         }
+        
+        
         // Add other navigation options as needed
     };
 
