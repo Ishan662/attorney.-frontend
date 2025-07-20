@@ -71,7 +71,8 @@ const CaseDetails = () => {
                 ]);
                 
                 setCaseData(caseDetailsData);
-                setHearings(hearingsData || []); // Ensure hearings is an array even if null
+                console.log("Case Details:", caseDetailsData);
+                // setHearings(hearingsData || []); // Ensure hearings is an array even if null
             } catch (err) {
                 setError("Failed to fetch case details. You may not have permission to view this case.");
                 console.error(err);
