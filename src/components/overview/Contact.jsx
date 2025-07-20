@@ -99,7 +99,7 @@ const Contact = () => {
                         {/* Form Background Image */}
                         <div className="absolute inset-0 rounded-3xl overflow-hidden">
                             <div
-                                className="w-full h-full bg-cover bg-center bg-no-repeat opacity-50"
+                                className="w-full h-full bg-cover bg-center bg-no-repeat opacity-30"
                                 style={{
                                     backgroundImage: `url(${formImage})`
                                 }}

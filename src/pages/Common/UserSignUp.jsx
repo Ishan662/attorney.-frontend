@@ -125,7 +125,7 @@ const UserSignUp = () => {
     }
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50  px-4 sm:px-6 lg:px-8 pt-20">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50  px-4 sm:px-6 lg:px-8 pt-20 pb-10">
             <AuthHeader />
             <div className="max-w-md w-full mt-8 space-y-8">
                 <div className="text-center">
@@ -135,7 +135,7 @@ const UserSignUp = () => {
                     </p>
                 </div>
 
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                <form className="mt-8 space-y-6 " onSubmit={handleSubmit}>
                     <div className="rounded-md space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <Input1
