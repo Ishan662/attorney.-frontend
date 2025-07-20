@@ -108,15 +108,22 @@ const AssignedCases = () => {
 
     return (
         <PageLayout user={user}>
-            <div className="mb-8">
+            {/* <div className="mb-8">
                 <PageHeader
                     user={user}
                     notificationCount={notificationCount}
                     onNotificationClick={handleNotificationClick}
                 />
-            </div>
+            </div> */}
 
-            <h1 className="text-2xl font-bold mb-6">Assigned Cases</h1>
+            {/* Page Title and Navigation */}
+            <div className="flex justify-between items-center mb-6">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Assigned Cases</h1>
+                    <p className="text-gray-600 mt-1">Manage your Cases</p>
+                </div>
+
+            </div>
             <div className="bg-white rounded-lg shadow-md overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
