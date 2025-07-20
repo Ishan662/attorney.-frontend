@@ -20,6 +20,16 @@ const Settings = () => {
         messages: true,
     });
 
+    const [darkMode, setDarkMode] = useState(false);
+    const [fontLarge, setFontLarge] = useState(false);
+    const [languages, setLanguages] = useState({
+        english: true,
+        sinhala: false,
+        tamil: false,
+    });
+
+    const [twoFA, setTwoFA] = useState(false);
+
     const handlePhotoChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -30,6 +40,10 @@ const Settings = () => {
 
     const handleNotificationChange = (type) => {
         setNotifications({ ...notifications, [type]: !notifications[type] });
+    };
+
+    const handleLanguageChange = (lang) => {
+        setLanguages({ ...languages, [lang]: !languages[lang] });
     };
 
     return (
@@ -92,8 +106,7 @@ const Settings = () => {
                         value={name}
                         readOnly={!isEditingName}
                         onChange={(e) => setName(e.target.value)}
-                        className={`w-full border rounded px-3 py-2 pr-10 ${isEditingName ? "bg-white" : "bg-gray-100 text-gray-700"
-                            }`}
+                        className={`w-full border rounded px-3 py-2 pr-10 ${isEditingName ? "bg-white" : "bg-gray-100 text-gray-700"}`}
                     />
                     <div
                         className="absolute right-3 top-9 cursor-pointer text-gray-500 hover:text-black"
@@ -111,8 +124,7 @@ const Settings = () => {
                         value={email}
                         readOnly={!isEditingEmail}
                         onChange={(e) => setEmail(e.target.value)}
-                        className={`w-full border rounded px-3 py-2 pr-10 ${isEditingEmail ? "bg-white" : "bg-gray-100 text-gray-700"
-                            }`}
+                        className={`w-full border rounded px-3 py-2 pr-10 ${isEditingEmail ? "bg-white" : "bg-gray-100 text-gray-700"}`}
                     />
                     <div
                         className="absolute right-3 top-9 cursor-pointer text-gray-500 hover:text-black"
@@ -130,8 +142,7 @@ const Settings = () => {
                         value={phone}
                         readOnly={!isEditingPhone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className={`w-full border rounded px-3 py-2 pr-10 ${isEditingPhone ? "bg-white" : "bg-gray-100 text-gray-700"
-                            }`}
+                        className={`w-full border rounded px-3 py-2 pr-10 ${isEditingPhone ? "bg-white" : "bg-gray-100 text-gray-700"}`}
                     />
                     <div
                         className="absolute right-3 top-9 cursor-pointer text-gray-500 hover:text-black"
@@ -173,6 +184,40 @@ const Settings = () => {
                         </label>
                     </div>
                 </div>
+
+                {/* Display Settings */}
+                <div className="mb-6">
+                    <h3 className="text-sm font-medium mb-2 text-black">Display Settings</h3>
+                    <label className="flex items-center space-x-2 text-sm text-gray-800">
+                        <input type="checkbox" checked={darkMode} onChange={() => setDarkMode(!darkMode)} />
+                        <span>Dark Mode</span>
+                    </label>
+                    <label className="flex items-center space-x-2 text-sm text-gray-800 mt-2">
+                        <input type="checkbox" checked={fontLarge} onChange={() => setFontLarge(!fontLarge)} />
+                        <span>Large Font</span>
+                    </label>
+                </div>
+
+                {/* Language Selection */}
+                <div className="mb-6">
+                    <h3 className="text-sm font-medium mb-2 text-black">Language Preferences</h3>
+                    <div className="space-y-2 pl-2 text-sm text-gray-800">
+                        <label className="flex items-center space-x-2">
+                            <input type="checkbox" checked={languages.english} onChange={() => handleLanguageChange("english")} />
+                            <span>English</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                            <input type="checkbox" checked={languages.sinhala} onChange={() => handleLanguageChange("sinhala")} />
+                            <span>Sinhala</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                            <input type="checkbox" checked={languages.tamil} onChange={() => handleLanguageChange("tamil")} />
+                            <span>Tamil</span>
+                        </label>
+                    </div>
+                </div>
+
+
 
                 {/* Save Button */}
                 <Button1 className="mt-4">Save Changes</Button1>
