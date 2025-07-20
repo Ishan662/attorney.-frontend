@@ -6,6 +6,7 @@ import Sidebar from '../../components/layout/Sidebar'; // Reusing your layout co
 import Button1 from '../../components/UI/Button1';
 import { getCaseById, updateCase } from '../../services/caseService'; // Ensure updateCase exists
 import { useAuth } from '../../context/AuthContext'; // Using auth context for user info
+import PageLayout from '../../components/layout/PageLayout';
 
 // Your case type options, same as in the NewCaseProfile page
 const caseTypeOptions = [
@@ -35,6 +36,13 @@ const EditCasePage = () => {
     const { caseId } = useParams();
     const navigate = useNavigate();
     const { currentUser } = useAuth(); // Get user from context
+
+    // Add user object like in CaseDetails.jsx
+    const user = {
+        name: "nishagi jewantha",
+        email: "jewanthadheerath@gmail.com",
+        role: "lawyer"
+    };
 
     // State for form data, focused only on the editable fields
     const [formData, setFormData] = useState({
@@ -124,33 +132,27 @@ const EditCasePage = () => {
     };
 
     if (isLoading) {
-        return <div className="flex justify-center items-center h-screen">Loading...</div>;
+        return <PageLayout user={user}><div className="flex justify-center items-center h-screen">Loading...</div></PageLayout>;
     }
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
-            {/* We assume a Sidebar component similar to your NewCaseProfile page */}
-            <Sidebar user={currentUser} onToggle={() => {}} />
-
-            <div className="flex-grow overflow-y-auto" style={{ marginLeft: '16rem' }}> {/* Adjust margin as needed */}
-                <div className="p-6">
-                    <div className="flex flex-col items-center w-full">
-                        <div className="w-full max-w-4xl">
-                            <Button1 text="← Back to Case Details" onClick={() => navigate(`/lawyer/case/${caseId}`)} className="mb-6" />
-                        </div>
-                        
-                        <h1 className="text-2xl font-semibold mb-6">
-                            Edit Case Profile ({originalCaseNumber})
-                        </h1>
-                        
-                        {error && (
-                            <div className="w-full max-w-4xl mx-auto mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-                                {error}
-                            </div>
-                        )}
-                        
-                        <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-4xl mx-auto">
-                            <section className="bg-white rounded-lg p-8 shadow-md">
+        <PageLayout user={user}>
+            <div className="flex items-center justify-between mb-6">
+                <Button1 text="← Back to Case Details" onClick={() => navigate(`/lawyer/case/${caseId}`)} className="mb-6" />
+            </div>
+            
+            <h1 className="text-2xl font-semibold mb-6">
+                Edit Case Profile ({originalCaseNumber})
+            </h1>
+            
+            {error && (
+                <div className="w-full mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {error}
+                </div>
+            )}
+            
+            <form onSubmit={handleSubmit} className="space-y-8 w-full">
+                <section className="bg-white rounded-lg p-8 shadow-md">
                                 <h2 className="text-xl font-semibold mb-6">Case Details</h2>
                                 <div className="grid md:grid-cols-2 gap-8">
 
@@ -232,10 +234,7 @@ const EditCasePage = () => {
                                 />
                             </div>
                         </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </PageLayout>
     );
 };
 

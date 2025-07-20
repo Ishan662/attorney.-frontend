@@ -54,7 +54,7 @@ const CaseProfiles = () => {
   return (
       <PageLayout user={user}>
 
-      <div className="flex min-h-screen bg-white-50">
+      {/* <div className="flex min-h-screen bg-white-50"> */}
           <div
             className="flex-grow overflow-y-auto transition-all duration-300"
           >
@@ -66,7 +66,7 @@ const CaseProfiles = () => {
                   onNotificationClick={handleNotificationClick}
                 />
               </div> */}
-              <main className="flex-1 p-8">
+              <main className="flex-1 p-0">
                 <div className='justify-between flex items-center mb-6'>
                 <h1 className="text-2xl font-semibold mb-6">Case Profiles</h1>
                 <Button1
@@ -149,7 +149,7 @@ const CaseProfiles = () => {
               </main>
             </div>
           </div>
-      </div>
+      {/* </div> */}
       </PageLayout>
 
   );

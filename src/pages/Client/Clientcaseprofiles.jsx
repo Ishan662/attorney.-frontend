@@ -71,7 +71,7 @@ const CaseProfiles = () => {
                   onNotificationClick={handleNotificationClick}
                 />
               </div> */}
-              <main className="flex-1 p-8">
+              <main className="flex-1 p-0">
                 <h1 className="text-2xl font-semibold mb-6">Case Profiles</h1>
                 <div className="mb-6 max-w-md">
                   <Input1
