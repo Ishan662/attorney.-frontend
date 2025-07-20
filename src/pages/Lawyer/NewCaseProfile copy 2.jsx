@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import PageLayout from '../../components/layout/PageLayout';
+import React, { useState } from 'react';
+import Sidebar from '../../components/layout/Sidebar';
+import PageHeader from '../../components/layout/PageHeader';
 import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import { useNavigate } from 'react-router-dom';
-// Add these imports
-import { createCase, getJuniorsForFirm } from '../../services/caseService';
-import Swal from 'sweetalert2';
 
 const user = {
   name: 'Nishagi Jewantha',
@@ -17,7 +15,6 @@ const initialState = {
   caseName: '',
   caseNumber: '',
   caseType: '',
-  courtType: '',
   court: '',
   date: '',
   status: '',
@@ -40,8 +37,6 @@ const initialState = {
   documents: [],
 };
 
-
-
 // Case type options from the image
 const caseTypeOptions = [
   { value: 'MR/DMR', label: 'MR/DMR - Money Recovery' },
@@ -58,64 +53,23 @@ const caseTypeOptions = [
   { value: 'HP/DHP', label: 'HP/DHP - Hire Purchase' },
 ];
 
-// Court type options
-const courtTypeOptions = [
-  { value: 'Supreme Court', label: 'Supreme Court' },
-  { value: 'Court of Appeal', label: 'Court of Appeal' },
-  { value: 'High Court', label: 'High Court' },
-  { value: 'District Court', label: 'District Court' },
-  { value: 'Magistrate Court', label: 'Magistrate Court' },
-  { value: 'Commercial High Court', label: 'Commercial High Court' },
-  { value: 'Family Court', label: 'Family Court' },
-  { value: 'Labor Tribunal', label: 'Labor Tribunal' },
-  { value: 'Primary Court', label: 'Primary Court' },
-  { value: 'Special High Court', label: 'Special High Court' },
+// Dummy junior lawyers
+const juniorLawyerOptions = [
+  { value: 'jane_smith', label: 'Jane Smith' },
+  { value: 'michael_johnson', label: 'Michael Johnson' },
+  { value: 'sarah_williams', label: 'Sarah Williams' },
+  { value: 'david_lee', label: 'David Lee' },
+  { value: 'priya_patel', label: 'Priya Patel' },
+  { value: 'robert_chen', label: 'Robert Chen' },
 ];
 
 const NewCaseProfile = () => {
   const [form, setForm] = useState(initialState);
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [notificationCount, setNotificationCount] = useState(1);
   const [showCaseTypeDropdown, setShowCaseTypeDropdown] = useState(false);
-  const [showCourtTypeDropdown, setShowCourtTypeDropdown] = useState(false);
   const [showJuniorDropdown, setShowJuniorDropdown] = useState(false);
-  const [showClientDropdown, setShowClientDropdown] = useState(false);
-  // Add these new state variables
-  const [juniorLawyerOptions, setJuniorLawyerOptions] = useState([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
   const navigate = useNavigate();
-
-  // Predefined client list (no backend needed)
-  const predefinedClients = [
-    { id: 1, name: 'John Doe', phone: '+94712345678', email: 'john.doe@email.com' },
-    { id: 2, name: 'Jane Smith', phone: '+94723456789', email: 'jane.smith@email.com' },
-    { id: 3, name: 'Michael Johnson', phone: '+94734567890', email: 'michael.johnson@email.com' },
-    { id: 4, name: 'Sarah Williams', phone: '+94745678901', email: 'sarah.williams@email.com' },
-    { id: 5, name: 'David Brown', phone: '+94756789012', email: 'david.brown@email.com' },
-    { id: 6, name: 'Emily Davis', phone: '+94767890123', email: 'emily.davis@email.com' },
-    { id: 7, name: 'Robert Wilson', phone: '+94778901234', email: 'robert.wilson@email.com' },
-    { id: 8, name: 'Lisa Anderson', phone: '+94789012345', email: 'lisa.anderson@email.com' },
-  ];
-
-  // Load junior lawyers when component mounts
-  useEffect(() => {
-    const loadJuniorLawyers = async () => {
-      try {
-        const juniors = await getJuniorsForFirm();
-        // Transform the API response to match your dropdown format
-        const formattedJuniors = juniors.map(junior => ({
-          value: junior.id, // Use the actual ID from backend
-          label: `${junior.firstName} ${junior.lastName}` // Adjust based on your user model
-        }));
-        setJuniorLawyerOptions(formattedJuniors);
-      } catch (error) {
-        console.error('Failed to load junior lawyers:', error);
-        // Fallback to empty array or show error message
-        setJuniorLawyerOptions([]);
-      }
-    };
-
-    loadJuniorLawyers();
-  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -127,104 +81,29 @@ const NewCaseProfile = () => {
     setShowCaseTypeDropdown(false);
   };
 
-  // Handle dropdown selection for court type
-  const handleCourtTypeSelect = (option) => {
-    setForm({ ...form, courtType: option.value });
-    setShowCourtTypeDropdown(false);
-  };
-
   // Handle dropdown selection for junior lawyer
   const handleJuniorSelect = (option) => {
     setForm({ ...form, junior: option.value });
     setShowJuniorDropdown(false);
   };
 
-  // Handle client selection from predefined list
-  const handleClientSelect = (client) => {
-    setForm({ 
-      ...form, 
-      clientName: client.name,
-      clientPhone: client.phone,
-      clientEmail: client.email
-    });
-    setShowClientDropdown(false);
+  // For simplicity, hearings/timeline/documents are not dynamic in this starter
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Submit logic here
+    console.log('Form submitted:', form);
+    alert('Case profile submitted!');
   };
 
-  // For simplicity, hearings/timeline/documents are not dynamic in this starter
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-
-    // Validate required dropdown fields
-    if (!form.caseType) {
-      setError('Please select a Case Type');
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!form.courtType) {
-      setError('Please select a Court Type');
-      setIsSubmitting(false);
-      return;
-    }
-
-    try {
-      // Call the backend API
-      const newCaseId = await createCase(form);
-      
-      // Show success message with SweetAlert2
-      await Swal.fire({
-        title: 'Case Created Successfully!',
-        text: 'Your new case profile has been created and saved to the system.',
-        confirmButtonText: 'View Cases',
-        confirmButtonColor: '#000000',
-        background: '#ffffff',
-        width: '500px',
-        customClass: {
-          popup: 'rounded-lg',
-          title: 'text-gray-800 text-xl',
-          content: 'text-gray-600 text-xs'
-        }
-      });
-      
-      // Navigate to the case details page or cases list
-      navigate(`/lawyer/caseprofile`); 
-      
-    } catch (error) {
-      console.error('Failed to create case:', error);
-      
-      // Show error message with SweetAlert2
-      await Swal.fire({
-        title: 'Error Creating Case',
-        text: error.message || 'Failed to create case. Please try again.',
-        confirmButtonText: 'Try Again',
-        confirmButtonColor: '#000000',
-        background: '#ffffff',
-        width: '500px',
-        customClass: {
-          popup: 'rounded-lg',
-          title: 'text-gray-800 text-xl',
-          content: 'text-gray-600 text-xs'
-        }
-      });
-      
-      setError(error.message || 'Failed to create case. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+  // Optional: handle notification click
+  const handleNotificationClick = () => {
+    // Notification handling
   };
 
   // Get the selected case type label
   const getSelectedCaseTypeLabel = () => {
     const selected = caseTypeOptions.find(option => option.value === form.caseType);
     return selected ? selected.label : "Select Case Type";
-  };
-
-  // Get the selected court type label
-  const getSelectedCourtTypeLabel = () => {
-    const selected = courtTypeOptions.find(option => option.value === form.courtType);
-    return selected ? selected.label : "Select Court Type";
   };
 
   // Get the selected junior lawyer label
@@ -234,24 +113,28 @@ const NewCaseProfile = () => {
   };
 
   return (
-    <PageLayout user={user}>
-      {/* Center content with flex and max-width */}
-      <div className="flex flex-col items-center w-full">
-        <h1 className="text-2xl font-semibold mb-6">Add New Case Profile</h1>
-        
-        {/* Add error display */}
-        {error && (
-          <div className="w-full max-w-4xl mx-auto mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-            {error}
-          </div>
-        )}
-        
-        <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-4xl mx-auto">
+    <div className="flex min-h-screen bg-gray-50">
+      <Sidebar
+        user={user}
+        onToggle={setSidebarExpanded}
+      />
+      <div
+        className="flex-grow overflow-y-auto transition-all duration-300"
+        style={{
+          marginLeft: sidebarExpanded ? '16rem' : '5rem'
+        }}
+      >
+        <div className="p-6">
+          
+          {/* Center content with flex and max-width */}
+          <div className="flex flex-col items-center w-full">
+            <h1 className="text-2xl font-semibold mb-6">Add New Case Profile</h1>
+            
+            <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-4xl mx-auto">
               {/* Case Overview */}
               <section className="bg-white rounded-lg p-8 shadow-md">
                 <h2 className="text-xl font-semibold mb-4">New Case</h2>
                 <div className="grid md:grid-cols-2 gap-6">
-                  {/* Left Side */}
                   <Input1
                     label="Case Name"
                     name="caseName"
@@ -263,43 +146,10 @@ const NewCaseProfile = () => {
                     required
                   />
                   
-                  {/* Right Side */}
+                  {/* Case Type Dropdown */}
                   <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Court Type <span className="text-red-500">*</span>
-                    </label>
-                    <div 
-                      className="w-full mt-2 text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 flex justify-between items-center cursor-pointer"
-                      onClick={() => setShowCourtTypeDropdown(!showCourtTypeDropdown)}
-                    >
-                      <span className={form.courtType ? "" : "text-gray-500"}>
-                        {getSelectedCourtTypeLabel()}
-                      </span>
-                      <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${showCourtTypeDropdown ? 'transform rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    
-                    {/* Dropdown Menu */}
-                    {showCourtTypeDropdown && (
-                      <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 overflow-auto">
-                        {courtTypeOptions.map((option) => (
-                          <div
-                            key={option.value}
-                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                            onClick={() => handleCourtTypeSelect(option)}
-                          >
-                            <div className="font-medium">{option.label}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Left Side */}
-                  <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Case Type <span className="text-red-500">*</span>
+                      Case Type
                     </label>
                     <div 
                       className="w-full mt-2 text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 flex justify-between items-center cursor-pointer"
@@ -330,19 +180,6 @@ const NewCaseProfile = () => {
                     )}
                   </div>
                   
-                  {/* Right Side */}
-                  <Input1
-                    label="Court"
-                    name="court"
-                    value={form.court}
-                    onChange={handleChange}
-                    placeholder="Court Name"
-                    className="mt-2"
-                    variant="outlined"
-                    required
-                  />
-                  
-                  {/* Left Side */}
                   <Input1
                     label="Case Number"
                     name="caseNumber"
@@ -353,8 +190,16 @@ const NewCaseProfile = () => {
                     variant="outlined"
                     required
                   />
-                  
-                  {/* Right Side */}
+                  <Input1
+                    label="Court"
+                    name="court"
+                    value={form.court}
+                    onChange={handleChange}
+                    placeholder="Court"
+                    className="mt-2"
+                    variant="outlined"
+                    required
+                  />
                   <Input1
                     label="Hearing date"
                     name="date"
@@ -387,48 +232,17 @@ const NewCaseProfile = () => {
               {/* Parties Involved */}
               <section className="bg-white rounded-lg p-8 shadow-md">
                 <h2 className="text-xl font-semibold mb-4">Parties Involved</h2>
-                
                 <div className="grid md:grid-cols-2 gap-6">
-                  {/* Choose from Existing Clients Dropdown */}
-                  <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Choose from Existing Clients
-                    </label>
-                    <div 
-                      className="w-full mt-2 text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 flex justify-between items-center cursor-pointer"
-                      onClick={() => setShowClientDropdown(!showClientDropdown)}
-                    >
-                      <span className="text-gray-500">
-                        Select from existing clients
-                      </span>
-                      <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${showClientDropdown ? 'transform rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    
-                    {/* Client Dropdown Menu */}
-                    {showClientDropdown && (
-                      <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-64 rounded-md border border-gray-200 overflow-auto">
-                        <div className="py-1">
-                          <div className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border-b">
-                            Select Client
-                          </div>
-                          {predefinedClients.map((client) => (
-                            <div
-                              key={client.id}
-                              className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                              onClick={() => handleClientSelect(client)}
-                            >
-                              <div className="font-medium text-gray-900">{client.name}</div>
-                              <div className="text-sm text-gray-500">{client.phone}</div>
-                              <div className="text-sm text-gray-500">{client.email}</div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
+                  <Input1
+                    label="Client"
+                    name="clientName"
+                    value={form.clientName}
+                    onChange={handleChange}
+                    placeholder="Client Name"
+                    className="mt-2"
+                    variant="outlined"
+                    required
+                  />
                   <Input1
                     label="Opposing Party"
                     name="opposingParty"
@@ -438,13 +252,12 @@ const NewCaseProfile = () => {
                     className="mt-2"
                     variant="outlined"
                   />
-                  
                   <Input1
-                    label="Client"
-                    name="clientName"
-                    value={form.clientName}
+                    label="Client Phone"
+                    name="clientPhone"
+                    value={form.clientPhone}
                     onChange={handleChange}
-                    placeholder="Client Name"
+                    placeholder="Client Phone Number"
                     className="mt-2"
                     variant="outlined"
                     required
@@ -484,20 +297,6 @@ const NewCaseProfile = () => {
                   </div>
                   
                   <Input1
-                    label="Client Phone"
-                    name="clientPhone"
-                    value={form.clientPhone}
-                    onChange={handleChange}
-                    placeholder="Client Phone Number"
-                    className="mt-2"
-                    variant="outlined"
-                    required
-                  />
-                  
-                  {/* Empty space for alignment */}
-                  <div></div>
-                  
-                  <Input1
                     label="Client Email"
                     name="clientEmail"
                     value={form.clientEmail}
@@ -505,11 +304,7 @@ const NewCaseProfile = () => {
                     placeholder="Client Email"
                     className="mt-2"
                     variant="outlined"
-                    required
                   />
-                  
-                  {/* Empty space for alignment */}
-                  <div></div>
                 </div>
               </section>
 
@@ -549,16 +344,13 @@ const NewCaseProfile = () => {
 
               {/* Submit Button */}
               <div className="flex justify-center mt-6">
-                <Button1 
-                  text={isSubmitting ? "Creating..." : "Create Case Profile"} 
-                  type="submit" 
-                  className="px-8"
-                  disabled={isSubmitting}
-                />
+                <Button1 text="Create Case Profile" type="submit" className="px-8" />
               </div>
             </form>
           </div>
-    </PageLayout>
+        </div>
+      </div>
+    </div>
   );
 };
 

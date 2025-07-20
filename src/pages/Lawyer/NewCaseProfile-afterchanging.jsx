@@ -6,7 +6,6 @@ import Button2 from '../../components/UI/Button2';
 import { useNavigate } from 'react-router-dom';
 // Add these imports
 import { createCase, getJuniorsForFirm } from '../../services/caseService';
-import Swal from 'sweetalert2';
 
 const user = {
   name: 'Nishagi Jewantha',
@@ -17,7 +16,6 @@ const initialState = {
   caseName: '',
   caseNumber: '',
   caseType: '',
-  courtType: '',
   court: '',
   date: '',
   status: '',
@@ -40,8 +38,6 @@ const initialState = {
   documents: [],
 };
 
-
-
 // Case type options from the image
 const caseTypeOptions = [
   { value: 'MR/DMR', label: 'MR/DMR - Money Recovery' },
@@ -58,24 +54,9 @@ const caseTypeOptions = [
   { value: 'HP/DHP', label: 'HP/DHP - Hire Purchase' },
 ];
 
-// Court type options
-const courtTypeOptions = [
-  { value: 'Supreme Court', label: 'Supreme Court' },
-  { value: 'Court of Appeal', label: 'Court of Appeal' },
-  { value: 'High Court', label: 'High Court' },
-  { value: 'District Court', label: 'District Court' },
-  { value: 'Magistrate Court', label: 'Magistrate Court' },
-  { value: 'Commercial High Court', label: 'Commercial High Court' },
-  { value: 'Family Court', label: 'Family Court' },
-  { value: 'Labor Tribunal', label: 'Labor Tribunal' },
-  { value: 'Primary Court', label: 'Primary Court' },
-  { value: 'Special High Court', label: 'Special High Court' },
-];
-
 const NewCaseProfile = () => {
   const [form, setForm] = useState(initialState);
   const [showCaseTypeDropdown, setShowCaseTypeDropdown] = useState(false);
-  const [showCourtTypeDropdown, setShowCourtTypeDropdown] = useState(false);
   const [showJuniorDropdown, setShowJuniorDropdown] = useState(false);
   const [showClientDropdown, setShowClientDropdown] = useState(false);
   // Add these new state variables
@@ -127,12 +108,6 @@ const NewCaseProfile = () => {
     setShowCaseTypeDropdown(false);
   };
 
-  // Handle dropdown selection for court type
-  const handleCourtTypeSelect = (option) => {
-    setForm({ ...form, courtType: option.value });
-    setShowCourtTypeDropdown(false);
-  };
-
   // Handle dropdown selection for junior lawyer
   const handleJuniorSelect = (option) => {
     setForm({ ...form, junior: option.value });
@@ -156,59 +131,18 @@ const NewCaseProfile = () => {
     setIsSubmitting(true);
     setError(null);
 
-    // Validate required dropdown fields
-    if (!form.caseType) {
-      setError('Please select a Case Type');
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!form.courtType) {
-      setError('Please select a Court Type');
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
       // Call the backend API
       const newCaseId = await createCase(form);
       
-      // Show success message with SweetAlert2
-      await Swal.fire({
-        title: 'Case Created Successfully!',
-        text: 'Your new case profile has been created and saved to the system.',
-        confirmButtonText: 'View Cases',
-        confirmButtonColor: '#000000',
-        background: '#ffffff',
-        width: '500px',
-        customClass: {
-          popup: 'rounded-lg',
-          title: 'text-gray-800 text-xl',
-          content: 'text-gray-600 text-xs'
-        }
-      });
+      // Show success message
+      alert('Case profile created successfully!');
       
       // Navigate to the case details page or cases list
       navigate(`/lawyer/caseprofile`); 
       
     } catch (error) {
       console.error('Failed to create case:', error);
-      
-      // Show error message with SweetAlert2
-      await Swal.fire({
-        title: 'Error Creating Case',
-        text: error.message || 'Failed to create case. Please try again.',
-        confirmButtonText: 'Try Again',
-        confirmButtonColor: '#000000',
-        background: '#ffffff',
-        width: '500px',
-        customClass: {
-          popup: 'rounded-lg',
-          title: 'text-gray-800 text-xl',
-          content: 'text-gray-600 text-xs'
-        }
-      });
-      
       setError(error.message || 'Failed to create case. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -219,12 +153,6 @@ const NewCaseProfile = () => {
   const getSelectedCaseTypeLabel = () => {
     const selected = caseTypeOptions.find(option => option.value === form.caseType);
     return selected ? selected.label : "Select Case Type";
-  };
-
-  // Get the selected court type label
-  const getSelectedCourtTypeLabel = () => {
-    const selected = courtTypeOptions.find(option => option.value === form.courtType);
-    return selected ? selected.label : "Select Court Type";
   };
 
   // Get the selected junior lawyer label
@@ -251,7 +179,6 @@ const NewCaseProfile = () => {
               <section className="bg-white rounded-lg p-8 shadow-md">
                 <h2 className="text-xl font-semibold mb-4">New Case</h2>
                 <div className="grid md:grid-cols-2 gap-6">
-                  {/* Left Side */}
                   <Input1
                     label="Case Name"
                     name="caseName"
@@ -263,43 +190,10 @@ const NewCaseProfile = () => {
                     required
                   />
                   
-                  {/* Right Side */}
+                  {/* Case Type Dropdown */}
                   <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Court Type <span className="text-red-500">*</span>
-                    </label>
-                    <div 
-                      className="w-full mt-2 text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 flex justify-between items-center cursor-pointer"
-                      onClick={() => setShowCourtTypeDropdown(!showCourtTypeDropdown)}
-                    >
-                      <span className={form.courtType ? "" : "text-gray-500"}>
-                        {getSelectedCourtTypeLabel()}
-                      </span>
-                      <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${showCourtTypeDropdown ? 'transform rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    
-                    {/* Dropdown Menu */}
-                    {showCourtTypeDropdown && (
-                      <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 overflow-auto">
-                        {courtTypeOptions.map((option) => (
-                          <div
-                            key={option.value}
-                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                            onClick={() => handleCourtTypeSelect(option)}
-                          >
-                            <div className="font-medium">{option.label}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Left Side */}
-                  <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Case Type <span className="text-red-500">*</span>
+                      Case Type
                     </label>
                     <div 
                       className="w-full mt-2 text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 flex justify-between items-center cursor-pointer"
@@ -330,19 +224,6 @@ const NewCaseProfile = () => {
                     )}
                   </div>
                   
-                  {/* Right Side */}
-                  <Input1
-                    label="Court"
-                    name="court"
-                    value={form.court}
-                    onChange={handleChange}
-                    placeholder="Court Name"
-                    className="mt-2"
-                    variant="outlined"
-                    required
-                  />
-                  
-                  {/* Left Side */}
                   <Input1
                     label="Case Number"
                     name="caseNumber"
@@ -353,8 +234,16 @@ const NewCaseProfile = () => {
                     variant="outlined"
                     required
                   />
-                  
-                  {/* Right Side */}
+                  <Input1
+                    label="Court"
+                    name="court"
+                    value={form.court}
+                    onChange={handleChange}
+                    placeholder="Court"
+                    className="mt-2"
+                    variant="outlined"
+                    required
+                  />
                   <Input1
                     label="Hearing date"
                     name="date"
