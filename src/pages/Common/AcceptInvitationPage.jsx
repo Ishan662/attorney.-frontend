@@ -4,8 +4,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import AuthHeader from '../../components/layout/AuthHeader';
-// --- THIS IS THE CORRECTED IMPORT ---
-// We now import from the dedicated invitationService.
 import { finalizeInvitation, getInvitationDetails } from '../../services/invitationService';
 import { getFullSession, waitForAuthUser, logout } from '../../services/authService';
 
@@ -18,6 +16,7 @@ const AcceptInvitationPage = () => {
         lastName: '',
         password: '',
         confirmPassword: '',
+        phoneNumber: '', // Add phoneNumber to initial state
     });
 
     // State for the email, which is fetched from the backend and is not editable
@@ -49,8 +48,8 @@ const AcceptInvitationPage = () => {
                 setFormData(prev => ({
                     ...prev,
                     firstName: nameParts[0] || '',
-                    lastName: nameParts.slice(1).join(' ') || ''
-
+                    lastName: nameParts.slice(1).join(' ') || '',
+                    phoneNumber: details.phoneNumber || '' // Add phone number to formData
                 }));
             } catch (error) {
                 console.error("Failed to fetch invitation details:", error);
@@ -95,25 +94,8 @@ const AcceptInvitationPage = () => {
                     { firstName: formData.firstName, lastName: formData.lastName }
                 );
                 
-                    // await waitForAuthUser();
-
-                    // const user = await getFullSession();
-
-                    // if (user.role === 'CLIENT') {
-                    //     navigate('/client/caseprofiles');
-                    // } else if (user.role === 'JUNIOR') {
-                    //     navigate('/junior/cases');
-                    // } else if (user.role === 'LAWYER') {
-                    //     navigate('/lawyer/dashboard');
-                    // } else if (user.role === 'ADMIN') {
-                    //     navigate('/admin/systemsettings');
-                    // } else if (user.role === 'RESEARCHER') {
-                    //     navigate('/researcher/chatbot');
-                    // } else {
-                    //     navigate('/dashboard');
-                    // }
-
-                    logout()
+                // Navigate to OTP page with phone number
+                navigate('/user/otp', { state: { phoneNumber: formData.phoneNumber } });
 
             } catch (error) {
                 console.error("Invitation finalization error:", error);
@@ -160,7 +142,7 @@ const AcceptInvitationPage = () => {
                         <Input1 name="lastName" label="Last Name" value={formData.lastName} onChange={handleChange} required error={formErrors.lastName} />
                     </div>
 
-                    <Input1 name="Phone" label="Phone Number" value={formData.phoneNumber} onChange={handleChange} required error={formErrors.phoneNumber} />
+                    <Input1 name="phoneNumber" label="Phone Number" value={formData.phoneNumber} onChange={handleChange} required error={formErrors.phoneNumber} />
                     
                     <Input1 type="password" name="password" label="Create Password" value={formData.password} onChange={handleChange} required error={formErrors.password} />
                     <Input1 type="password" name="confirmPassword" label="Confirm Password" value={formData.confirmPassword} onChange={handleChange} required error={formErrors.confirmPassword} />
