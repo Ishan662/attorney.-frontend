@@ -4,12 +4,11 @@ import Input1 from '../../components/UI/Input1';
 import Button1 from '../../components/UI/Button1';
 import AuthHeader from '../../components/layout/AuthHeader';
 import { Navigate } from 'react-router-dom';
-import { signupNewLawyer, signupNewResearcher, loginWithGoogle } from '../../services/authService'; // Adjust path
+import { signupNewLawyer, loginWithGoogle } from '../../services/authService'; // Adjust path
 
 
 const UserSignUp = () => {
     const navigate = useNavigate();
-    const [userType, setUserType] = useState('lawyer'); // 'lawyer' or 'researcher'
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -20,8 +19,6 @@ const UserSignUp = () => {
     });
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -37,12 +34,6 @@ const UserSignUp = () => {
                 [name]: ''
             });
         }
-    };
-
-    const handleUserTypeChange = (type) => {
-        setUserType(type);
-        // Clear any form errors when switching
-        setErrors({});
     };
 
     const validate = () => {
@@ -103,14 +94,9 @@ const UserSignUp = () => {
                     phoneNumber: `+94${formData.phoneNumber.slice(-9)}`,
                 };
 
-                // Add user type specific data
-                if (userType === 'lawyer') {
-                    await signupNewLawyer(formData.email, formData.password, profileData);
-                } else {
-                    await signupNewResearcher(formData.email, formData.password, profileData);
-                }
+                await signupNewLawyer(formData.email, formData.password, profileData);
 
-                alert(`${userType === 'lawyer' ? 'Lawyer' : 'Researcher'} account created! A verification link has been sent to your email. Please verify your email, then log in to continue.`);
+                alert('Account created! A verification link has been sent to your email. Please verify your email, then log in to continue.');
                 navigate('/user/login');
 
             } catch (error) {
@@ -139,7 +125,7 @@ const UserSignUp = () => {
     }
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50  px-4 sm:px-6 lg:px-8 pt-20 pb-10">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50  px-4 sm:px-6 lg:px-8 pt-20">
             <AuthHeader />
             <div className="max-w-md w-full mt-8 space-y-8">
                 <div className="text-center">
@@ -147,32 +133,6 @@ const UserSignUp = () => {
                     <p className="text-gray-600">
                         Create your account to get started
                     </p>
-                </div>
-
-                {/* User Type Toggle */}
-                <div className="flex bg-gray-100 rounded-lg p-1">
-                    <button
-                        type="button"
-                        onClick={() => handleUserTypeChange('lawyer')}
-                        className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                            userType === 'lawyer'
-                                ? 'bg-white text-black shadow-sm'
-                                : 'text-gray-600 hover:text-gray-900'
-                        }`}
-                    >
-                        Lawyer
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => handleUserTypeChange('researcher')}
-                        className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                            userType === 'researcher'
-                                ? 'bg-white text-black shadow-sm'
-                                : 'text-gray-600 hover:text-gray-900'
-                        }`}
-                    >
-                        Researcher
-                    </button>
                 </div>
 
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -234,69 +194,33 @@ const UserSignUp = () => {
                             className="rounded-md"
                         />
 
-                        <div className="relative">
-                            <Input1
-                                type={showPassword ? "text" : "password"}
-                                name="password"
-                                id="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="Password"
-                                label="Password"
-                                required={true}
-                                variant="outlined"
-                                error={errors.password}
-                                className="rounded-md"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                            >
-                                {showPassword ? (
-                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                                    </svg>
-                                ) : (
-                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                )}
-                            </button>
-                        </div>
+                        <Input1
+                            type="password"
+                            name="password"
+                            id="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder="Password"
+                            label="Password"
+                            required={true}
+                            variant="outlined"
+                            error={errors.password}
+                            className="rounded-md"
+                        />
 
-                        <div className="relative">
-                            <Input1
-                                type={showConfirmPassword ? "text" : "password"}
-                                name="confirmPassword"
-                                id="confirmPassword"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                                placeholder="Confirm password"
-                                label="Confirm password"
-                                required={true}
-                                variant="outlined"
-                                error={errors.confirmPassword}
-                                className="rounded-md"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                            >
-                                {showConfirmPassword ? (
-                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                                    </svg>
-                                ) : (
-                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                )}
-                            </button>
-                        </div>
+                        <Input1
+                            type="password"
+                            name="confirmPassword"
+                            id="confirmPassword"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            placeholder="Confirm password"
+                            label="Confirm password"
+                            required={true}
+                            variant="outlined"
+                            error={errors.confirmPassword}
+                            className="rounded-md"
+                        />
                     </div>
 
                     {errors.form && (
@@ -308,7 +232,7 @@ const UserSignUp = () => {
                     <div>
                         <Button1
                             type="submit"
-                            text={isSubmitting ? `Signing up as ${userType}...` : `Sign up as ${userType === 'lawyer' ? 'Lawyer' : 'Researcher'}`}
+                            text={isSubmitting ? "Signing up..." : "Continue"}
                             className="w-full"
                             disabled={isSubmitting}
                         />

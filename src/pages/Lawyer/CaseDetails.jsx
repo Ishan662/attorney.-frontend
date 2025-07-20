@@ -168,7 +168,7 @@ const CaseDetails = () => {
                     />
                 )}
         </div>
-            <h1 className="text-2xl font-bold mb-6">Case No = {caseData.caseNumber}</h1>
+            <h1 className="text-2xl font-bold mb-6">Case No : {caseData.caseNumber}</h1>
 
             {/* Case Overview */}
             <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
@@ -281,10 +281,17 @@ const CaseDetails = () => {
                             className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors" 
                             onClick={() => handleOpenEditModal(hearing)}
                         >
-                            <div className="font-bold text-gray-800">{hearing.title}</div>
-                            <div className="text-sm text-gray-600 mb-2">{new Date(hearing.hearingDate).toLocaleString()}</div>
-                            {hearing.location && <p className="text-sm"><span className="font-semibold">Location:</span> {hearing.location}</p>}
-                            {hearing.note && <p className="text-sm mt-1"><span className="font-semibold">Note:</span> {hearing.note}</p>}
+                            <div className="font-bold text-gray-800 text-base">{hearing.title}</div>
+                            <div className="text-gray-600 mb-2">{new Date(hearing.hearingDate).toLocaleString('en-US', { 
+                                year: 'numeric', 
+                                month: 'short', 
+                                day: 'numeric', 
+                                hour: 'numeric', 
+                                minute: '2-digit', 
+                                hour12: true 
+                            })}</div>
+                            {hearing.location && <p className=""><span className="font-semibold">Location:</span> {hearing.location}</p>}
+                            {hearing.note && <p className="mt-1"><span className="font-semibold">Note:</span> {hearing.note}</p>}
                             <div className="mt-2">
                                 <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${hearing.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
                                     {hearing.status}

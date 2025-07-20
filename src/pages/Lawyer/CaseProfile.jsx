@@ -1,5 +1,3 @@
-// >> In your existing file: pages/CaseProfiles.jsx
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Using useNavigate for buttons
 import Sidebar from '../../components/layout/Sidebar';
@@ -11,9 +9,6 @@ import PageHeader from '../../components/layout/PageHeader';
 import { getMyCases } from '../../services/caseService'; // Import the function to fetch data
 import PageLayout from '../../components/layout/PageLayout';
 
-// We will replace mockCases with a real data fetch.
-// const mockCases = [ ... ];
-
 const user = {
   name: 'Nishagi Jewantha',
   email: 'jewanthadheerath@gmail.com',
@@ -23,20 +18,17 @@ const user = {
 const CaseProfiles = () => {
   const navigate = useNavigate();
 
-  // --- ▼▼▼ STATE MANAGEMENT FOR REAL DATA ▼▼▼ ---
   const [cases, setCases] = useState([]); // This will hold the data from the backend
   const [isLoading, setIsLoading] = useState(true); // To show a loading message
   const [error, setError] = useState(''); // To show any fetching errors
   const [search, setSearch] = useState('');
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [notificationCount, setNotificationCount] = useState(1); // Assuming this is dynamic later
-  // --- ▲▲▲ STATE MANAGEMENT FOR REAL DATA ▲▲▲ ---
 
   const handleNotificationClick = () => {
     // Notification click handler
   };
 
-  // --- ▼▼▼ FETCHING DATA FROM THE BACKEND ▼▼▼ ---
   useEffect(() => {
     const fetchCases = async () => {
       try {
@@ -52,33 +44,37 @@ const CaseProfiles = () => {
     };
     fetchCases();
   }, []); // The empty array ensures this runs only once on component mount
-  // --- ▲▲▲ FETCHING DATA FROM THE BACKEND ▲▲▲ ---
 
   
-  // --- ▼▼▼ DEFENSIVE FILTERING FOR REAL DATA ▼▼▼ ---
   const filteredCases = cases.filter(c =>
     (c.caseTitle?.toLowerCase() || '').includes(search.toLowerCase()) ||
     (c.caseNumber?.toLowerCase() || '').includes(search.toLowerCase())
   );
-  // --- ▲▲▲ DEFENSIVE FILTERING FOR REAL DATA ▲▲▲ ---
 
   return (
       <PageLayout user={user}>
 
-      <div className="flex min-h-screen bg-white-50">
+      {/* <div className="flex min-h-screen bg-white-50"> */}
           <div
             className="flex-grow overflow-y-auto transition-all duration-300"
           >
             <div className="p-6">
-              <div className='mb-8'>
+              {/* <div className='mb-8'>
                 <PageHeader
                   user={user}
                   notificationCount={notificationCount}
                   onNotificationClick={handleNotificationClick}
                 />
-              </div>
-              <main className="flex-1 p-8">
+              </div> */}
+              <main className="flex-1 p-0">
+                <div className='justify-between flex items-center mb-6'>
                 <h1 className="text-2xl font-semibold mb-6">Case Profiles</h1>
+                <Button1
+                  text="Create New Case"
+                  onClick={() => navigate('/lawyer/newcaseprofile')}
+                  className=""
+                />
+                </div>
                 <div className="mb-6 max-w-md">
                   <Input1
                     type="text"
@@ -90,7 +86,6 @@ const CaseProfiles = () => {
                   />
                 </div>
                 <div className="space-y-4">
-                  {/* --- ▼▼▼ UPDATED JSX TO RENDER REAL DATA IN YOUR LAYOUT ▼▼▼ --- */}
                   {isLoading ? (
                     <p>Loading...</p>
                   ) : error ? (
@@ -150,12 +145,11 @@ const CaseProfiles = () => {
                   {!isLoading && !error && filteredCases.length === 0 && (
                     <p>No cases found.</p>
                   )}
-                  {/* --- ▲▲▲ UPDATED JSX TO RENDER REAL DATA IN YOUR LAYOUT ▲▲▲ --- */}
                 </div>
               </main>
             </div>
           </div>
-      </div>
+      {/* </div> */}
       </PageLayout>
 
   );
