@@ -7,12 +7,7 @@ import Button2 from "../../components/UI/Button2";
 
 const ClientDashboard = () => {
     const navigate = useNavigate();
-    const [notificationCount, setNotificationCount] = useState(2);
-
-    const user = {
-        name: 'Nethsilu Marasinghe',
-        email: 'kasuntharamarasinghe.com',
-    };
+    const [notificationCount, setNotificationCount] = useState(2)
 
     const handleNotificationClick = () => {
         console.log('Notifications clicked');
@@ -48,6 +43,12 @@ const ClientDashboard = () => {
             day: 'numeric',
             year: 'numeric'
         });
+    };
+
+    const user= {
+        name: 'Nethsilu Marasinghe',
+        email: 'kasuntharamarasinghe.com',
+        role: 'client',
     };
 
     return (

@@ -19,6 +19,11 @@ const Clientcalender = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
 
+  // Small popup state for meeting details
+  const [showMeetingDetails, setShowMeetingDetails] = useState(false);
+  const [meetingDetailsPosition, setMeetingDetailsPosition] = useState({ x: 0, y: 0 });
+  const [selectedMeetingDetails, setSelectedMeetingDetails] = useState(null);
+
   // Form state for popup
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
@@ -123,10 +128,86 @@ const Clientcalender = () => {
 
   const weekDays = ["S", "M", "T", "W", "T", "F", "S"];
 
+  // Meeting details data
+  const meetingDetails = {
+    3: {
+      topic: "Land case court meeting",
+      time: "11:00 AM - 12:00 PM",
+      location: "District Court, Colombo",
+      description: "Important hearing for the land dispute case"
+    },
+    7: {
+      topic: "Mr Nadun's Meeting",
+      time: "1:00 PM - 2:00 PM", 
+      location: "Law Office Conference Room",
+      description: "Client consultation meeting"
+    },
+    24: {
+      topic: "Mr Nadun's Second Meeting",
+      time: "3:00 PM - 4:00 PM",
+      location: "Client's Office",
+      description: "Follow-up meeting for case updates"
+    }
+  };
+
   // Open popup on time slot click
-  const handleTimeSlotClick = (timeSlot) => {
-    setSelectedTimeSlot(timeSlot);
-    setShowPopup(true);
+  const handleTimeSlotClick = (timeSlot, event) => {
+    // Check if this time slot has a scheduled meeting
+    const dateKey = selectedDate.getDate();
+    const meetingData = meetingDetails[dateKey];
+    
+    if (meetingData && (
+      (timeSlot === "11 AM - 12 PM" && selectedDate.getDate() === 3 && selectedDate.getMonth() === 6) ||
+      (timeSlot === "1 PM - 2 PM" && selectedDate.getDate() === 7 && selectedDate.getMonth() === 6) ||
+      (timeSlot === "3 PM - 4 PM" && selectedDate.getDate() === 24 && selectedDate.getMonth() === 6)
+    )) {
+      // Show meeting details popup for scheduled meetings
+      const rect = event.currentTarget.getBoundingClientRect();
+      setMeetingDetailsPosition({
+        x: rect.left + rect.width / 2,
+        y: rect.top
+      });
+      setSelectedMeetingDetails({
+        ...meetingData,
+        date: selectedDate
+      });
+      setShowMeetingDetails(true);
+    } else {
+      // Show regular add meeting popup for empty time slots
+      setSelectedTimeSlot(timeSlot);
+      setShowPopup(true);
+    }
+  };
+
+  // Handle meeting detail click
+  const handleMeetingDetailClick = (event, date) => {
+    event.stopPropagation(); // Prevent calendar date selection
+    const meetingData = meetingDetails[date.getDate()];
+    if (meetingData) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      setMeetingDetailsPosition({
+        x: rect.left + rect.width / 2,
+        y: rect.top
+      });
+      setSelectedMeetingDetails({
+        ...meetingData,
+        date: date
+      });
+      setShowMeetingDetails(true);
+    }
+  };
+
+  // Handle edit meeting
+  const handleEditMeeting = () => {
+    setShowMeetingDetails(false);
+    if (selectedMeetingDetails) {
+      setSelectedDate(selectedMeetingDetails.date);
+      setTitle(selectedMeetingDetails.topic);
+      setLocation(selectedMeetingDetails.location);
+      setSpecialNote(selectedMeetingDetails.description);
+      setSelectedTimeSlot(selectedMeetingDetails.time);
+      setShowPopup(true);
+    }
   };
 
   // Handle popup form save
@@ -267,6 +348,67 @@ const Clientcalender = () => {
     </div>
   );
 
+  // Meeting Details Popup component
+  const MeetingDetailsPopup = () => (
+    <div
+      className="fixed bg-white rounded-lg shadow-lg border border-gray-300 p-4 z-50 min-w-[280px]"
+      style={{
+        left: `${meetingDetailsPosition.x - 140}px`,
+        top: `${meetingDetailsPosition.y - 10}px`,
+        transform: 'translateY(-100%)'
+      }}
+    >
+      <div className="relative">
+        <button
+          className="absolute -top-[15px] -right-2 text-gray-500 hover:text-gray-700 text-sm"
+          onClick={() => setShowMeetingDetails(false)}
+          aria-label="Close details"
+        >
+          &#x2715;
+        </button>
+        
+        <div className="mb-3">
+          <h3 className="font-semibold text-lg text-gray-800 mb-2">
+            {selectedMeetingDetails?.topic}
+          </h3>
+          
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-2">
+              <FaClock className="text-gray-500" size={12} />
+              <span className="text-gray-700">{selectedMeetingDetails?.time}</span>
+            </div>
+            
+            <div className="flex items-start gap-2">
+              <FaBriefcase className="text-gray-500 mt-0.5" size={12} />
+              <span className="text-gray-700">{selectedMeetingDetails?.location}</span>
+            </div>
+            
+            {selectedMeetingDetails?.description && (
+              <div className="mt-2 p-2 bg-gray-50 rounded text-gray-600 text-xs">
+                {selectedMeetingDetails.description}
+              </div>
+            )}
+          </div>
+          
+          <div className="mt-3 pt-2 border-t border-gray-200">
+            <button
+              onClick={handleEditMeeting}
+              className="w-full bg-black-500 hover:bg-black-600 text-white py-2 px-3 rounded text-sm font-medium transition-colors"
+            >
+              Edit Meeting
+            </button>
+          </div>
+        </div>
+        
+        {/* Arrow pointing down */}
+        <div 
+          className="absolute left-1/2 transform -translate-x-1/2 top-full w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-white"
+          style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}
+        ></div>
+      </div>
+    </div>
+  );
+
   return (
     <PageLayout>
     <div className="flex min-h-screen bg-gray-50">
@@ -318,8 +460,8 @@ const Clientcalender = () => {
   onClick={() => setSelectedDate(date)}
   className={`flex flex-col items-center justify-start text-xs pt-1 rounded ${
     date.toDateString() === selectedDate.toDateString()
-      ? "bg-black-600 text-white"
-      : "hover:bg-black-100"
+      ? "bg-gray-400 text-white"
+      : "hover:bg-gray-100"
   }`}
   style={{ height: "3rem" }}
 >
@@ -377,7 +519,7 @@ const Clientcalender = () => {
           {/* Right Panel - Day Summary with dropdown */}
           <div className="flex-grow bg-white rounded-lg shadow-md p-6 min-h-[600px]">
             {/* Dropdown to select view mode */}
-            <div className="mb-4">
+            <div className="flex mb-4  justify-between">
               <select
                 value={viewMode}
                 onChange={(e) => setViewMode(e.target.value)}
@@ -387,6 +529,17 @@ const Clientcalender = () => {
                 <option value="date">Date</option>
                 <option value="month">Month</option>
               </select>
+
+              <button
+                aria-label="Settings"
+                className="text-gray-600 hover:text-gray-900 cursor-pointer p-1 rounded-full -mt-1"
+                onClick={() => {
+                  // Placeholder for settings click handler
+                  alert("Settings clicked");
+                }}
+              >
+                <FaCog size={26} />
+              </button>
             </div>
 
             {viewMode === "date" ? (
@@ -399,11 +552,23 @@ const Clientcalender = () => {
                     <button
                       key={idx}
                       className={`w-full text-left py-3 px-4 ${
-                        idx % 2 === 0 ? "bg-gray-50" : "bg-white"
-                      } hover:bg-blue-100 rounded`}
-                      onClick={() => handleTimeSlotClick(slot)}
+                        slot === "11 AM - 12 PM" && selectedDate.getDate() === 3 && selectedDate.getMonth() === 6
+                          ? "bg-green-100 text-green-800 border border-green-300 hover:bg-green-200"
+                          : slot === "1 PM - 2 PM" && selectedDate.getDate() === 7 && selectedDate.getMonth() === 6
+                          ? "bg-red-100 text-red-800 border border-red-300 hover:bg-red-200"
+                          : slot === "3 PM - 4 PM" && selectedDate.getDate() === 24 && selectedDate.getMonth() === 6
+                          ? "bg-blue-100 text-blue-800 border border-blue-300 hover:bg-blue-200"
+                          : idx % 2 === 0 ? "bg-gray-50" : "bg-white"
+                      } hover:bg-blue-100 rounded transition-colors`}
+                      onClick={(e) => handleTimeSlotClick(slot, e)}
                     >
-                      {slot}
+                      {slot === "11 AM - 12 PM" && selectedDate.getDate() === 3 && selectedDate.getMonth() === 6
+                        ? "11 AM - 12 PM - Land case court meeting"
+                        : slot === "1 PM - 2 PM" && selectedDate.getDate() === 7 && selectedDate.getMonth() === 6
+                        ? "1 PM - 2 PM - Mr Nadun's Meeting"
+                        : slot === "3 PM - 4 PM" && selectedDate.getDate() === 24 && selectedDate.getMonth() === 6
+                        ? "3 PM - 4 PM - Mr Nadun's Second Meeting"
+                        : slot}
                     </button>
                   ))}
                 </div>
@@ -418,16 +583,7 @@ const Clientcalender = () => {
                   year: "numeric",
                 })}
               </div>
-              <button
-                aria-label="Settings"
-                className="text-gray-600 hover:text-gray-900 cursor-pointer p-1 rounded-full -mt-1"
-                onClick={() => {
-                  // Placeholder for settings click handler
-                  alert("Settings clicked");
-                }}
-              >
-                <FaCog size={26} />
-              </button>
+
             </div>
                 <div className="grid grid-cols-7 text-center text-xs font-medium text-gray-500 mb-2">
                   {weekDays.map((day, idx) => (
@@ -439,27 +595,53 @@ const Clientcalender = () => {
                     date ? (
                       <button
                         key={idx}
-                        onClick={() => setSelectedDate(date)}
+                        onClick={() => {
+                          // Check if this date has a scheduled meeting
+                          const hasScheduledMeeting = (
+                            (date.getDate() === 3 && date.getMonth() === 6) ||
+                            (date.getDate() === 7 && date.getMonth() === 6) ||
+                            (date.getDate() === 24 && date.getMonth() === 6)
+                          );
+                          
+                          // Only show add hearing popup for dates without scheduled meetings
+                          if (!hasScheduledMeeting) {
+                            setSelectedDate(date);
+                            setSelectedTimeSlot("");
+                            setShowPopup(true);
+                          } else {
+                            // Just select the date for labeled dates, don't show popup
+                            setSelectedDate(date);
+                          }
+                        }}
                         className={`text-center py-1 rounded relative ${
                           date.toDateString() === selectedDate.toDateString()
-                            ? "bg-black-600 text-white"
-                            : "hover:bg-black-100"
+                            ? "bg-gray-400 text-white"
+                            : "hover:bg-gray-100"
                         }`}
                       >
                         {date.getDate()}
-                        {date.getDate() === 4 && date.getMonth() === 6 && (
-                          <div className="absolute bottom-1 left-1 right-1 bg-red-200 text-red-800 text-xs rounded px-1 truncate">
-                            client meeting
+                        {date.getDate() === 7 && date.getMonth() === 6 && (
+                          <div 
+                            className="absolute bottom-1 left-1 right-1 bg-red-200 text-red-800 text-xs rounded px-1 truncate cursor-pointer hover:bg-red-300"
+                            onClick={(e) => handleMeetingDetailClick(e, date)}
+                          >
+                            Mr Nadun's Meeting
                           </div>
                         )}
-                        {date.getDate() === 8 && date.getMonth() === 6 && (
-                          <div className="absolute bottom-1 left-1 right-1 bg-green-200 text-green-800 text-xs rounded px-1 truncate">
-                            galle high court
+                        {date.getDate() === 3 && date.getMonth() === 6 && (
+                          <div 
+                            className="absolute bottom-1 left-1 right-1 bg-green-200 text-green-800 text-xs rounded px-1 truncate cursor-pointer hover:bg-green-300"
+                            onClick={(e) => handleMeetingDetailClick(e, date)}
+                          >
+                            Land case court date
                           </div>
                         )}
-                        {date.getDate() === 17 && date.getMonth() === 6 && (
-                          <div className="absolute bottom-1 left-1 right-1 bg-blue-200 text-blue-800 text-xs rounded px-1 truncate">
-                            badulla court meeting
+                        {date.getDate() === 24 && date.getMonth() === 6 && (
+                          <div 
+                            className="absolute bottom-1 left-1 right-1 bg-blue-200 text-blue-800 text-xs rounded px-1 truncate cursor-pointer hover:bg-blue-300"
+                            onClick={(e) => handleMeetingDetailClick(e, date)}
+                          >
+                            Mr Nadun's Second meeting
                           </div>
                         )}
                       </button>
@@ -474,6 +656,13 @@ const Clientcalender = () => {
         </div>
       </div>
       {showPopup && <Popup />}
+      {showMeetingDetails && <MeetingDetailsPopup />}
+      {showMeetingDetails && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowMeetingDetails(false)}
+        />
+      )}
     </div>
     </PageLayout>
   );
