@@ -5,6 +5,7 @@ import Button1 from '../../components/UI/Button1';
 import AuthHeader from '../../components/layout/AuthHeader';
 import { Navigate } from 'react-router-dom';
 import { signupNewLawyer, signupNewResearcher, loginWithGoogle } from '../../services/authService'; // Adjust path
+import Swal from 'sweetalert2';
 
 
 const UserSignUp = () => {
@@ -110,7 +111,21 @@ const UserSignUp = () => {
                     await signupNewResearcher(formData.email, formData.password, profileData);
                 }
 
-                alert(`${userType === 'lawyer' ? 'Lawyer' : 'Researcher'} account created! A verification link has been sent to your email. Please verify your email, then log in to continue.`);
+                // Show success alert with SweetAlert2
+                await Swal.fire({
+                    title: 'Account Created Successfully!',
+                    text: `Your ${userType === 'lawyer' ? 'lawyer' : 'researcher'} account has been created. A verification link has been sent to your email. Please verify your email, then log in to continue.`,
+                    confirmButtonText: 'Go to Login',
+                    confirmButtonColor: '#000000',
+                    background: '#ffffff',
+                    width: '500px',
+                    customClass: {
+                        popup: 'rounded-lg',
+                        title: 'text-gray-800 text-xl',
+                        content: 'text-gray-600 text-xs'
+                    }
+                });
+                
                 navigate('/user/login');
 
             } catch (error) {
@@ -128,7 +143,20 @@ const UserSignUp = () => {
         setErrors({});
         try {
             const userDto = await loginWithGoogle(); 
-            alert(`Welcome, ${userDto.fullName}!`);
+            // Show success alert with SweetAlert2
+            await Swal.fire({
+                title: 'Welcome!',
+                text: `Welcome, ${userDto.fullName}! You have successfully signed up with Google.`,
+                confirmButtonText: 'Continue',
+                confirmButtonColor: '#000000',
+                background: '#ffffff',
+                width: '500px',
+                customClass: {
+                    popup: 'rounded-lg',
+                    title: 'text-gray-800 text-xl',
+                    content: 'text-gray-600 text-xs'
+                }
+            });
             navigate('/dashboard');
         } catch (error) {
             console.error('Google registration error:', error);
@@ -141,6 +169,7 @@ const UserSignUp = () => {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50  px-4 sm:px-6 lg:px-8 pt-20 pb-10">
             <AuthHeader />
+            
             <div className="max-w-md w-full mt-8 space-y-8">
                 <div className="text-center">
                     <h1 className="text-3xl font-bold mb-2">Sign up</h1>
@@ -148,6 +177,25 @@ const UserSignUp = () => {
                         Create your account to get started
                     </p>
                 </div>
+
+                <Button1
+                    text="Test Alert"
+                    onClick={() =>
+                        Swal.fire({
+                            title: 'Test Alert',
+                            text: 'Your lawyer account has been created. A verification link has been sent to your email. Please verify your email, then log in to continue.',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#000000',
+                            background: '#ffffff',
+                            width: '500px',
+                            customClass: {
+                                popup: 'rounded-lg',
+                                title: 'text-gray-800 text-xl',
+                                content: 'text-gray-600 text-xs'
+                            }
+                        })
+                    }
+                />
 
                 {/* User Type Toggle */}
                 <div className="flex bg-gray-100 rounded-lg p-1">

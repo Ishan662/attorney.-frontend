@@ -17,9 +17,6 @@ const UserLogin = () => {
 
     const { currentUser } = useAuth();
     const navigateUserByRole = (currentUser) => {
-        // if (!currentUser || !currentUser.role) {
-        //     throw new Error("Login succeeded but user profile is incomplete.");
-        // }
 
         if (currentUser.status === "PENDING_PHONE_VERIFICATION") {
             navigate('/user/otp', { state: { phoneNumber: currentUser.phoneNumber } });
