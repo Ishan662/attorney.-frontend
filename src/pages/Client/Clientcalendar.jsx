@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Sidebar from "../../components/layout/Sidebar";
+import PageLayout from "../../components/layout/PageLayout";
 import Button1 from "../../components/UI/Button1";
 import Input1 from "../../components/UI/Input1";
 import { FaBriefcase, FaClock, FaCog } from "react-icons/fa";
@@ -494,7 +495,9 @@ const Clientcalender = () => {
   );
 
   return (
+    <PageLayout>
     <div className="flex min-h-screen bg-gray-50">
+
       <Sidebar
         user={user}
         onToggle={(expanded) => setSidebarExpanded(expanded)}
@@ -756,6 +759,7 @@ const Clientcalender = () => {
         />
       )}
     </div>
+    </PageLayout>
   );
 };
 
