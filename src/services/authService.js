@@ -61,16 +61,61 @@ export const signupNewLawyer = async (email, password, profileData) => {
   
   // We need the token from the newly created user to make the backend call.
   const idToken = await userCredential.user.getIdToken();
-  await fetch('http://localhost:8080/api/auth/register-lawyer', {
+  const response = await fetch('http://localhost:8080/api/auth/register-lawyer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+      body: JSON.stringify(profileData),
+  });
+
+  // Check if the response is not ok and handle errors properly
+  if (!response.ok) {
+    const errorBody = await response.text();
+    let errorMessage = `API Error: ${response.status}`;
+    try {
+        const parsedError = JSON.parse(errorBody);
+        errorMessage = parsedError.message || errorBody;
+    } catch (e) {
+        errorMessage = errorBody || errorMessage;
+    }
+    throw new Error(errorMessage);
+  }
+  
+  // Send verification email and force logout so they must verify before continuing.
+  await sendEmailVerification(userCredential.user);
+  await signOut(auth);
+};
+
+/**
+ * Signs up a new researcher. This involves creating their Firebase account,
+ * sending a verification email, registering them on the backend, and logging them out.
+ */
+export const signupNewResearcher = async (email, password, profileData) => {
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  
+  // We need the token from the newly created user to make the backend call.
+  const idToken = await userCredential.user.getIdToken();
+  const response = await fetch('http://localhost:8080/api/auth/register-researcher', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
       body: JSON.stringify(profileData),
   });
   
+  // Check if the response is not ok and handle errors properly
+  if (!response.ok) {
+    const errorBody = await response.text();
+    let errorMessage = `API Error: ${response.status}`;
+    try {
+        const parsedError = JSON.parse(errorBody);
+        errorMessage = parsedError.message || errorBody;
+    } catch (e) {
+        errorMessage = errorBody || errorMessage;
+    }
+    throw new Error(errorMessage);
+  }
+  
   // Send verification email and force logout so they must verify before continuing.
   await sendEmailVerification(userCredential.user);
   await signOut(auth);
-  
 };
 
 /**
@@ -84,7 +129,7 @@ export const loginWithEmail = async (email, password) => {
 
   const userStatus = await authenticatedFetch('/api/auth/status');
 
-  const requiresVerification = userStatus?.role === 'LAWYER';
+  const requiresVerification = userStatus?.role === 'LAWYER' || userStatus?.role === 'RESEARCHER';
 
   if (!user.emailVerified && requiresVerification) {
     await sendEmailVerification(user);
