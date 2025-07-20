@@ -64,7 +64,7 @@ const ClientDashboard = () => {
 
             {/* Dashboard Content */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Due Payments Box */}
+                Due Payments Box
                 <div className="bg-white rounded-lg shadow-md p-6">
                     <h2 className="text-xl font-bold mb-4">Due Payments</h2>
                     {duePayments.length === 0 ? (
