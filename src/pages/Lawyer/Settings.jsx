@@ -141,6 +141,38 @@ const lawyerSettings = () => {
                     </div>
                 </div>
 
+                {/* Notification Preferences */}
+                <div className="mb-6">
+                    <label className="block text-sm font-medium mb-2 text-black">
+                        Notification Preferences
+                    </label>
+                    <div className="space-y-2 pl-2 text-sm text-gray-800">
+                        <label className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                checked={notifications.caseUpdates}
+                                onChange={() => handleNotificationChange("caseUpdates")}
+                            />
+                            <span>Case Updates</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                checked={notifications.deadlines}
+                                onChange={() => handleNotificationChange("deadlines")}
+                            />
+                            <span>Deadlines</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                checked={notifications.messages}
+                                onChange={() => handleNotificationChange("messages")}
+                            />
+                            <span>Messages</span>
+                        </label>
+                    </div>
+                </div>
 
                 {/* Save Button */}
                 <Button1 className="mt-4">Save Changes</Button1>
