@@ -28,6 +28,7 @@ export const createCase = async (caseFormData) => {
     associatedJuniorId: caseFormData.junior || null, // Use null if no junior is selected
     caseNumber: caseFormData.caseNumber,
     court: caseFormData.court,
+    courtType: caseFormData.courtType, // New field for court type
     initialHearingDate: caseFormData.date, // Assumes your form state uses 'date'
     description: caseFormData.description,
     caseType: caseFormData.caseType,

@@ -122,7 +122,7 @@ const getHomeRouteByRole = (role) => {
     switch(role) {
         case 'client':
             return '/client/dashboard';
-        case 'junior_lawyer':
+        case 'junior':
             return '/junior/dashboard';
         case 'admin':
             return '/admin/dashboard';
@@ -137,7 +137,7 @@ const getRoleDisplayName = (role) => {
     switch(role) {
         case 'client':
             return 'Client';
-        case 'junior_lawyer':
+        case 'junior':
             return 'Junior Lawyer';
         case 'lawyer':
             return 'Senior Lawyer';
@@ -386,7 +386,7 @@ const getMenuItemsByRole = (role) => {
     switch(role) {
         case 'client':
             return clientMenuItems;
-        case 'junior_lawyer':
+        case 'junior':
             return juniorLawyerMenuItems;
         case 'admin':
             return adminMenuItems;
