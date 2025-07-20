@@ -135,13 +135,13 @@ const JuniorHearings = () => {
 
     return (
         <PageLayout user={user}>
-            <div className='mb-8'>
+            {/* <div className='mb-8'>
                 <PageHeader
                     user={user}
                     notificationCount={notificationCount}
                     onNotificationClick={handleNotificationClick}
                 />
-            </div>
+            </div> */}
 
             {/* Page Title and Navigation */}
             <div className="flex justify-between items-center mb-6">

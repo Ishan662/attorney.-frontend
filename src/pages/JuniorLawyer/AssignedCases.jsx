@@ -108,15 +108,22 @@ const AssignedCases = () => {
 
     return (
         <PageLayout user={user}>
-            <div className="mb-8">
+            {/* <div className="mb-8">
                 <PageHeader
                     user={user}
                     notificationCount={notificationCount}
                     onNotificationClick={handleNotificationClick}
                 />
-            </div>
+            </div> */}
 
-            <h1 className="text-2xl font-bold mb-6">Assigned Cases</h1>
+            {/* Page Title and Navigation */}
+            <div className="flex justify-between items-center mb-6">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Assigned Cases</h1>
+                    <p className="text-gray-600 mt-1">Manage your Cases</p>
+                </div>
+
+            </div>
             <div className="bg-white rounded-lg shadow-md overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -154,8 +161,12 @@ const AssignedCases = () => {
 
             {/* Modal for Case Details */}
             {selectedCase && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40 px-4">
-                    <div className="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative border border-gray-200">
+                <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40 px-4"
+                    onClick={closeModal}>
+
+                    <div className="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative border border-gray-200"
+                        onClick={(e) => e.stopPropagation()} >
+                            
                         <h2 className="text-3xl font-semibold mb-6 border-b pb-4 text-gray-800">
                             Case Details - {selectedCase.id}
                         </h2>
@@ -265,10 +276,10 @@ const AssignedCases = () => {
                                         {dummyHearings[0].status && (
                                             <span
                                                 className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${dummyHearings[0].status === 'Completed'
-                                                        ? 'bg-green-100 text-green-700'
-                                                        : dummyHearings[0].status === 'Planned'
-                                                            ? 'bg-blue-100 text-blue-700'
-                                                            : 'bg-gray-100 text-gray-700'
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : dummyHearings[0].status === 'Planned'
+                                                        ? 'bg-blue-100 text-blue-700'
+                                                        : 'bg-gray-100 text-gray-700'
                                                     }`}
                                             >
                                                 {dummyHearings[0].status}
@@ -293,10 +304,10 @@ const AssignedCases = () => {
                                         {dummyHearings[1].status && (
                                             <span
                                                 className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${dummyHearings[1].status === 'Completed'
-                                                        ? 'bg-green-100 text-green-700'
-                                                        : dummyHearings[1].status === 'Planned'
-                                                            ? 'bg-blue-100 text-blue-700'
-                                                            : 'bg-gray-100 text-gray-700'
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : dummyHearings[1].status === 'Planned'
+                                                        ? 'bg-blue-100 text-blue-700'
+                                                        : 'bg-gray-100 text-gray-700'
                                                     }`}
                                             >
                                                 {dummyHearings[1].status}
@@ -322,10 +333,10 @@ const AssignedCases = () => {
                                             {h.status && (
                                                 <span
                                                     className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ml-2 ${h.status === "Completed"
-                                                            ? "bg-green-100 text-green-700"
-                                                            : h.status === "Planned"
-                                                                ? "bg-blue-100 text-blue-700"
-                                                                : "bg-gray-100 text-gray-700"
+                                                        ? "bg-green-100 text-green-700"
+                                                        : h.status === "Planned"
+                                                            ? "bg-blue-100 text-blue-700"
+                                                            : "bg-gray-100 text-gray-700"
                                                         }`}
                                                 >
                                                     {h.status}
@@ -377,16 +388,24 @@ const AssignedCases = () => {
                                     </li>
                                 ))}
                             </ul>
+
+                            <Button1
+                                className="mt-4"
+                            >
+                                Add Documents
+                            </Button1>
                         </section>
 
                         {/* Close button */}
                         <div className="mt-8 text-right">
                             <Button1
-                                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-800"
+                                className="mt-4"
                                 onClick={closeModal}
                             >
                                 Close
                             </Button1>
+
+
                         </div>
                     </div>
                 </div>
