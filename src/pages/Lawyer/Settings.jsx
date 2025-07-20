@@ -20,6 +20,14 @@ const lawyerSettings = () => {
         messages: true,
     });
 
+    const [darkMode, setDarkMode] = useState(false);
+    const [fontLarge, setFontLarge] = useState(false);
+    const [languages, setLanguages] = useState({
+        english: true,
+        sinhala: false,
+        tamil: false,
+    });
+
     const handlePhotoChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -170,6 +178,38 @@ const lawyerSettings = () => {
                                 onChange={() => handleNotificationChange("messages")}
                             />
                             <span>Messages</span>
+                        </label>
+                    </div>
+                </div>
+
+                {/* Display Settings */}
+                <div className="mb-6">
+                    <h3 className="text-sm font-medium mb-2 text-black">Display Settings</h3>
+                    <label className="flex items-center space-x-2 text-sm text-gray-800">
+                        <input type="checkbox" checked={darkMode} onChange={() => setDarkMode(!darkMode)} />
+                        <span>Dark Mode</span>
+                    </label>
+                    <label className="flex items-center space-x-2 text-sm text-gray-800 mt-2">
+                        <input type="checkbox" checked={fontLarge} onChange={() => setFontLarge(!fontLarge)} />
+                        <span>Large Font</span>
+                    </label>
+                </div>
+
+                {/* Language Selection */}
+                <div className="mb-6">
+                    <h3 className="text-sm font-medium mb-2 text-black">Language Preferences</h3>
+                    <div className="space-y-2 pl-2 text-sm text-gray-800">
+                        <label className="flex items-center space-x-2">
+                            <input type="checkbox" checked={languages.english} onChange={() => handleLanguageChange("english")} />
+                            <span>English</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                            <input type="checkbox" checked={languages.sinhala} onChange={() => handleLanguageChange("sinhala")} />
+                            <span>Sinhala</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                            <input type="checkbox" checked={languages.tamil} onChange={() => handleLanguageChange("tamil")} />
+                            <span>Tamil</span>
                         </label>
                     </div>
                 </div>
