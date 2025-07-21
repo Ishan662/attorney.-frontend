@@ -27,11 +27,21 @@ const PageLayout = ({
     //     role:  currentUser.role.toLowerCase()
     // };
 
-        const user = {
-        name: "nishagi jewantha",
-        email: "jewanthadheerath@gmail.com",
-            role: "junior"
-    } 
+    const user = {
+        name: currentUser.fullName,
+        email: currentUser.email,
+        role:  currentUser.role.toLowerCase()
+    };
+
+    
+
+
+    //     const user = {
+    //     name: "nishagi jewantha",
+    //     email: "jewanthadheerath@gmail.com",
+    //         role: "lawyer"
+    // } 
+
     
     return (
 
