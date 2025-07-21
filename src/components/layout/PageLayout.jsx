@@ -27,13 +27,6 @@ const PageLayout = ({
         role:  currentUser.role.toLowerCase()
     };
 
-
-        const user = {
-        name: "nishagi jewantha",
-        email: "jewanthadheerath@gmail.com",
-        role:  "admin"
-    }
-
     //     const user = {
     //     name: "nishagi jewantha",
     //     email: "jewanthadheerath@gmail.com",
