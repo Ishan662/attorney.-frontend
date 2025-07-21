@@ -30,7 +30,7 @@ import NotFoundPage from './pages/Common/404';
 import JuniorDashboard from './pages/JuniorLawyer/JuniorDashboard';
 import AssignedCases from './pages/JuniorLawyer/AssignedCases';
 import Tasks from './pages/JuniorLawyer/Tasks';
-import JuniorMessages from './pages/JuniorLawyer/JuniorMessages';
+import JuniorMessages from './pages/JuniorLawyer/JuniorMessage';
 import JuniorHearings from './pages/JuniorLawyer/JuniorHearing';
 import AccountUsers from './pages/Lawyer/AccountUsers';
 import UserManagement from './pages/Admin/UserManagement';
@@ -103,6 +103,7 @@ export default function App() {
           <Route path="admin/usermanagement" element={<UserManagement />} />
           <Route path="admin/viewmessages" element={<ViewMessages />} />
           <Route path="admin/viewanalytics" element={<AdminAnalytics />} />
+          <Route path='lawyer/assigntasks' element={<AssignTasks />} />
           {/* client case profiles  */}
           {/* <Route path="client/caseprofiles" element={<Clientcaseprofiles />} /> */}
           {/* <Route path="/invitation/:inviteToken" element={<ClientInvitation />} />   */}
