@@ -31,7 +31,18 @@ const AddClientModal = ({ isOpen, onClose, caseId, existingClient }) => {
     if (!isOpen) return null;
 
     const handleChange = (e) => {
-        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        const { name, value } = e.target;
+        
+        // Special handling for phone number to allow only digits and limit to 10 characters
+        if (name === 'phoneNumber') {
+            // Remove any non-digit characters
+            const numbersOnly = value.replace(/\D/g, '');
+            // Limit to 10 digits
+            const limitedValue = numbersOnly.slice(0, 10);
+            setFormData(prev => ({ ...prev, [name]: limitedValue }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     // --- ▼▼▼ YOUR EXISTING, WORKING SUBMIT LOGIC ▼▼▼ ---
@@ -41,6 +52,18 @@ const AddClientModal = ({ isOpen, onClose, caseId, existingClient }) => {
             setFormError('Client name and email are required.');
             return;
         }
+        if (!formData.phoneNumber) {
+            setFormError('Phone number is required.');
+            return;
+        }
+        
+        // Validate phone number: exactly 10 digits starting with 0
+        const phoneRegex = /^0\d{9}$/;
+        if (!phoneRegex.test(formData.phoneNumber)) {
+            setFormError('Phone number must be exactly 10 digits starting with 0 (e.g., 0765647672).');
+            return;
+        }
+        
         if (!caseId) {
             setFormError('Error: Case ID not found.');
             return;
@@ -72,56 +95,91 @@ const AddClientModal = ({ isOpen, onClose, caseId, existingClient }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
-                <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-                    <h2 className="text-lg font-semibold text-gray-800">Add or Invite Client to Case</h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-500 focus:outline-none">
-                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                <div className="px-6 py-4">
-                    <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg mx-4">
+                <h2 className="text-xl font-bold mb-4">
+                    Add or Invite Client to Case
+                </h2>
+                
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Client Name
+                        </label>
                         <Input1
                             type="text"
                             name="fullName"
-                            label="Client Name"
                             value={formData.fullName}
                             onChange={handleChange}
+                            placeholder="Full name"
+                            variant="outlined"
+                            className="w-full"
                             required
                         />
+                    </div>
+                    
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Email Address
+                        </label>
                         <Input1
                             type="email"
                             name="email"
-                            label="Email Address"
                             value={formData.email}
                             onChange={handleChange}
+                            placeholder="email@example.com"
+                            variant="outlined"
+                            className="w-full"
                             required
                         />
+                        <p className="text-xs text-gray-500 mt-1">
+                            They will receive an invitation email to join the case
+                        </p>
+                    </div>
+                    
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Phone Number
+                        </label>
                         <Input1
                             type="tel"
                             name="phoneNumber"
-                            label="Phone Number"
                             value={formData.phoneNumber}
                             onChange={handleChange}
+                            placeholder="0765647672"
+                            variant="outlined"
+                            className="w-full"
+                            required
+                            maxLength="10"
                         />
-                        
-                        {formError && <p className="text-red-500 text-center text-sm">{formError}</p>}
-                        {successMessage && <p className="text-green-500 text-center text-sm">{successMessage}</p>}
-
-                        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                            <Button2 text="Cancel" onClick={onClose} disabled={isSubmitting} />
-                            <Button1
-                                type="submit"
-                                text={isSubmitting ? "Sending..." : "Send Invitation"}
-                                disabled={isSubmitting}
-                            />
-                        </div>
-                    </form>
-                </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                            Must be exactly 10 digits starting with 0 (e.g., 0765647672)
+                        </p>
+                    </div>
+                    
+                    {formError && (
+                        <p className="text-red-500 text-xs mt-1">{formError}</p>
+                    )}
+                    
+                    {successMessage && (
+                        <p className="text-green-500 text-xs mt-1">{successMessage}</p>
+                    )}
+                    
+                    <div className="flex justify-end space-x-3">
+                        <Button2
+                            text="Cancel"
+                            onClick={onClose}
+                            disabled={isSubmitting}
+                            className="px-4 py-2"
+                        />
+                        <Button1
+                            type="submit"
+                            text={isSubmitting ? "Sending..." : "Send Invitation"}
+                            disabled={isSubmitting}
+                            className="px-4 py-2"
+                        />
+                    </div>
+                </form>
             </div>
         </div>
     );

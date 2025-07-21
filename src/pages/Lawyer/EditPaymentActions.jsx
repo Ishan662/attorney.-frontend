@@ -6,6 +6,13 @@ const EditPaymentActions = ({ isOpen, onClose, payment }) => {
     const [updatedPayment, setUpdatedPayment] = useState(payment || {});
     const [isSaving, setIsSaving] = useState(false);
     
+    // Update state when payment prop changes
+    React.useEffect(() => {
+        if (payment) {
+            setUpdatedPayment(payment);
+        }
+    }, [payment]);
+    
     // If not open or no payment provided, don't render
     if (!isOpen || !payment) return null;
     
@@ -52,15 +59,23 @@ const EditPaymentActions = ({ isOpen, onClose, payment }) => {
                 </div>
                 
                 <div className="px-6 py-4">
-                    <div className="mb-4">
+                    {/* Client Information */}
+                    <div className="mb-6 p-3 bg-gray-50 rounded-lg">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Client Information
+                        </label>
                         <div className="flex items-center">
-                            <div className={`w-8 h-8 rounded-full ${updatedPayment?.client?.color} flex items-center justify-center mr-3 text-xs font-medium`}>
-                                {updatedPayment?.client?.initials}
+                            <div className={`w-10 h-10 rounded-full ${payment?.client?.color || 'bg-gray-200'} flex items-center justify-center mr-3 text-sm font-medium`}>
+                                {payment?.client?.initials || 'N/A'}
                             </div>
-                            <span className="font-medium">{updatedPayment?.client?.name}</span>
+                            <div>
+                                <div className="font-medium text-lg">{payment?.client?.name || 'No client name'}</div>
+                                <div className="text-sm text-gray-500">Client</div>
+                            </div>
                         </div>
                     </div>
                     
+                    {/* Case Number and Court - Top Row */}
                     <div className="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
