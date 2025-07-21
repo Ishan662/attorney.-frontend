@@ -73,9 +73,17 @@ const meetingRequests = [
 const Meetings = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showViewModal, setShowViewModal] = useState(false);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [meetingLink, setMeetingLink] = useState("");
   const [requests, setRequests] = useState(meetingRequests);
+  
+  // Reschedule form states
+  const [rescheduleData, setRescheduleData] = useState({
+    date: '',
+    time: '',
+    note: ''
+  });
 
   // Filter meetings based on search term
   const getFilteredMeetings = () => {
@@ -112,7 +120,49 @@ const Meetings = () => {
         setMeetingLink("");
         setShowViewModal(true);
       }
+    } else if (action === 'reschedule') {
+      const meetingToReschedule = requests.find(r => r.id === id);
+      if (meetingToReschedule) {
+        setSelectedMeeting(meetingToReschedule);
+        // Parse existing date and time for the form
+        const [date, time] = meetingToReschedule.date.split(' at ');
+        const formattedDate = new Date(date).toISOString().split('T')[0];
+        setRescheduleData({
+          date: formattedDate,
+          time: time,
+          note: ''
+        });
+        setShowViewModal(false);
+        setShowRescheduleModal(true);
+      }
     }
+  };
+
+  // Handle reschedule form submission
+  const handleRescheduleSubmit = () => {
+    if (!rescheduleData.date || !rescheduleData.time) {
+      alert('Please select both date and time for the rescheduled meeting.');
+      return;
+    }
+
+    const updatedDate = `${rescheduleData.date} at ${rescheduleData.time}`;
+    
+    setRequests(prevRequests => 
+      prevRequests.map(request => 
+        request.id === selectedMeeting.id 
+          ? { 
+              ...request, 
+              date: updatedDate,
+              status: 'Rescheduled',
+              rescheduleNote: rescheduleData.note
+            } 
+          : request
+      )
+    );
+    
+    setShowRescheduleModal(false);
+    setRescheduleData({ date: '', time: '', note: '' });
+    alert('Meeting has been successfully rescheduled.');
   };
 
   // Format date for display
@@ -198,6 +248,7 @@ const Meetings = () => {
                               ${meeting.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : ''}
                               ${meeting.status === 'Accepted' ? 'bg-green-100 text-green-800' : ''}
                               ${meeting.status === 'Declined' ? 'bg-red-100 text-red-800' : ''}
+                              ${meeting.status === 'Rescheduled' ? 'bg-blue-100 text-blue-800' : ''}
                             `}>
                               {meeting.status}
                             </span>
@@ -345,8 +396,104 @@ const Meetings = () => {
                     onClick={() => handleMeetingAction(selectedMeeting.id, 'decline')}
                   />
                   <Button1
+                    text="Reschedule"
+                    onClick={() => handleMeetingAction(selectedMeeting.id, 'reschedule')}
+                  />
+                  <Button1
                     text="Accept Meeting"
                     onClick={() => handleMeetingAction(selectedMeeting.id, 'accept')}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reschedule Meeting Modal */}
+        {showRescheduleModal && selectedMeeting && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-lg mx-4">
+              <div className="border-b px-6 py-4 flex justify-between items-center">
+                <h3 className="text-lg font-medium">Reschedule Meeting</h3>
+                <button 
+                  className="text-gray-400 hover:text-gray-500" 
+                  onClick={() => setShowRescheduleModal(false)}
+                >
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="px-6 py-4">
+                {/* Meeting Info */}
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center mb-2">
+                    <div className={`w-8 h-8 rounded-full ${selectedMeeting.client.color} flex items-center justify-center mr-3 text-xs font-medium`}>
+                      {selectedMeeting.client.initials}
+                    </div>
+                    <div>
+                      <div className="font-medium">{selectedMeeting.client.name}</div>
+                      <div className="text-sm text-gray-500">{selectedMeeting.title}</div>
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <strong>Current Date:</strong> {selectedMeeting.date}
+                  </div>
+                </div>
+
+                {/* New Date Selection */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    New Date
+                  </label>
+                  <Input1
+                    type="date"
+                    value={rescheduleData.date}
+                    onChange={(e) => setRescheduleData({...rescheduleData, date: e.target.value})}
+                    variant="outlined"
+                    className="w-full"
+                    required
+                  />
+                </div>
+
+                {/* New Time Selection */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    New Time
+                  </label>
+                  <Input1
+                    type="time"
+                    value={rescheduleData.time}
+                    onChange={(e) => setRescheduleData({...rescheduleData, time: e.target.value})}
+                    variant="outlined"
+                    className="w-full"
+                    required
+                  />
+                </div>
+
+                {/* Reschedule Note */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Reschedule Note (Optional)
+                  </label>
+                  <textarea
+                    value={rescheduleData.note}
+                    onChange={(e) => setRescheduleData({...rescheduleData, note: e.target.value})}
+                    placeholder="Add a note explaining the reason for rescheduling..."
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    rows="3"
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <Button2
+                    text="Cancel"
+                    onClick={() => setShowRescheduleModal(false)}
+                  />
+                  <Button1
+                    text="Confirm Reschedule"
+                    onClick={handleRescheduleSubmit}
                   />
                 </div>
               </div>
