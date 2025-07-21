@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PageLayout from "../../components/layout/PageLayout";
 import Button1 from "../../components/UI/Button1";
 import Input1 from "../../components/UI/Input1";
 import { FaBriefcase, FaClock, FaCog } from "react-icons/fa";
+import CourtColorSettings from "./CourtColorSettings";
 
 const Lawyercalender = () => {
   // Updated user object with role property
@@ -19,6 +20,20 @@ const Lawyercalender = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
 
+  // Settings popup state
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  
+  // Court colors state - can be loaded from localStorage or API
+  const [courtColors, setCourtColors] = useState(() => {
+    const savedColors = localStorage.getItem('courtColors');
+    return savedColors ? JSON.parse(savedColors) : {
+      "Galle High Court": "#EF4444", // Red
+      "Badulla District Court": "#3B82F6", // Blue
+      "Colombo Magistrate Court": "#10B981", // Green
+      "Kandy High Court": "#8B5CF6" // Purple
+    };
+  });
+
   // Form state for popup
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
@@ -26,6 +41,11 @@ const Lawyercalender = () => {
   const [specialNote, setSpecialNote] = useState("");
   const [googleMeetEnabled, setGoogleMeetEnabled] = useState(false);
   const [googleMeetLink, setGoogleMeetLink] = useState("");
+
+  // Save court colors to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem('courtColors', JSON.stringify(courtColors));
+  }, [courtColors]);
 
   // Format date display like "21st of June, Saturday"
   const formatDateDisplay = (date) => {
@@ -108,6 +128,28 @@ const Lawyercalender = () => {
     },
   ];
 
+  // Sample calendar events with court locations
+  const calendarEvents = [
+    { 
+      date: 4, 
+      month: 6, 
+      title: "client meeting", 
+      location: "Galle High Court" 
+    },
+    { 
+      date: 8, 
+      month: 6, 
+      title: "galle high court", 
+      location: "Galle High Court" 
+    },
+    { 
+      date: 17, 
+      month: 6, 
+      title: "badulla court meeting", 
+      location: "Badulla District Court" 
+    }
+  ];
+
   // Time slots for day summary panel
   const dayTimeSlots = [
     "8 AM - 9 AM",
@@ -127,6 +169,36 @@ const Lawyercalender = () => {
   const handleTimeSlotClick = (timeSlot) => {
     setSelectedTimeSlot(timeSlot);
     setShowPopup(true);
+  };
+
+  // Handle settings button click
+  const handleSettingsClick = () => {
+    setShowSettingsModal(true);
+  };
+
+  // Handle save court colors from settings modal
+  const handleSaveCourtColors = (newCourtColors) => {
+    setCourtColors(newCourtColors);
+  };
+
+  // Get background color based on court location
+  const getCourtBackgroundColor = (location) => {
+    return courtColors[location] || "#9CA3AF"; // Default gray if no color defined
+  };
+
+  // Get text color (white or black) based on background color for readability
+  const getTextColor = (bgColor) => {
+    // Convert hex to RGB
+    const hex = bgColor.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Calculate brightness (0-255)
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    
+    // Return white text for dark backgrounds, black for light
+    return brightness > 128 ? 'text-gray-900' : 'text-white';
   };
 
   // Handle popup form save
@@ -181,14 +253,29 @@ const Lawyercalender = () => {
             <label className="block mb-1 font-medium" htmlFor="location1">
               Location
             </label>
-            <Input1
+            <select
               id="location1"
-              type="text"
-              placeholder="Enter location"
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               required
-            />
+            >
+              <option value="">Select Court/Location</option>
+              {Object.keys(courtColors).map((court) => (
+                <option key={court} value={court}>
+                  {court}
+                </option>
+              ))}
+              <option value="Other">Other Location</option>
+            </select>
+            {location === "Other" && (
+              <Input1
+                type="text"
+                placeholder="Enter custom location"
+                className="mt-2"
+                onChange={(e) => setLocation(e.target.value)}
+              />
+            )}
           </div>
 
           <div className="mb-4">
@@ -320,8 +407,13 @@ const Lawyercalender = () => {
                   key={idx}
                   className="flex items-center gap-3 mb-2 text-gray-700"
                 >
-                  <div className="p-2 bg-gray-200 rounded">
-                    <FaBriefcase />
+                  <div 
+                    className="p-2 rounded"
+                    style={{
+                      backgroundColor: getCourtBackgroundColor(hearing.location)
+                    }}
+                  >
+                    <FaBriefcase className={getTextColor(getCourtBackgroundColor(hearing.location))} />
                   </div>
                   <div>
                     <div className="text-sm font-medium">{hearing.time}</div>
@@ -339,8 +431,15 @@ const Lawyercalender = () => {
                   key={idx}
                   className="flex items-center gap-3 mb-2 text-gray-700"
                 >
-                  <div className="p-2 bg-gray-200 rounded">
-                    <FaClock />
+                  <div 
+                    className="p-2 rounded"
+                    style={{
+                      backgroundColor: slot.available 
+                        ? "#D1D5DB" // Gray for available slots
+                        : getCourtBackgroundColor(slot.location)
+                    }}
+                  >
+                    <FaClock className={slot.available ? "text-gray-700" : getTextColor(getCourtBackgroundColor(slot.location))} />
                   </div>
                   <div>
                     <div className="text-sm font-medium">{slot.time}</div>
@@ -400,10 +499,7 @@ const Lawyercalender = () => {
                   <button
                     aria-label="Settings"
                     className="text-gray-600 hover:text-gray-900 cursor-pointer p-1 rounded-full -mt-1"
-                    onClick={() => {
-                      // Placeholder for settings click handler
-                      alert("Settings clicked");
-                    }}
+                    onClick={handleSettingsClick}
                   >
                     <FaCog size={26} />
                   </button>
@@ -426,21 +522,23 @@ const Lawyercalender = () => {
                         }`}
                       >
                         {date.getDate()}
-                        {date.getDate() === 4 && date.getMonth() === 6 && (
-                          <div className="absolute bottom-1 left-1 right-1 bg-red-200 text-red-800 text-xs rounded px-1 truncate">
-                            client meeting
-                          </div>
-                        )}
-                        {date.getDate() === 8 && date.getMonth() === 6 && (
-                          <div className="absolute bottom-1 left-1 right-1 bg-green-200 text-green-800 text-xs rounded px-1 truncate">
-                            galle high court
-                          </div>
-                        )}
-                        {date.getDate() === 17 && date.getMonth() === 6 && (
-                          <div className="absolute bottom-1 left-1 right-1 bg-blue-200 text-blue-800 text-xs rounded px-1 truncate">
-                            badulla court meeting
-                          </div>
-                        )}
+                        {/* Events with custom colors based on court */}
+                        {calendarEvents.map((event, eventIdx) => {
+                          if (date.getDate() === event.date && date.getMonth() === event.month) {
+                            const bgColor = getCourtBackgroundColor(event.location);
+                            const textColorClass = getTextColor(bgColor);
+                            return (
+                              <div 
+                                key={eventIdx}
+                                className={`absolute bottom-1 left-1 right-1 text-xs rounded px-1 truncate ${textColorClass}`}
+                                style={{ backgroundColor: bgColor }}
+                              >
+                                {event.title}
+                              </div>
+                            );
+                          }
+                          return null;
+                        })}
                       </button>
                     ) : (
                       <div key={idx}></div>
@@ -453,6 +551,14 @@ const Lawyercalender = () => {
         </div>
       </div>
       {showPopup && <Popup />}
+      
+      {/* Court Color Settings Modal */}
+      <CourtColorSettings 
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        courtColors={courtColors}
+        onSaveCourtColors={handleSaveCourtColors}
+      />
     </PageLayout>
   );
 };
