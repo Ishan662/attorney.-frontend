@@ -30,7 +30,7 @@ import NotFoundPage from './pages/Common/404';
 import JuniorDashboard from './pages/JuniorLawyer/JuniorDashboard';
 import AssignedCases from './pages/JuniorLawyer/AssignedCases';
 import Tasks from './pages/JuniorLawyer/Tasks';
-import JuniorMessages from './pages/JuniorLawyer/JuniorMessages';
+import JuniorMessage from './pages/JuniorLawyer/JuniorMessage';
 import JuniorHearings from './pages/JuniorLawyer/JuniorHearing';
 import AccountUsers from './pages/Lawyer/AccountUsers';
 import UserManagement from './pages/Admin/UserManagement';
@@ -95,7 +95,7 @@ export default function App() {
           <Route path="admin/packagemanagement" element={<PackageManagement />} />
           <Route path="junior/cases" element={<AssignedCases/>} />
           <Route path="junior/tasks" element={<Tasks/>} />
-          <Route path="junior/messages" element={<JuniorMessages/>} />
+          <Route path="junior/message" element={<JuniorMessage/>} />
           <Route path="junior/hearings" element={<JuniorHearings/>} />
           <Route path="lawyer/accountusers" element={<AccountUsers />} />
           <Route path="*" element={<NotFoundPage />} />
