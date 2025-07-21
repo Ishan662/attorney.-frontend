@@ -3,20 +3,31 @@ import Sidebar from "../../components/layout/Sidebar";
 import PageLayout from "../../components/layout/PageLayout";
 import Button1 from "../../components/UI/Button1";
 import Button2 from "../../components/UI/Button2";
-import Input1 from "../../components/UI/Input1";
 import SendRemindersModal from "./SendRemindersModal";
 import EditPaymentActions from "./EditPaymentActions";
 
 const DuePayments = () => {
-    const [activeTab, setActiveTab] = useState("all");
+    // Updated user data with correct role format
+    // const user = {
+    //     name: 'Nishagi Jewantha',
+    //     email: 'jeewanthadeherath@gmail.com',
+    //     role: 'lawyer' // Changed from 'Lawyer' to 'lawyer' for consistency
+    // };
+
+    const [notificationCount, setNotificationCount] = useState(1);
+    const [sidebarExpanded, setSidebarExpanded] = useState(true);
     const [showRemindersModal, setShowRemindersModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState(null);
-    const [searchTerm, setSearchTerm] = useState("");
     
-    // Handle tab change
-    const handleTabChange = (tab) => {
-        setActiveTab(tab);
+    // Handle notification click
+    const handleNotificationClick = () => {
+        console.log('Notifications clicked from Due Payments page');
+    };
+
+    // Handle sidebar toggle
+    const handleSidebarToggle = (expanded) => {
+        setSidebarExpanded(expanded);
     };
 
     // Enhanced sample payment due data with court and case number
@@ -131,94 +142,16 @@ const DuePayments = () => {
         // Implement sorting logic
     };
 
-    // Filter payments based on active tab and search
-    const getFilteredPayments = () => {
-        let paymentsToFilter = duePayments;
-        
-        // Filter by tab
-        if (activeTab === "overdue") {
-            paymentsToFilter = duePayments.filter(payment => payment.status === "Overdue");
-        }
-        
-        // Apply search filter
-        if (searchTerm) {
-            paymentsToFilter = paymentsToFilter.filter(payment => 
-                payment.client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                payment.caseNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                payment.court.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-        
-        return paymentsToFilter;
-    };
-
-    // Calculate overdue amount
-    const getOverdueAmount = () => {
-        return duePayments
-            .filter(p => p.status === 'Overdue')
-            .reduce((sum, payment) => sum + payment.amount, 0);
-    };
-
     return (
         <PageLayout>
             <div className="p-0">
                 {/* Due Payments Header */}
                 <div className="flex justify-between items-center mb-8">
                     <h1 className="text-2xl font-bold">Due Payments</h1>
-                </div>
-
-                {/* Tab Navigation */}
-                <div className="flex border-b mb-6">
-                    <button
-                        className={`py-2 px-4 font-medium ${activeTab === 'all' ? 'border-b-2 border-orange-500 text-orange-600' : 'text-gray-500 hover:text-gray-700'}`}
-                        onClick={() => handleTabChange('all')}
-                    >
-                        All Payments
-                    </button>
-                    <button
-                        className={`py-2 px-4 font-medium ${activeTab === 'overdue' ? 'border-b-2 border-orange-500 text-orange-600' : 'text-gray-500 hover:text-gray-700'}`}
-                        onClick={() => handleTabChange('overdue')}
-                    >
-                        Overdue
-                    </button>
-                </div>
-
-                {/* Search Section */}
-                <div className="mb-6 flex items-center justify-between">
-                    <div className="relative w-1/3">
-                        <Input1
-                            type="text"
-                            placeholder="Search by client name, case number, or court..."
-                            value={searchTerm}
-                            variant="outlined"
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                    <div className="flex items-center gap-2">
+                        <Button2 text="Print" className="text-sm py-1 px-4" />
                     </div>
                 </div>
-
-                {/* Overdue Summary (only show on overdue tab) */}
-                {activeTab === 'overdue' && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                        <div className="flex justify-between items-center">
-                            <div>
-                                <h3 className="text-lg font-medium text-red-800">Total Overdue Amount</h3>
-                                <p className="text-sm text-red-600">Payments that are past their due date</p>
-                            </div>
-                            <div className="text-right">
-                                <div className="flex items-center gap-4">
-                                    <div className="text-2xl font-bold text-red-700">
-                                        {formatCurrency(getOverdueAmount())}
-                                    </div>
-                                    <Button2 
-                                        text="Send Reminders" 
-                                        className="bg-red-600 hover:bg-red-700 text-white text-sm py-2 px-4"
-                                        onClick={() => setShowRemindersModal(true)}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 {/* Due Payments Table */}
                 <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -266,7 +199,7 @@ const DuePayments = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {getFilteredPayments().map((payment) => (
+                                {duePayments.map((payment) => (
                                     <tr 
                                         key={payment.id} 
                                         className="border-b last:border-b-0 hover:bg-gray-50"
@@ -332,8 +265,37 @@ const DuePayments = () => {
                     </div>
                 </div>
 
+                {/* Pagination or Additional Info */}
+                <div className="mt-6 text-center text-sm text-gray-600">
+                    <div className="flex justify-between items-center">
+                        <div>Showing {duePayments.length} items</div>
+                        <div className="flex items-center gap-2">
+                            <Button2 text="Previous" className="text-xs py-1 px-2" />
+                            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white">1</span>
+                            <Button2 text="Next" className="text-xs py-1 px-2" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Total Due */}
+                <div className="mt-8 bg-white rounded-lg shadow-md p-6">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-xl font-medium">Total Due Payments</h2>
+                        <div className="text-2xl font-bold text-orange-600">
+                            {formatCurrency(duePayments
+                                .filter(p => p.status !== 'Paid')
+                                .reduce((sum, payment) => sum + payment.amount, 0))}
+                        </div>
+                    </div>
+                </div>
+
                 {/* Actions */}
                 <div className="mt-8 flex justify-end gap-4">
+                    <Button2 
+                        text="Send Reminders" 
+                        className="py-2 px-4"
+                        onClick={() => setShowRemindersModal(true)}
+                    />
                     <Button1 
                         text="Edit Actions" 
                         onClick={() => {
