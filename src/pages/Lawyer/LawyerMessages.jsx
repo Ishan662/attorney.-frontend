@@ -3,32 +3,27 @@ import { useNavigate } from "react-router-dom";
 import { FaSearch, FaPaperclip, FaSmile, FaMicrophone, FaPaperPlane, FaArrowLeft, FaBars, FaUsers } from "react-icons/fa";
 import Sidebar from "../../components/layout/Sidebar";
 import logo from '../../assets/images/icon.png';
+import PageLayout from "../../components/layout/PageLayout";
 
-const JuniorMessages = () => {
+const LawyerMessages = () => {
     const [selectedChat, setSelectedChat] = useState(1);
     const [messageInput, setMessageInput] = useState("");
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mainSidebarExpanded, setMainSidebarExpanded] = useState(true);
-
-    const user = {
-        name: 'nishagi jewantha',
-        email: 'jewan...@gmail.com',
-        role: 'junior',
-    };
 
     // Mock chat data - First 3 are group chats
     const chatList = [
         {
             id: 1,
             name: "Case 0104",
-            lastMessage: "Sujan: I'll review your case documents and get back to you by tomorrow.",
+            lastMessage: "Nadun: I'll review your case documents and get back to you by tomorrow.",
             time: "2:45 PM",
             unread: 3,
             avatar: logo,
             online: true,
             isGroup: true,
             members: [
-                { name: "Sujan Darshana", role: "Senior Lawyer" },
+                { name: "Nadun Hasalanka", role: "Senior Lawyer" },
                 { name: "Priya Silva", role: "Junior Lawyer" },
                 { name: "Nethsilu Marasinghe", role: "Client" }
             ]
@@ -69,7 +64,7 @@ const JuniorMessages = () => {
             lastMessage: "Thank you for the payment confirmation.",
             time: "Yesterday",
             unread: 0,
-            avatar:  logo,
+            avatar: logo,
             online: false,
             isGroup: false
         },
@@ -79,7 +74,7 @@ const JuniorMessages = () => {
             lastMessage: "The case has been postponed to next month.",
             time: "Yesterday",
             unread: 0,
-            avatar: logo ,
+            avatar: logo,
             online: false,
             isGroup: false
         },
@@ -89,7 +84,7 @@ const JuniorMessages = () => {
             lastMessage: "I will check this",
             time: "Yesterday",
             unread: 0,
-            avatar: logo ,
+            avatar: logo,
             online: false,
             isGroup: false
         },
@@ -99,7 +94,7 @@ const JuniorMessages = () => {
             lastMessage: "Good",
             time: "Yesterday",
             unread: 0,
-            avatar:  logo ,
+            avatar: logo,
             online: false,
             isGroup: false
         },
@@ -109,7 +104,7 @@ const JuniorMessages = () => {
             lastMessage: "Done",
             time: "Yesterday",
             unread: 0,
-            avatar: logo ,
+            avatar: logo,
             online: false,
             isGroup: false
         },
@@ -119,7 +114,7 @@ const JuniorMessages = () => {
     const messages = [
         {
             id: 1,
-            sender: "Sujan Darshana",
+            sender: "Nadun Hasalanka",
             content: "Hello everyone, I've received Nethsilu's case documents. Let me review them and I'll get back to you shortly.",
             time: "2:30 PM",
             isOwn: false,
@@ -139,11 +134,11 @@ const JuniorMessages = () => {
             content: "I can assist with the research on similar property dispute cases. Let me compile some precedents.",
             time: "2:33 PM",
             isOwn: false,
-            role: "Client"
+            role: "Junior Lawyer"
         },
         {
             id: 4,
-            sender: "Sujan Darshana",
+            sender: "Nadun Hasalanka",
             content: "Excellent, Priya. That would be very helpful. Nethsilu, based on my initial review, we have a strong case.",
             time: "2:35 PM",
             isOwn: false,
@@ -163,11 +158,11 @@ const JuniorMessages = () => {
             content: "I've found 3 similar cases with favorable outcomes. Sharing the documents now.",
             time: "2:38 PM",
             isOwn: false,
-            role: "Client"
+            role: "Junior Lawyer"
         },
         {
             id: 7,
-            sender: "Sujan Darshana",
+            sender: "Nadun Hasalanka",
             content: "Perfect timing, Priya. I'll prepare a detailed analysis and strategy document. We'll also need to gather some additional evidence to strengthen our position.",
             time: "2:40 PM",
             isOwn: false,
@@ -175,7 +170,7 @@ const JuniorMessages = () => {
         },
         {
             id: 8,
-            sender: "Sujan Darshana",
+            sender: "Nadun Hasalanka",
             content: "I'll review your case documents and get back to you by tomorrow with a comprehensive plan.",
             time: "2:45 PM",
             isOwn: false,
@@ -201,18 +196,11 @@ const JuniorMessages = () => {
     };
 
     return (
-        <div className="h-screen bg-gray-100 flex">
-            {/* Main Navigation Sidebar */}
-            <Sidebar
-                user={user}
-                defaultExpanded={mainSidebarExpanded}
-                onToggle={setMainSidebarExpanded}
-            />
+        <PageLayout >
+            <div className="h-screen bg-gray-100 flex">
 
-            {/* Chat Application */}
-            <div className={`flex-1 flex flex-col transition-all duration-300 ${mainSidebarExpanded ? 'ml-64' : 'ml-20'}`}>
-                {/* Top Header Bar */}
-                <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                {/* Chat Application */}
+                <div className="bg-white shadow-sm border-b border-gray-200 flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                         <button
                             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -349,14 +337,14 @@ const JuniorMessages = () => {
                                         >
                                             <div
                                                 className={`max-w-sm lg:max-w-md xl:max-w-lg px-4 py-3 rounded-2xl shadow-sm ${message.isOwn
-                                                        ? 'bg-gray-400 text-white'
-                                                        : 'bg-white text-gray-900 border border-gray-200'
+                                                    ? 'bg-gray-400 text-white'
+                                                    : 'bg-white text-gray-900 border border-gray-200'
                                                     }`}
                                             >
                                                 {!message.isOwn && selectedChatData.isGroup && (
                                                     <p className={`text-xs font-medium mb-1 ${message.role === 'Senior Lawyer' ? 'text-blue-600' :
-                                                            message.role === 'Client' ? 'text-green-600' :
-                                                                'text-gray-600'
+                                                        message.role === 'Junior Lawyer' ? 'text-green-600' :
+                                                            'text-gray-600'
                                                         }`}>
                                                         {message.sender} • {message.role}
                                                     </p>
@@ -400,8 +388,8 @@ const JuniorMessages = () => {
                                             onClick={handleSendMessage}
                                             disabled={!messageInput.trim()}
                                             className={`p-3 rounded-full transition-colors ${messageInput.trim()
-                                                    ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-lg'
-                                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-lg'
+                                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                                 }`}
                                         >
                                             <FaPaperPlane size={16} />
@@ -423,8 +411,9 @@ const JuniorMessages = () => {
                     </div>
                 </div>
             </div>
-        </div>
+    </PageLayout>
+
     );
 };
 
-export default JuniorMessages;
+export default LawyerMessages;
