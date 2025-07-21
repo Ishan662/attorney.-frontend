@@ -127,9 +127,9 @@ export default function App() {
             
           <Route path="/lawyer/case/:caseId/edit" element={<EditCasePage />} />
 
-          <Route path="/junior/setting" element={<Settings />} />
-          <Route path="/client/setting" element={<clientSettings />} />
-          <Route path="/lawyer/setting" element={<LawyerSettings/>} />
+          <Route path="/junior/settings" element={<Settings />} />
+          <Route path="/client/settings" element={<clientSettings />} />
+          <Route path="/lawyer/settings" element={<LawyerSettings/>} />
 
           <Route path="/client/chat" element={<ClientMessages />} />
           <Route path="/client/payments" element={<Clientpayments />} />

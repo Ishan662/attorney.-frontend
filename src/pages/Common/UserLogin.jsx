@@ -25,9 +25,9 @@ const UserLogin = () => {
 
         const rolePaths = {
             LAWYER: '/lawyer/dashboard',
-            JUNIOR: '/junior/cases',
-            CLIENT: '/client/caseprofiles',
-            ADMIN: '/admin/systemsettings',
+            JUNIOR: '/junior/dashboard',
+            CLIENT: '/client/dashboard',
+            ADMIN: '/admin/dashboard',
             RESEARCHER: '/researcher/chatbot',
         };
 
