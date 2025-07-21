@@ -530,7 +530,7 @@ const CaseDetails = () => {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-end z-50" onClick={() => setShowChatModal(false)}>
                     <div className="bg-white rounded-lg shadow-lg w-96 mx-4 mt-4 h-[calc(100vh-2rem)] flex flex-col" onClick={(e) => e.stopPropagation()}>
                         {/* Chat Header */}
-                        <div className="border-b px-4 py-3 flex justify-between items-center">
+                        <div className="border-b px-4 py-3 flex justify-er45555t6yhb  between items-center">
                             <div>
                                 <h3 className="text-base font-semibold">Chat Box</h3>
                                 <p className="text-xs text-gray-600">Case: {caseData.caseNumber}</p>
