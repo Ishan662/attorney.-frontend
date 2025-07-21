@@ -193,7 +193,6 @@ const NewCaseProfile = () => {
   const [showCourtDropdown, setShowCourtDropdown] = useState(false);
   const [showJuniorDropdown, setShowJuniorDropdown] = useState(false);
   const [showClientDropdown, setShowClientDropdown] = useState(false);
-  const [hasCaseNumber, setHasCaseNumber] = useState(true); // New state for toggle
   // Add these new state variables
   const [juniorLawyerOptions, setJuniorLawyerOptions] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -373,43 +372,6 @@ const NewCaseProfile = () => {
       <div className="flex flex-col items-center w-full">
         <h1 className="text-2xl font-semibold mb-6">Add New Case Profile</h1>
         
-        {/* Case Type Toggle */}
-        <div className="w-full max-w-4xl mx-auto mb-6">
-          <div className="bg-white rounded-lg p-6 shadow-md">
-            <h3 className="text-lg font-medium mb-4">Case Registration Type</h3>
-            <div className="flex items-center space-x-4">
-              <button
-                type="button"
-                onClick={() => setHasCaseNumber(true)}
-                className={`px-6 py-3 rounded-full text-sm font-medium transition-all duration-200 ${
-                  hasCaseNumber
-                    ? 'bg-black text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                Registered Case
-              </button>
-              <button
-                type="button"
-                onClick={() => setHasCaseNumber(false)}
-                className={`px-6 py-3 rounded-full text-sm font-medium transition-all duration-200 ${
-                  !hasCaseNumber
-                    ? 'bg-black text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                Pre-Registration Case
-              </button>
-            </div>
-            <p className="text-sm text-gray-600 mt-3">
-              {hasCaseNumber 
-                ? "For cases that already have an official case number assigned by the court."
-                : "For cases in preparation stage. You can add the case number later when the case is officially registered."
-              }
-            </p>
-          </div>
-        </div>
-        
         {/* Add error display */}
         {error && (
           <div className="w-full max-w-4xl mx-auto mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -420,9 +382,7 @@ const NewCaseProfile = () => {
         <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-4xl mx-auto">
               {/* Case Overview */}
               <section className="bg-white rounded-lg p-8 shadow-md">
-                <h2 className="text-xl font-semibold mb-4">
-                  {hasCaseNumber ? "Registered Case Details" : "Pre-Registration Case Details"}
-                </h2>
+                <h2 className="text-xl font-semibold mb-4">New Case</h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* Left Side */}
                   <Input1
@@ -538,64 +498,30 @@ const NewCaseProfile = () => {
                     )}
                   </div>
                   
-                  {/* Conditional Case Number Field */}
-                  {hasCaseNumber ? (
-                    <>
-                      {/* Left Side - Case Number */}
-                      <Input1
-                        label="Case Number"
-                        name="caseNumber"
-                        value={form.caseNumber}
-                        onChange={handleChange}
-                        placeholder="Case Number"
-                        className="mt-2"
-                        variant="outlined"
-                        required
-                      />
-                      
-                      {/* Right Side - Initial Hearing Date */}
-                      <Input1
-                        label="Initial Hearing Date"
-                        name="date"
-                        type="date"
-                        value={form.date}
-                        onChange={handleChange}
-                        placeholder="Hearing date"
-                        className="mt-2"
-                        variant="outlined"
-                        required
-                      />
-                    </>
-                  ) : (
-                    <>
-                      {/* Left Side - Pre-Registration Notice */}
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <div className="flex items-start">
-                          <svg className="h-5 w-5 text-blue-400 mt-1 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                          </svg>
-                          <div>
-                            <h4 className="text-sm font-medium text-blue-800">Pre-Registration Case</h4>
-                            <p className="text-sm text-blue-700 mt-1">
-                              This case is in preparation stage. You can add the official case number and hearing date later when the case is registered with the court.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Right Side - Expected Filing Date */}
-                      <Input1
-                        label="Expected Filing Date"
-                        name="date"
-                        type="date"
-                        value={form.date}
-                        onChange={handleChange}
-                        placeholder="Expected filing date"
-                        className="mt-2"
-                        variant="outlined"
-                      />
-                    </>
-                  )}
+                  {/* Left Side */}
+                  <Input1
+                    label="Case Number"
+                    name="caseNumber"
+                    value={form.caseNumber}
+                    onChange={handleChange}
+                    placeholder="Case Number"
+                    className="mt-2"
+                    variant="outlined"
+                    required
+                  />
+                  
+                  {/* Right Side */}
+                  <Input1
+                    label="Initial Hearing date"
+                    name="date"
+                    type="date"
+                    value={form.date}
+                    onChange={handleChange}
+                    placeholder="Hearing date"
+                    className="mt-2"
+                    variant="outlined"
+                    required
+                  />
                 
                 </div>
                 <div className="mt-6">
@@ -607,6 +533,7 @@ const NewCaseProfile = () => {
                     value={form.description}
                     onChange={handleChange}
                     placeholder="Brief description of the case"
+                    required
                     className="w-full text-md py-3 px-4 rounded-lg bg-white border-2 border-gray-300 text-gray-800 placeholder-gray-500 focus:border-black transition-all duration-200 focus:outline-none resize-none"
                     rows={4}
                   />
@@ -617,138 +544,128 @@ const NewCaseProfile = () => {
               <section className="bg-white rounded-lg p-8 shadow-md">
                 <h2 className="text-xl font-semibold mb-4">Parties Involved</h2>
                 
-                {/* Client Information - Required */}
-                <div className="mb-8">
-                  <h3 className="text-lg font-medium mb-4 text-gray-800">Client Information <span className="text-red-500">*</span></h3>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {/* Choose from Existing Clients Dropdown */}
-                    <div className="relative">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Choose from Existing Clients
-                      </label>
-                      <div 
-                        className="w-full mt-2 text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 flex justify-between items-center cursor-pointer"
-                        onClick={() => setShowClientDropdown(!showClientDropdown)}
-                      >
-                        <span className="text-gray-500">
-                          Select from existing clients
-                        </span>
-                        <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${showClientDropdown ? 'transform rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                      
-                      {/* Client Dropdown Menu */}
-                      {showClientDropdown && (
-                        <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-64 rounded-md border border-gray-200 overflow-auto">
-                          <div className="py-1">
-                            <div className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border-b">
-                              Select Client
-                            </div>
-                            {predefinedClients.map((client) => (
-                              <div
-                                key={client.id}
-                                className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                                onClick={() => handleClientSelect(client)}
-                              >
-                                <div className="font-medium text-gray-900">{client.name}</div>
-                                <div className="text-sm text-gray-500">{client.phone}</div>
-                                <div className="text-sm text-gray-500">{client.email}</div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Choose from Existing Clients Dropdown */}
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Choose from Existing Clients
+                    </label>
+                    <div 
+                      className="w-full mt-2 text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 flex justify-between items-center cursor-pointer"
+                      onClick={() => setShowClientDropdown(!showClientDropdown)}
+                    >
+                      <span className="text-gray-500">
+                        Select from existing clients
+                      </span>
+                      <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${showClientDropdown ? 'transform rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
                     </div>
-
-                    {/* Empty space for alignment */}
-                    <div></div>
                     
-                    <Input1
-                      label="Client Name"
-                      name="clientName"
-                      value={form.clientName}
-                      onChange={handleChange}
-                      placeholder="Client Name"
-                      className="mt-2"
-                      variant="outlined"
-                      required
-                    />
-                    
-                    <Input1
-                      label="Client Phone"
-                      name="clientPhone"
-                      value={form.clientPhone}
-                      onChange={handleChange}
-                      placeholder="Client Phone Number"
-                      className="mt-2"
-                      variant="outlined"
-                      required
-                    />
-                    
-                    <Input1
-                      label="Client Email"
-                      name="clientEmail"
-                      value={form.clientEmail}
-                      onChange={handleChange}
-                      placeholder="Client Email"
-                      className="mt-2"
-                      variant="outlined"
-                      required
-                    />
-                    
-                    {/* Empty space for alignment */}
-                    <div></div>
-                  </div>
-                </div>
-
-                {/* Additional Parties - Optional */}
-                <div className="border-t border-gray-200 pt-6">
-                  <h3 className="text-lg font-medium mb-4 text-gray-800">Additional Parties <span className="text-gray-500 text-sm font-normal">(Optional)</span></h3>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <Input1
-                      label="Opposing Party"
-                      name="opposingParty"
-                      value={form.opposingParty}
-                      onChange={handleChange}
-                      placeholder="Opposing Party Name"
-                      className="mt-2"
-                      variant="outlined"
-                    />
-                    
-                    {/* Junior Lawyer Dropdown */}
-                    <div className="relative">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Junior Associated
-                      </label>
-                      <div 
-                        className="w-full mt-2 text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 flex justify-between items-center cursor-pointer"
-                        onClick={() => setShowJuniorDropdown(!showJuniorDropdown)}
-                      >
-                        <span className={form.junior ? "" : "text-gray-500"}>
-                          {getSelectedJuniorLabel()}
-                        </span>
-                        <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${showJuniorDropdown ? 'transform rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                      
-                      {/* Dropdown Menu */}
-                      {showJuniorDropdown && (
-                        <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 overflow-auto">
-                          {juniorLawyerOptions.map((option) => (
+                    {/* Client Dropdown Menu */}
+                    {showClientDropdown && (
+                      <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-64 rounded-md border border-gray-200 overflow-auto">
+                        <div className="py-1">
+                          <div className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border-b">
+                            Select Client
+                          </div>
+                          {predefinedClients.map((client) => (
                             <div
-                              key={option.value}
-                              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                              onClick={() => handleJuniorSelect(option)}
+                              key={client.id}
+                              className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                              onClick={() => handleClientSelect(client)}
                             >
-                              {option.label}
+                              <div className="font-medium text-gray-900">{client.name}</div>
+                              <div className="text-sm text-gray-500">{client.phone}</div>
+                              <div className="text-sm text-gray-500">{client.email}</div>
                             </div>
                           ))}
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
+
+                  <Input1
+                    label="Opposing Party"
+                    name="opposingParty"
+                    value={form.opposingParty}
+                    onChange={handleChange}
+                    placeholder="Opposing Party Name"
+                    className="mt-2"
+                    variant="outlined"
+                  />
+                  
+                  <Input1
+                    label="Client"
+                    name="clientName"
+                    value={form.clientName}
+                    onChange={handleChange}
+                    placeholder="Client Name"
+                    className="mt-2"
+                    variant="outlined"
+                    required
+                  />
+                  
+                  {/* Junior Lawyer Dropdown */}
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Junior Associated
+                    </label>
+                    <div 
+                      className="w-full mt-2 text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 flex justify-between items-center cursor-pointer"
+                      onClick={() => setShowJuniorDropdown(!showJuniorDropdown)}
+                    >
+                      <span className={form.junior ? "" : "text-gray-500"}>
+                        {getSelectedJuniorLabel()}
+                      </span>
+                      <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${showJuniorDropdown ? 'transform rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    
+                    {/* Dropdown Menu */}
+                    {showJuniorDropdown && (
+                      <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 overflow-auto">
+                        {juniorLawyerOptions.map((option) => (
+                          <div
+                            key={option.value}
+                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                            onClick={() => handleJuniorSelect(option)}
+                          >
+                            {option.label}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <Input1
+                    label="Client Phone"
+                    name="clientPhone"
+                    value={form.clientPhone}
+                    onChange={handleChange}
+                    placeholder="Client Phone Number"
+                    className="mt-2"
+                    variant="outlined"
+                    required
+                  />
+                  
+                  {/* Empty space for alignment */}
+                  <div></div>
+                  
+                  <Input1
+                    label="Client Email"
+                    name="clientEmail"
+                    value={form.clientEmail}
+                    onChange={handleChange}
+                    placeholder="Client Email"
+                    className="mt-2"
+                    variant="outlined"
+                    required
+                  />
+                  
+                  {/* Empty space for alignment */}
+                  <div></div>
                 </div>
               </section>
 
@@ -787,11 +704,9 @@ const NewCaseProfile = () => {
               </section>
 
               {/* Submit Button */}
-
-              {/* Submit Button */}
               <div className="flex justify-center mt-6">
                 <Button1 
-                  text={isSubmitting ? "Creating..." : hasCaseNumber ? "Create Case Profile" : "Create Pre-Registration Case"} 
+                  text={isSubmitting ? "Creating..." : "Create Case Profile"} 
                   type="submit" 
                   className="px-8"
                   disabled={isSubmitting}
