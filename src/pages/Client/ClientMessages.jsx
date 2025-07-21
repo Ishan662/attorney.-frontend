@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaSearch, FaPaperclip, FaSmile, FaMicrophone, FaPaperPlane, FaArrowLeft, FaBars, FaUsers } from "react-icons/fa";
 import Sidebar from "../../components/layout/Sidebar";
+import Input1 from "../../components/UI/Input1";
 
 const ClientMessages = () => {
     const navigate = useNavigate();
@@ -9,6 +10,7 @@ const ClientMessages = () => {
     const [messageInput, setMessageInput] = useState("");
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mainSidebarExpanded, setMainSidebarExpanded] = useState(true);
+    const [search, setSearch] = useState("");
 
     const user = {
         name: 'Nethsilu Marasinghe',
@@ -185,6 +187,12 @@ const ClientMessages = () => {
 
     const selectedChatData = chatList.find(chat => chat.id === selectedChat);
 
+    // Filter chat list based on search input
+    const filteredChatList = chatList.filter(chat =>
+        chat.name.toLowerCase().includes(search.toLowerCase()) ||
+        chat.lastMessage.toLowerCase().includes(search.toLowerCase())
+    );
+
     const handleSendMessage = () => {
         if (messageInput.trim()) {
             // Here you would typically send the message to your backend
@@ -236,19 +244,21 @@ const ClientMessages = () => {
                     <div className={`${sidebarCollapsed ? 'w-0' : 'w-80'} lg:w-80 bg-white border-r border-gray-200 flex flex-col transition-all duration-300 overflow-hidden`}>
                         {/* Search Bar */}
                         <div className="p-4 border-b border-gray-200">
-                            <div className="relative">
-                                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                                <input
+                            <div className="max-w-md">
+                                <Input1
                                     type="text"
+                                    value={search}
+                                    onChange={e => setSearch(e.target.value)}
                                     placeholder="Search conversations..."
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="bg-orange-50"
+                                    variant="outlined"
                                 />
                             </div>
                         </div>
 
                         {/* Chat List */}
                         <div className="flex-1 overflow-y-auto">
-                            {chatList.map((chat) => (
+                            {filteredChatList.map((chat) => (
                                 <div
                                     key={chat.id}
                                     onClick={() => {

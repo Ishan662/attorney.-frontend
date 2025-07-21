@@ -552,9 +552,9 @@ const Clientcalender = () => {
       ? "bg-gray-400 text-white"
       : "hover:bg-gray-100"
   }`}
-  style={{ height: "3rem" }}
+  style={{ height: "1.5rem" }}
 >
-  <div className="self-start pl-1">
+  <div className="self-start pl-4">
     {date.getDate()}
   </div>
 </button>
