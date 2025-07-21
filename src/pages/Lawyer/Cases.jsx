@@ -5,6 +5,7 @@ import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import Input1 from '../../components/UI/Input1';
 import PageHeader from '../../components/layout/PageHeader';
+import PageLayout from '../../components/layout/PageLayout';
 import { useNavigate } from 'react-router-dom';
 
 const DropdownFilter = ({ label, options, value, onChange }) => {
@@ -41,11 +42,11 @@ const DropdownFilter = ({ label, options, value, onChange }) => {
     );
 };
 
-const user = {
-    name: 'Nishagi Jewantha',
-    email: 'jewanthadheerath@gmail.com',
-    role: 'lawyer',
-};
+// const user = {
+//     name: 'Nishagi Jewantha',
+//     email: 'jewanthadheerath@gmail.com',
+//     role: 'lawyer',
+// };
 
 
 const handleNotificationClick = () => {
@@ -106,17 +107,15 @@ const casesData = [
 ];
 
 const Cases = () => {
-
-    const [sidebarExpanded, setSidebarExpanded] = useState(true);
-    const [notificationCount, setNotificationCount] = useState(1);
-
     const [activeTab, setActiveTab] = useState('Table');
     const [searchTerm, setSearchTerm] = useState('');
     const [filters, setFilters] = useState({
         caseType: '',
         upcomingHearings: '',
         closedCases: '',
-        paymentDue: ''
+        court: '',
+        startDate: '',
+        endDate: ''
     });
 
     const navigate = useNavigate();
@@ -167,47 +166,63 @@ const Cases = () => {
             (filters.closedCases === 'Open Only' && caseItem.status === 'Open') ||
             (filters.closedCases === 'Closed Only' && caseItem.status === 'Closed');
 
-        // Payment Due filter
-        const matchesPaymentDue =
-            !filters.paymentDue ||
-            filters.paymentDue === 'All Payments' ||
-            caseItem.paymentStatus === filters.paymentDue;
+        // Court filter
+        const matchesCourt =
+            !filters.court ||
+            filters.court === 'All Courts' ||
+            caseItem.court === filters.court;
+
+        // Date Range filter
+        const matchesDateRange = (() => {
+            if (!filters.startDate && !filters.endDate) return true;
+            
+            const hearingDate = new Date(caseItem.nextHearingDate);
+            
+            // If only start date is provided
+            if (filters.startDate && !filters.endDate) {
+                const startDate = new Date(filters.startDate);
+                return hearingDate >= startDate;
+            }
+            
+            // If only end date is provided
+            if (!filters.startDate && filters.endDate) {
+                const endDate = new Date(filters.endDate);
+                return hearingDate <= endDate;
+            }
+            
+            // If both dates are provided
+            if (filters.startDate && filters.endDate) {
+                const startDate = new Date(filters.startDate);
+                const endDate = new Date(filters.endDate);
+                return hearingDate >= startDate && hearingDate <= endDate;
+            }
+            
+            return true;
+        })();
 
         return (
             matchesSearch &&
             matchesCaseType &&
             matchesUpcomingHearings &&
             matchesClosedCases &&
-            matchesPaymentDue
+            matchesCourt &&
+            matchesDateRange
         );
     });
 
     return (
-        <div className="flex min-h-screen bg-white-50">
-            <Sidebar
-                user={user}
-                onToggle={setSidebarExpanded}
-            />
-            <div
-                className="flex-grow overflow-y-auto transition-all duration-300"
-                style={{
-                    marginLeft: sidebarExpanded ? '16rem' : '5rem'
-                }}
-            >
-
-                <div className="p-6">
-                    <div className='mb-8'>
-                        <PageHeader
-                            user={user}
-                            notificationCount={notificationCount}
-                            onNotificationClick={handleNotificationClick}
-                        />
-                    </div>
-                    <main className="flex-1 p-8">
+        <PageLayout>
+            <div className="flex-grow overflow-y-auto transition-all duration-300">
+                <div className="p-0">
+                    <main className="flex-1 p-0">
+                        <div className='justify-between flex items-center mb-6'>
+                            <h1 className="text-2xl font-semibold mb-6">View All Case Details</h1>
+                            <Button1 text="+ Add Case" onClick={() => navigate('/lawyer/newcaseprofile')} />
+                        </div>
 
                         {/* Search Bar */}
                         <div className="mb-6 flex items-center justify-between">
-                            <div className="relative w-64">
+                            <div className="relative w-1/3">
                                 <Input1
                                     type="text"
                                     placeholder="Search cases"
@@ -216,8 +231,6 @@ const Cases = () => {
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
-                            <Button1 text="+ Add Case" onClick={() => navigate('/lawyer/newcaseprofile')} />
-
                         </div>
 
                         {/* Tabs */}
@@ -239,59 +252,100 @@ const Cases = () => {
                         </div>
 
                         {/* Filters */}
-                        <div className="flex flex-wrap gap-4 mb-6">
-                            <span className="inline-block px-3 py-1 bg-black text-white text-sm rounded-full">
-                                Cases
-                            </span>
+                        <div className="bg-white rounded-lg p-4 shadow-md mb-6">
+                            <div className="flex flex-wrap gap-4">
+                                <span className="py-2 text-black text-sm">
+                                    Filters:
+                                </span>
 
-                            <DropdownFilter
-                                label="Case Type"
-                                options={['All Types', 'Probate', 'Guardianship', 'Estate Litigation']}
-                                value={filters.caseType}
-                                onChange={(value) => setFilters({ ...filters, caseType: value })}
-                            />
+                                <DropdownFilter
+                                    label="Case Type"
+                                    options={['All Types', 'Probate', 'Guardianship', 'Estate Litigation']}
+                                    value={filters.caseType}
+                                    onChange={(value) => setFilters({ ...filters, caseType: value })}
+                                />
 
-                            <DropdownFilter
-                                label="Upcoming Hearings"
-                                options={['All Hearings', 'This Week', 'This Month', 'Next Month']}
-                                value={filters.upcomingHearings}
-                                onChange={(value) => setFilters({ ...filters, upcomingHearings: value })}
-                            />
+                                <DropdownFilter
+                                    label="Upcoming Hearings"
+                                    options={['All Hearings', 'This Week', 'This Month', 'Next Month']}
+                                    value={filters.upcomingHearings}
+                                    onChange={(value) => setFilters({ ...filters, upcomingHearings: value })}
+                                />
 
-                            <DropdownFilter
-                                label="Closed Cases"
-                                options={['All Cases', 'Open Only', 'Closed Only']}
-                                value={filters.closedCases}
-                                onChange={(value) => setFilters({ ...filters, closedCases: value })}
-                            />
+                                <DropdownFilter
+                                    label="Closed Cases"
+                                    options={['All Cases', 'Open Only', 'Closed Only']}
+                                    value={filters.closedCases}
+                                    onChange={(value) => setFilters({ ...filters, closedCases: value })}
+                                />
 
-                            <DropdownFilter
-                                label="Payment Due"
-                                options={['All Payments', 'Paid', 'Pending', 'Overdue']}
-                                value={filters.paymentDue}
-                                onChange={(value) => setFilters({ ...filters, paymentDue: value })}
-                            />
+                                <DropdownFilter
+                                    label="Court"
+                                    options={['All Courts', 'Superior Court', 'Family Court', 'Probate Court']}
+                                    value={filters.court}
+                                    onChange={(value) => setFilters({ ...filters, court: value })}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Date Range Filter - Separate Section */}
+                        <div className="bg-white rounded-lg p-4 shadow-md mb-6">
+                            <div className="flex items-center space-x-4">
+                                <span className="py-2 text-black text-sm font-medium">
+                                    Date Range Filter:
+                                </span>
+                                <div className="flex items-center space-x-2">
+                                    <Input1
+                                        type="date"
+                                        placeholder="Start Date"
+                                        value={filters.startDate}
+                                        variant="outlined"
+                                        onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+                                        className="w-32 text-sm"
+                                    />
+                                    <span className="text-gray-400 text-sm">to</span>
+                                    <Input1
+                                        type="date"
+                                        placeholder="End Date"
+                                        value={filters.endDate}
+                                        variant="outlined"
+                                        onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+                                        className="w-32 text-sm"
+                                    />
+                                    {(filters.startDate || filters.endDate) && (
+                                        <button
+                                            onClick={() => setFilters({ ...filters, startDate: '', endDate: '' })}
+                                            className="text-gray-400 hover:text-gray-600 ml-2"
+                                            title="Clear date range"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
                         </div>
 
                         {/* Table or Cards */}
                         {activeTab === 'Table' ? (
-                            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                            <div className="bg-white rounded-lg shadow-md overflow-hidden">
                                 <div className="overflow-x-auto">
                                     <table className="w-full">
-                                        <thead className="bg-gray-50 border-b border-gray-200">
-                                            <tr>
-                                                <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Case Name</th>
-                                                <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Case Type</th>
-                                                <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Case Number</th>
-                                                <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Court</th>
-                                                <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Next Hearing Date</th>
-                                                <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Status</th>
-                                                <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Payment Status</th>
+                                        <thead>
+                                            <tr className="border-b">
+                                                <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">CASE NAME</th>
+                                                <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">CASE TYPE</th>
+                                                <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">CASE NUMBER</th>
+                                                <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">COURT</th>
+                                                <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">NEXT HEARING DATE</th>
+                                                <th className="px-6 py-4 text-center text-sm font-medium text-gray-600">STATUS</th>
+                                                <th className="px-6 py-4 text-center text-sm font-medium text-gray-600">PAYMENT STATUS</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-gray-200">
+                                        <tbody>
                                             {filteredCases.map((caseItem) => (
-                                                <tr key={caseItem.id} className="hover:bg-gray-50 cursor-pointer">
+                                                <tr key={caseItem.id} className="border-b last:border-b-0 hover:bg-gray-50 cursor-pointer">
                                                     <td className="px-6 py-4">
                                                         <div className="text-sm font-medium text-gray-900">{caseItem.name}</div>
                                                     </td>
@@ -308,14 +362,18 @@ const Cases = () => {
                                                         <div className="text-sm text-gray-600">{caseItem.nextHearingDate}</div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <span className={getStatusBadge(caseItem.status)}>
-                                                            {caseItem.status}
-                                                        </span>
+                                                        <div className="flex justify-center">
+                                                            <span className={getStatusBadge(caseItem.status)}>
+                                                                {caseItem.status}
+                                                            </span>
+                                                        </div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <span className={getPaymentStatusBadge(caseItem.paymentStatus)}>
-                                                            {caseItem.paymentStatus}
-                                                        </span>
+                                                        <div className="flex justify-center">
+                                                            <span className={getPaymentStatusBadge(caseItem.paymentStatus)}>
+                                                                {caseItem.paymentStatus}
+                                                            </span>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -345,7 +403,7 @@ const Cases = () => {
                     </main>
                 </div>
             </div>
-        </div>
+        </PageLayout>
     );
 };
 export default Cases;

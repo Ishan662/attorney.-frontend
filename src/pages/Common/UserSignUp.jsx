@@ -178,7 +178,7 @@ const UserSignUp = () => {
                     </p>
                 </div>
 
-                <Button1
+                {/* <Button1
                     text="Test Alert"
                     onClick={() =>
                         Swal.fire({
@@ -195,7 +195,7 @@ const UserSignUp = () => {
                             }
                         })
                     }
-                />
+                /> */}
 
                 {/* User Type Toggle */}
                 <div className="flex bg-gray-100 rounded-lg p-1">
@@ -396,7 +396,7 @@ const UserSignUp = () => {
                         </button>
                     </div>
 
-                    <div className="text-center">
+                    {/* <div className="text-center">
                         <button
                             type="button"
                             className="flex items-center justify-center w-full py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
@@ -406,7 +406,7 @@ const UserSignUp = () => {
                             </svg>
                             Log in with QR code
                         </button>
-                    </div>
+                    </div> */}
                 </form>
 
                 <div className="text-sm text-center mt-4">
