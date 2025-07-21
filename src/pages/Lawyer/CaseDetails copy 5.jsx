@@ -25,42 +25,7 @@ const CaseDetails = () => {
     const [showClientModal, setShowClientModal] = useState(false);
     const [showEditHearingModal, setShowEditHearingModal] = useState(false);
     const [showJuniorModal, setShowJuniorModal] = useState(false);
-    const [showChatModal, setShowChatModal] = useState(false);
     const [selectedHearing, setSelectedHearing] = useState(null);
-    const [chatMessage, setChatMessage] = useState('');
-    const [chatMessages, setChatMessages] = useState([
-        {
-            id: 1,
-            sender: 'System',
-            message: 'Welcome to the case team chat. You can discuss case details and coordinate with your team here.',
-            timestamp: '14/07/2025, 19:35:16',
-            isSystem: true
-        },
-        {
-            id: 2,
-            sender: 'Client',
-            message: 'Thank you for your preference. We have a 2018 BMW M2 Coupe available. It\'s a petrol car with an automatic transmission and has done 61,465km. The price is $49,990. Would you like more information about this car?',
-            timestamp: '14/07/2025, 19:35:16',
-            isSystem: false,
-            isClient: true
-        },
-        {
-            id: 3,
-            sender: 'Lawyer',
-            message: 'yes',
-            timestamp: '14/07/2025, 19:36:27',
-            isSystem: false,
-            isClient: false
-        },
-        {
-            id: 4,
-            sender: 'Client',
-            message: 'Absolutely! This 2018 BMW M2 Coupe is a New Zealand new car with low mileage. It has a 2993cc twin-turbo DOHC inline-six petrol engine that produces 272kW and 465Nm of torque. It can go from 0 to 100kph in 4 seconds. The car is in Snapper Rocks blue metallic color and has a 7-Speed DCT transmission. Would you like to know about its interior features?',
-            timestamp: '14/07/2025, 19:36:38',
-            isSystem: false,
-            isClient: true
-        }
-    ]);
     
     const [caseData, setCaseData] = useState(null); 
     const [isLoading, setIsLoading] = useState(true);
@@ -223,29 +188,6 @@ const CaseDetails = () => {
         }
     };
 
-    // Handle chat functionality
-    const handleSendMessage = () => {
-        if (chatMessage.trim()) {
-            const newMessage = {
-                id: chatMessages.length + 1,
-                sender: user.name,
-                message: chatMessage,
-                timestamp: new Date().toLocaleString('en-GB', {
-                    day: '2-digit',
-                    month: '2-digit', 
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                }),
-                isSystem: false,
-                isClient: false
-            };
-            setChatMessages(prev => [...prev, newMessage]);
-            setChatMessage('');
-        }
-    };
-
     // --- DYNAMIC TIMELINE GENERATION ---
     // This now uses the 'hearings' state variable
     const timelineEvents = hearings
@@ -263,19 +205,6 @@ const CaseDetails = () => {
 
     return (
         <PageLayout user={user}>
-            {/* Chat Button - Fixed position */}
-            <div className="fixed bottom-6 right-6 z-40">
-                <button
-                    onClick={() => setShowChatModal(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 shadow-lg transition-colors duration-200"
-                    title="Team Chat"
-                >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.02-5.874A8.955 8.955 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z" />
-                    </svg>
-                </button>
-            </div>
-
             <div className="flex items-center justify-between mb-6">
                 {/* Left side: The "Back" button */}
                 <Button1 
@@ -520,80 +449,6 @@ const CaseDetails = () => {
                                 text="Cancel"
                                 onClick={() => setShowJuniorModal(false)}
                             />
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Team Chat Modal */}
-            {showChatModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-end z-50" onClick={() => setShowChatModal(false)}>
-                    <div className="bg-white rounded-lg shadow-lg w-96 mx-4 mt-4 h-[calc(100vh-2rem)] flex flex-col" onClick={(e) => e.stopPropagation()}>
-                        {/* Chat Header */}
-                        <div className="border-b px-4 py-3 flex justify-er45555t6yhb  between items-center">
-                            <div>
-                                <h3 className="text-base font-semibold">Chat Box</h3>
-                                <p className="text-xs text-gray-600">Case: {caseData.caseNumber}</p>
-                            </div>
-                            <button 
-                                className="text-gray-400 hover:text-gray-500" 
-                                onClick={() => setShowChatModal(false)}
-                            >
-                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        {/* Chat Messages Area */}
-                        <div className="flex-1 overflow-y-auto p-3 bg-gray-50">
-                            <div className="space-y-3">
-                                {chatMessages.map((msg) => (
-                                    <div key={msg.id} className={`flex ${msg.isSystem ? 'justify-center' : msg.isClient ? 'justify-start' : 'justify-end'}`}>
-                                        <div className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
-                                            msg.isSystem 
-                                                ? 'bg-yellow-100 text-yellow-800 text-center text-xs px-2 py-1'
-                                                : msg.isClient
-                                                    ? 'bg-white text-gray-800 rounded-bl-none border' 
-                                                    : 'bg-gray-400 bg-opacity-60 text-gray-800 rounded-br-none'
-                                        }`}>
-                                            {!msg.isSystem && (
-                                                <div className="text-xs font-medium mb-1 opacity-70">
-                                                    {msg.isClient ? 'Client' : msg.sender}
-                                                </div>
-                                            )}
-                                            <div>{msg.message}</div>
-                                            <div className={`text-xs mt-1 ${
-                                                msg.isSystem 
-                                                    ? 'text-yellow-600' 
-                                                    : 'text-gray-500'
-                                            }`}>
-                                                {msg.timestamp}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Chat Input Area */}
-                        <div className="border-t p-3 bg-white">
-                            <div className="flex space-x-2">
-                                <input
-                                    type="text"
-                                    value={chatMessage}
-                                    onChange={(e) => setChatMessage(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                                    placeholder="Type your message..."
-                                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                />
-                                <button
-                                    onClick={handleSendMessage}
-                                    className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-4 py-2 transition-colors duration-200 flex items-center justify-center"
-                                >
-                                    <span className="text-sm font-medium">Send</span>
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
