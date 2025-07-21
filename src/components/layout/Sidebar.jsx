@@ -141,6 +141,8 @@ const getRoleDisplayName = (role) => {
             return 'Junior Lawyer';
         case 'lawyer':
             return 'Senior Lawyer';
+        case 'admin':
+            return 'Administrator';
         default:
             return 'User';
     }
