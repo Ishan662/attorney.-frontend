@@ -132,7 +132,6 @@ const AccountUsers = () => {
         name: "",
         email: "",
         phone: "",
-        court: "",
         location: "",
         salary: ""
     });
@@ -142,7 +141,6 @@ const AccountUsers = () => {
         name: "",
         email: "",
         phone: "",
-        court: "",
         location: ""
     });
 
@@ -215,10 +213,6 @@ const AccountUsers = () => {
             errors.location = "Location is required";
         }
 
-        if (!formData.court.trim()) {
-            errors.court = "Court is required";
-        }
-
         if (activeTab === "junior-lawyers" && !formData.salary.trim()) {
             errors.salary = "Salary amount is required";
         } else if (activeTab === "junior-lawyers" && (isNaN(Number(formData.salary)) || Number(formData.salary) <= 0)) {
@@ -247,12 +241,12 @@ const AccountUsers = () => {
                     name: newLawyer.name,
                     email: newLawyer.email,
                     phone: newLawyer.phone,
-                    court: newLawyer.court,
                     location: newLawyer.location,
                     status: "active",
                     dateAdded: new Date().toISOString().split('T')[0],
                     casesAssigned: 0,
                     avatar: null,
+                    court: "District Court", // Default court value
                     salary: {
                         amount: Number(newLawyer.salary),
                         lastPaid: null,
@@ -265,7 +259,6 @@ const AccountUsers = () => {
                     name: "",
                     email: "",
                     phone: "",
-                    court: "",
                     location: "",
                     salary: ""
                 });
@@ -278,12 +271,12 @@ const AccountUsers = () => {
                     name: newClient.name,
                     email: newClient.email,
                     phone: newClient.phone,
-                    court: newClient.court,
                     location: newClient.location,
                     status: "active",
                     dateAdded: new Date().toISOString().split('T')[0],
                     casesAssigned: 0,
-                    avatar: null
+                    avatar: null,
+                    court: "District Court" // Default court value
                 };
                 
                 setClients(prev => [...prev, newClientData]);
@@ -291,7 +284,6 @@ const AccountUsers = () => {
                     name: "",
                     email: "",
                     phone: "",
-                    court: "",
                     location: ""
                 });
                 
@@ -434,11 +426,13 @@ const AccountUsers = () => {
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Account Users</h1>
-                <Button1 
-                    text={activeTab === "junior-lawyers" ? "Add Junior Lawyer" : "Add Client"} 
-                    onClick={() => setShowAddModal(true)}
-                    className="px-4"
-                />
+                {activeTab === "junior-lawyers" && (
+                    <Button1 
+                        text="Add Junior Lawyer"
+                        onClick={() => setShowAddModal(true)}
+                        className="px-4"
+                    />
+                )}
             </div>
 
             {/* Tab Navigation */}
@@ -457,43 +451,46 @@ const AccountUsers = () => {
                 </button>
             </div>
 
+            {/* Search Bar */}
+            <div className="mb-6 flex items-center justify-between">
+                <div className="relative w-1/3">
+                    <Input1
+                        type="text"
+                        placeholder="Search by name, email or location"
+                        value={searchTerm}
+                        variant="outlined"
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+            </div>
+
             {/* Filters */}
             <div className="bg-white rounded-lg p-4 shadow-md mb-6">
-                <div className="flex flex-col md:flex-row justify-between gap-4">
-                    <div className="w-full md:w-1/3">
-                        <Input1
-                            type="text"
-                            placeholder="Search by name, email or location"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            variant="outlined"
-                            className="w-full"
-                        />
-                    </div>
+                <div className="flex flex-wrap gap-4">
+                    <span className="py-2 text-black text-sm">
+                        Filter:
+                    </span>
                     
-                    <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-600">Filter:</span>
-                        <div className="flex space-x-2">
-                            <button 
-                                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${filter === "all" ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
-                                onClick={() => setFilter("all")}
-                            >
-                                All
-                            </button>
-                            <button 
-                                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${filter === "active" ? "bg-green-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
-                                onClick={() => setFilter("active")}
-                            >
-                                Active
-                            </button>
-                            <button 
-                                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${filter === "inactive" ? "bg-gray-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
-                                onClick={() => setFilter("inactive")}
-                            >
-                                Inactive
-                            </button>
-                        </div>
-                    </div>
+                    <button 
+                        className={`flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg transition-colors ${filter === "all" ? "bg-orange-500 text-white border-orange-500" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+                        onClick={() => setFilter("all")}
+                    >
+                        <span className="text-sm">All</span>
+                    </button>
+                    
+                    <button 
+                        className={`flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg transition-colors ${filter === "active" ? "bg-green-500 text-white border-green-500" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+                        onClick={() => setFilter("active")}
+                    >
+                        <span className="text-sm">Active</span>
+                    </button>
+                    
+                    <button 
+                        className={`flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg transition-colors ${filter === "inactive" ? "bg-gray-500 text-white border-gray-500" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+                        onClick={() => setFilter("inactive")}
+                    >
+                        <span className="text-sm">Inactive</span>
+                    </button>
                 </div>
             </div>
 
@@ -503,19 +500,19 @@ const AccountUsers = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
-                                <tr className="bg-gray-50 text-left">
-                                    <th className="px-6 py-4 text-sm font-medium text-gray-600">Name</th>
-                                    <th className="px-6 py-4 text-sm font-medium text-gray-600">Contact Information</th>
-                                    <th className="px-6 py-4 text-sm font-medium text-gray-600">Location</th>
-                                    <th className="px-6 py-4 text-sm font-medium text-gray-600">Court</th>
-                                    <th className="px-6 py-4 text-sm font-medium text-gray-600">Added On</th>
-                                    <th className="px-6 py-4 text-sm font-medium text-gray-600">Status</th>
-                                    <th className="px-6 py-4 text-sm font-medium text-gray-600">Actions</th>
+                                <tr className="border-b">
+                                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">NAME</th>
+                                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">CONTACT INFORMATION</th>
+                                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">LOCATION</th>
+                                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">COURT</th>
+                                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-600">ADDED ON</th>
+                                    <th className="px-6 py-4 text-center text-sm font-medium text-gray-600">STATUS</th>
+                                    <th className="px-6 py-4 text-center text-sm font-medium text-gray-600">ACTIONS</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {getFilteredUsers().map((user) => (
-                                    <tr key={user.id} className="border-t hover:bg-gray-50">
+                                    <tr key={user.id} className="border-b last:border-b-0 hover:bg-gray-50">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center">
                                                 <div className={`w-8 h-8 rounded-full ${getAvatarColor(user.name)} flex items-center justify-center text-xs font-medium mr-3`}>
@@ -544,23 +541,25 @@ const AccountUsers = () => {
                                         <td className="px-6 py-4 text-sm">{user.court}</td>
                                         <td className="px-6 py-4 text-sm">{formatDate(user.dateAdded)}</td>
                                         <td className="px-6 py-4">
-                                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium 
-                                                ${user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}
-                                            `}>
-                                                {user.status === 'active' ? 'Active' : 'Inactive'}
-                                            </span>
+                                            <div className="flex justify-center">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block
+                                                    ${user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}
+                                                `}>
+                                                    {user.status === 'active' ? 'Active' : 'Inactive'}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="flex space-x-2">
+                                            <div className="flex justify-center space-x-2">
                                                 <button 
                                                     className="text-xs font-medium text-blue-600 hover:text-blue-800"
-                                                    onClick={() => {
-                                                        if (activeTab === "junior-lawyers") {
-                                                            navigate(`/lawyer/account-users/${user.id}`);
-                                                        } else {
-                                                            navigate(`/lawyer/clients/${user.id}`);
-                                                        }
-                                                    }}
+                                                    // onClick={() => {
+                                                    //     if (activeTab === "junior-lawyers") {
+                                                    //         navigate(`/lawyer/account-users/${user.id}`);
+                                                    //     } else {
+                                                    //         navigate(`/lawyer/clients/${user.id}`);
+                                                    //     }
+                                                    // }}
                                                 >
                                                     View
                                                 </button>
@@ -728,41 +727,17 @@ const AccountUsers = () => {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Location
                                 </label>
-                                <select
+                                <Input1
+                                    type="text"
                                     name="location"
                                     value={activeTab === "junior-lawyers" ? newLawyer.location : newClient.location}
                                     onChange={handleInputChange}
-                                    className="w-full text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 focus:border-black transition-all duration-200 focus:outline-none"
-                                >
-                                    <option value="">Select Location</option>
-                                    {locationOptions.map((location, index) => (
-                                        <option key={index} value={location}>{location}</option>
-                                    ))}
-                                </select>
+                                    placeholder="Enter location"
+                                    variant="outlined"
+                                    className="w-full"
+                                />
                                 {formErrors.location && (
                                     <p className="text-red-500 text-xs mt-1">{formErrors.location}</p>
-                                )}
-                            </div>
-
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Court
-                                </label>
-                                <select
-                                    name="court"
-                                    value={activeTab === "junior-lawyers" ? newLawyer.court : newClient.court}
-                                    onChange={handleInputChange}
-                                    className="w-full text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 focus:border-black transition-all duration-200 focus:outline-none"
-                                >
-                                    <option value="">Select Court</option>
-                                    <option value="District Court">District Court</option>
-                                    <option value="High Court">High Court</option>
-                                    <option value="Supreme Court">Supreme Court</option>
-                                    <option value="Family Court">Family Court</option>
-                                    <option value="Magistrate Court">Magistrate Court</option>
-                                </select>
-                                {formErrors.court && (
-                                    <p className="text-red-500 text-xs mt-1">{formErrors.court}</p>
                                 )}
                             </div>
 

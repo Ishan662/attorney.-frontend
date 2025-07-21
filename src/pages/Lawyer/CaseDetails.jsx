@@ -24,6 +24,7 @@ const CaseDetails = () => {
     const navigate = useNavigate();
     const [showClientModal, setShowClientModal] = useState(false);
     const [showEditHearingModal, setShowEditHearingModal] = useState(false);
+    const [showJuniorModal, setShowJuniorModal] = useState(false);
     const [selectedHearing, setSelectedHearing] = useState(null);
     
     const [caseData, setCaseData] = useState(null); 
@@ -52,6 +53,38 @@ const CaseDetails = () => {
     
     // This state will now manage the list of hearings, populated from the API
     const [hearings, setHearings] = useState([]);
+
+    // Sample junior lawyers data - in a real app, this would come from an API
+    const [availableJuniors] = useState([
+        {
+            id: 1,
+            name: "Jane Smith",
+            email: "jane.smith@example.com",
+            specialization: "Corporate Law",
+            experience: "2 years"
+        },
+        {
+            id: 2,
+            name: "Michael Johnson", 
+            email: "michael.johnson@example.com",
+            specialization: "Criminal Law",
+            experience: "3 years"
+        },
+        {
+            id: 3,
+            name: "Sarah Williams",
+            email: "sarah.williams@example.com", 
+            specialization: "Family Law",
+            experience: "1.5 years"
+        },
+        {
+            id: 4,
+            name: "Robert Chen",
+            email: "robert.chen@example.com",
+            specialization: "Estate Planning",
+            experience: "4 years"
+        }
+    ]);
 
     // --- DATA FETCHING ---
     useEffect(() => {
@@ -133,6 +166,28 @@ const CaseDetails = () => {
         }
     };
 
+    // Handle junior lawyer assignment
+    const handleAssignJunior = async (juniorId) => {
+        try {
+            // In a real app, you would call an API to assign the junior to the case
+            // await assignJuniorToCase(caseId, juniorId);
+            
+            // For now, we'll just update the local state
+            const selectedJunior = availableJuniors.find(junior => junior.id === juniorId);
+            if (selectedJunior) {
+                setCaseData(prev => ({
+                    ...prev,
+                    junior: selectedJunior.name
+                }));
+                setShowJuniorModal(false);
+                alert(`Successfully assigned ${selectedJunior.name} to this case.`);
+            }
+        } catch (err) {
+            console.error("Failed to assign junior lawyer:", err);
+            alert("Error: Could not assign junior lawyer to case.");
+        }
+    };
+
     // --- DYNAMIC TIMELINE GENERATION ---
     // This now uses the 'hearings' state variable
     const timelineEvents = hearings
@@ -167,7 +222,7 @@ const CaseDetails = () => {
                         onClick={() => navigate(`/lawyer/case/${caseId}/edit`)}
                     />
                 )}
-        </div>
+            </div>
             <h1 className="text-2xl font-bold mb-6">Case No : {caseData.caseNumber}</h1>
 
             {/* Case Overview */}
@@ -200,11 +255,18 @@ const CaseDetails = () => {
             <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold">Parties Involved</h2>
-                    <Button1 
-                        text="Add / Invite Client" 
-                        className="text-sm py-1 px-4" 
-                        onClick={() => setShowClientModal(true)} 
-                    />
+                    <div className="flex gap-2">
+                        <Button1 
+                            text="Add / Invite Client" 
+                            className="text-sm py-1 px-4" 
+                            onClick={() => setShowClientModal(true)} 
+                        />
+                        <Button1 
+                            text="Associate Junior" 
+                            className="text-sm py-1 px-4" 
+                            onClick={() => setShowJuniorModal(true)} 
+                        />
+                    </div>
                 </div>
                 <div className="flex flex-col md:flex-row">
                     <div className="flex-1 mb-6 md:mb-0">
@@ -326,6 +388,7 @@ const CaseDetails = () => {
                     isOpen={showHearingModal}
                     onClose={() => setShowHearingModal(false)}
                     caseNumber={caseData.caseNumber}
+                    courtName={caseData.courtName} // Pass court name as default location
                     onSave={handleAddHearing}
                 />
             )}
@@ -337,6 +400,58 @@ const CaseDetails = () => {
                     onSave={handleUpdateHearing}
                     onDelete={handleDeleteHearing}
                 />
+            )}
+
+            {/* Junior Lawyer Selection Modal */}
+            {showJuniorModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg mx-4">
+                        <h2 className="text-xl font-bold mb-4">
+                            Associate Junior Lawyer
+                        </h2>
+                        
+                        <p className="text-sm text-gray-600 mb-4">
+                            Select a junior lawyer to associate with this case:
+                        </p>
+                        
+                        <div className="space-y-3 max-h-96 overflow-y-auto mb-6">
+                            {availableJuniors.map((junior) => (
+                                <div 
+                                    key={junior.id}
+                                    className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                                    onClick={() => handleAssignJunior(junior.id)}
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex-1">
+                                            <h4 className="font-medium text-gray-900">{junior.name}</h4>
+                                            <p className="text-sm text-gray-600">{junior.email}</p>
+                                            <div className="mt-2 flex items-center space-x-4">
+                                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                                    {junior.specialization}
+                                                </span>
+                                                <span className="text-xs text-gray-500">
+                                                    {junior.experience} experience
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="ml-4">
+                                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        
+                        <div className="flex justify-end space-x-3">
+                            <Button2
+                                text="Cancel"
+                                onClick={() => setShowJuniorModal(false)}
+                            />
+                        </div>
+                    </div>
+                </div>
             )}
         </PageLayout>
     );

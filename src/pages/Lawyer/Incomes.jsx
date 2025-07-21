@@ -161,16 +161,7 @@ const Incomes = () => {
     ];
 
     return (
-        <PageLayout user={user}>
-            {/* PageHeader component */}
-            <div className="mb-8">
-                <PageHeader 
-                    user={user} 
-                    notificationCount={notificationCount}
-                    onNotificationClick={handleNotificationClick}
-                />
-            </div>
-            
+        <PageLayout>
             {/* Incomes specific header */}
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-2xl font-bold">Incomes</h1>

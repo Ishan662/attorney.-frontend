@@ -3,12 +3,12 @@ import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import Input1 from '../../components/UI/Input1';
 
-const AddNextHearingModal = ({ isOpen, onClose, caseNumber, onSave }) => {
+const AddNextHearingModal = ({ isOpen, onClose, caseNumber, courtName, onSave }) => {
   const [formData, setFormData] = useState({
     label: '',
     date: '',
     time: '',
-    location: '',
+    location: courtName || '', // Set court name as default location
     note: '',
     status: 'Planned'
   });
@@ -211,6 +211,8 @@ const AddNextHearingModal = ({ isOpen, onClose, caseNumber, onSave }) => {
               value={formData.location}
               onChange={handleChange}
               error={errors.location}
+              disabled={true}
+              className="bg-gray-100"
             />
             
             <div className="mb-4">
