@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaSearch, FaPaperclip, FaSmile, FaMicrophone, FaPaperPlane, FaArrowLeft, FaBars, FaUsers } from "react-icons/fa";
 import Sidebar from "../../components/layout/Sidebar";
+import logo from '../../assets/images/icon.png';
 
 const ClientMessages = () => {
-    const navigate = useNavigate();
     const [selectedChat, setSelectedChat] = useState(1);
     const [messageInput, setMessageInput] = useState("");
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -24,7 +24,7 @@ const ClientMessages = () => {
             lastMessage: "Nadun: I'll review your case documents and get back to you by tomorrow.",
             time: "2:45 PM",
             unread: 3,
-            avatar: "https://via.placeholder.com/40/4F46E5/white?text=C1",
+            avatar: logo,
             online: true,
             isGroup: true,
             members: [
@@ -39,7 +39,7 @@ const ClientMessages = () => {
             lastMessage: "Priya Silva: The hearing has been scheduled for next week.",
             time: "1:30 PM",
             unread: 1,
-            avatar: "https://via.placeholder.com/40/059669/white?text=PG",
+            avatar: logo,
             online: false,
             isGroup: true,
             members: [
@@ -54,7 +54,7 @@ const ClientMessages = () => {
             lastMessage: "Kamal: Please send the additional evidence we discussed.",
             time: "11:15 AM",
             unread: 2,
-            avatar: "https://via.placeholder.com/40/DC2626/white?text=CT",
+            avatar: logo,
             online: true,
             isGroup: true,
             members: [
@@ -69,7 +69,7 @@ const ClientMessages = () => {
             lastMessage: "Thank you for the payment confirmation.",
             time: "Yesterday",
             unread: 0,
-            avatar: "https://via.placeholder.com/40/7C3AED/white?text=S",
+            avatar:  logo,
             online: false,
             isGroup: false
         },
@@ -79,7 +79,7 @@ const ClientMessages = () => {
             lastMessage: "The case has been postponed to next month.",
             time: "Yesterday",
             unread: 0,
-            avatar: "https://via.placeholder.com/40/EA580C/white?text=NR",
+            avatar: logo ,
             online: false,
             isGroup: false
         },
@@ -89,7 +89,7 @@ const ClientMessages = () => {
             lastMessage: "I will check this",
             time: "Yesterday",
             unread: 0,
-            avatar: "https://via.placeholder.com/40/EA580C/white?text=KG",
+            avatar: logo ,
             online: false,
             isGroup: false
         },
@@ -99,7 +99,7 @@ const ClientMessages = () => {
             lastMessage: "Good",
             time: "Yesterday",
             unread: 0,
-            avatar: "https://via.placeholder.com/40/EA580C/white?text=DD",
+            avatar:  logo ,
             online: false,
             isGroup: false
         },
@@ -109,7 +109,7 @@ const ClientMessages = () => {
             lastMessage: "Done",
             time: "Yesterday",
             unread: 0,
-            avatar: "https://via.placeholder.com/40/EA580C/white?text=MW",
+            avatar: logo ,
             online: false,
             isGroup: false
         },
@@ -203,12 +203,12 @@ const ClientMessages = () => {
     return (
         <div className="h-screen bg-gray-100 flex">
             {/* Main Navigation Sidebar */}
-            <Sidebar 
-                user={user} 
+            <Sidebar
+                user={user}
                 defaultExpanded={mainSidebarExpanded}
                 onToggle={setMainSidebarExpanded}
             />
-            
+
             {/* Chat Application */}
             <div className={`flex-1 flex flex-col transition-all duration-300 ${mainSidebarExpanded ? 'ml-64' : 'ml-20'}`}>
                 {/* Top Header Bar */}
@@ -255,9 +255,8 @@ const ClientMessages = () => {
                                         setSelectedChat(chat.id);
                                         setSidebarCollapsed(true); // Auto-collapse on mobile
                                     }}
-                                    className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
-                                        selectedChat === chat.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
-                                    }`}
+                                    className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${selectedChat === chat.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
+                                        }`}
                                 >
                                     <div className="flex items-center space-x-3">
                                         <div className="relative">
@@ -349,26 +348,23 @@ const ClientMessages = () => {
                                             className={`flex ${message.isOwn ? 'justify-end' : 'justify-start'}`}
                                         >
                                             <div
-                                                className={`max-w-sm lg:max-w-md xl:max-w-lg px-4 py-3 rounded-2xl shadow-sm ${
-                                                    message.isOwn
+                                                className={`max-w-sm lg:max-w-md xl:max-w-lg px-4 py-3 rounded-2xl shadow-sm ${message.isOwn
                                                         ? 'bg-gray-400 text-white'
                                                         : 'bg-white text-gray-900 border border-gray-200'
-                                                }`}
+                                                    }`}
                                             >
                                                 {!message.isOwn && selectedChatData.isGroup && (
-                                                    <p className={`text-xs font-medium mb-1 ${
-                                                        message.role === 'Senior Lawyer' ? 'text-blue-600' :
-                                                        message.role === 'Junior Lawyer' ? 'text-green-600' :
-                                                        'text-gray-600'
-                                                    }`}>
+                                                    <p className={`text-xs font-medium mb-1 ${message.role === 'Senior Lawyer' ? 'text-blue-600' :
+                                                            message.role === 'Junior Lawyer' ? 'text-green-600' :
+                                                                'text-gray-600'
+                                                        }`}>
                                                         {message.sender} • {message.role}
                                                     </p>
                                                 )}
                                                 <p className="text-sm leading-relaxed">{message.content}</p>
                                                 <p
-                                                    className={`text-xs mt-2 ${
-                                                        message.isOwn ? 'text-blue-100' : 'text-gray-500'
-                                                    }`}
+                                                    className={`text-xs mt-2 ${message.isOwn ? 'text-blue-100' : 'text-gray-500'
+                                                        }`}
                                                 >
                                                     {message.time}
                                                 </p>
@@ -403,11 +399,10 @@ const ClientMessages = () => {
                                         <button
                                             onClick={handleSendMessage}
                                             disabled={!messageInput.trim()}
-                                            className={`p-3 rounded-full transition-colors ${
-                                                messageInput.trim()
+                                            className={`p-3 rounded-full transition-colors ${messageInput.trim()
                                                     ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-lg'
                                                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                            }`}
+                                                }`}
                                         >
                                             <FaPaperPlane size={16} />
                                         </button>
