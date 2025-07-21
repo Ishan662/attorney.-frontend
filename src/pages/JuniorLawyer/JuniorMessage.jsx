@@ -13,7 +13,7 @@ const JuniorMessage = () => {
     const user = {
         name: 'Nethsilu Marasinghe',
         email: 'kasuntharamarasinghe.com',
-        role: 'Junior',
+        role: 'Junior_Lawyer',
     };
 
     // Mock chat data - First 3 are group chats
@@ -28,7 +28,7 @@ const JuniorMessage = () => {
             online: true,
             isGroup: true,
             members: [
-                { name: "Nadun Hasalanka", role: "Senior Lawyer" },
+                { name: "Sujan Darshana", role: "Senior Lawyer" },
                 { name: "Priya Silva", role: "Junior Lawyer" },
                 { name: "Nethsilu Marasinghe", role: "Client" }
             ]
@@ -119,7 +119,7 @@ const JuniorMessage = () => {
     const messages = [
         {
             id: 1,
-            sender: "Nadun Hasalanka",
+            sender: "Sujan Darshana",
             content: "Hello everyone, I've received Nethsilu's case documents. Let me review them and I'll get back to you shortly.",
             time: "2:30 PM",
             isOwn: false,
@@ -139,11 +139,11 @@ const JuniorMessage = () => {
             content: "I can assist with the research on similar property dispute cases. Let me compile some precedents.",
             time: "2:33 PM",
             isOwn: false,
-            role: "Junior Lawyer"
+            role: "Client"
         },
         {
             id: 4,
-            sender: "Nadun Hasalanka",
+            sender: "Sujan Darshana",
             content: "Excellent, Priya. That would be very helpful. Nethsilu, based on my initial review, we have a strong case.",
             time: "2:35 PM",
             isOwn: false,
@@ -163,11 +163,11 @@ const JuniorMessage = () => {
             content: "I've found 3 similar cases with favorable outcomes. Sharing the documents now.",
             time: "2:38 PM",
             isOwn: false,
-            role: "Junior Lawyer"
+            role: "Client"
         },
         {
             id: 7,
-            sender: "Nadun Hasalanka",
+            sender: "Sujan Darshana",
             content: "Perfect timing, Priya. I'll prepare a detailed analysis and strategy document. We'll also need to gather some additional evidence to strengthen our position.",
             time: "2:40 PM",
             isOwn: false,
@@ -175,7 +175,7 @@ const JuniorMessage = () => {
         },
         {
             id: 8,
-            sender: "Nadun Hasalanka",
+            sender: "Sujan Darshana",
             content: "I'll review your case documents and get back to you by tomorrow with a comprehensive plan.",
             time: "2:45 PM",
             isOwn: false,
@@ -358,7 +358,7 @@ const JuniorMessage = () => {
                                                 {!message.isOwn && selectedChatData.isGroup && (
                                                     <p className={`text-xs font-medium mb-1 ${
                                                         message.role === 'Senior Lawyer' ? 'text-blue-600' :
-                                                        message.role === 'Junior Lawyer' ? 'text-green-600' :
+                                                        message.role === 'Client' ? 'text-green-600' :
                                                         'text-gray-600'
                                                     }`}>
                                                         {message.sender} • {message.role}
