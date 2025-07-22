@@ -104,7 +104,7 @@ export default function App() {
           <Route path="admin/usermanagement" element={<UserManagement />} />
           <Route path="admin/viewmessages" element={<ViewMessages />} />
           <Route path="admin/viewanalytics" element={<AdminAnalytics />} />
-          {/* <Route path='lawyer/assigntasks' element={<AssignTasks />} /> */}
+          <Route path='lawyer/assigntasks' element={<AssignTasks />} />
           {/* client case profiles  */}
           {/* <Route path="client/caseprofiles" element={<Clientcaseprofiles />} /> */}
           {/* <Route path="/invitation/:inviteToken" element={<ClientInvitation />} />   */}
