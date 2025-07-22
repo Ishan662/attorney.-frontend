@@ -57,7 +57,7 @@ import DaySummary from './pages/Lawyer/Daysummary';
 import ClientMessages from './pages/Client/ClientMessages';
 import Clientpayments from './pages/Client/Clientpayments';
 import LawyerMessages from './pages/Lawyer/LawyerMessages';
-// import AssignTasks from './pages/Lawyer/AssignTasks';
+import AssignTasks from './pages/Lawyer/AssignTasks';
 
 
 export default function App() {
