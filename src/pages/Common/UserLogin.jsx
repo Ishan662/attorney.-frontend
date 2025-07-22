@@ -21,6 +21,12 @@ const UserLogin = () => {
     const formatFirebaseError = (errorMessage) => {
         console.log('Original error message:', errorMessage); // Debug log
         
+        // First check for specific email verification message from authService
+        if (errorMessage.includes('Your email is not verified') || 
+            errorMessage.includes('Please check your inbox for the verification link')) {
+            return 'Please verify your email address before logging in. Check your inbox for a verification link.';
+        }
+        
         // Extract the error code from Firebase error message using multiple patterns
         let errorCode = null;
         
@@ -48,6 +54,7 @@ const UserLogin = () => {
             'invalid-email': 'Please enter a valid email address.',
             'user-disabled': 'This account has been disabled. Please contact support.',
             'too-many-requests': 'Too many failed login attempts. Please try again later.',
+            'email-not-verified': 'Please verify your email address before logging in. Check your inbox for a verification link.',
             'network-request-failed': 'Network error. Please check your connection and try again.',
             'internal-error': 'An internal error occurred. Please try again later.',
             'invalid-api-key': 'Authentication service unavailable. Please try again later.',
@@ -59,6 +66,19 @@ const UserLogin = () => {
             'operation-not-allowed': 'This operation is not allowed. Please contact support.',
             'requires-recent-login': 'Please log out and log back in to continue.',
         };
+
+        // Special handling for email verification issues
+        // Sometimes Firebase returns 'too-many-requests' for unverified emails
+        if (errorCode === 'too-many-requests' && errorMessage.toLowerCase().includes('email') && errorMessage.toLowerCase().includes('verify')) {
+            return errorMessages['email-not-verified'];
+        }
+        
+        // Also check for specific patterns that indicate email verification issues
+        if (errorMessage.toLowerCase().includes('email not verified') || 
+            errorMessage.toLowerCase().includes('please verify your email') ||
+            errorMessage.toLowerCase().includes('verification required')) {
+            return errorMessages['email-not-verified'];
+        }
 
         const friendlyMessage = errorMessages[errorCode] || 'An error occurred during login. Please try again.';
         console.log('Friendly message:', friendlyMessage); // Debug log

@@ -24,6 +24,12 @@ const UserSignUp = () => {
     const formatFirebaseError = (errorMessage) => {
         console.log('Original error message:', errorMessage); // Debug log
         
+        // First check for specific email verification message from authService
+        if (errorMessage.includes('Your email is not verified') || 
+            errorMessage.includes('Please check your inbox for the verification link')) {
+            return 'Please verify your email address before logging in. Check your inbox for a verification link.';
+        }
+        
         // Extract the error code from Firebase error message using multiple patterns
         let errorCode = null;
         
