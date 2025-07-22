@@ -57,6 +57,7 @@ import DaySummary from './pages/Lawyer/Daysummary';
 import ClientMessages from './pages/Client/ClientMessages';
 import Clientpayments from './pages/Client/Clientpayments';
 import LawyerMessages from './pages/Lawyer/LawyerMessages';
+// import AssignTasks from './pages/Lawyer/AssignTasks';
 
 
 export default function App() {
@@ -103,7 +104,7 @@ export default function App() {
           <Route path="admin/usermanagement" element={<UserManagement />} />
           <Route path="admin/viewmessages" element={<ViewMessages />} />
           <Route path="admin/viewanalytics" element={<AdminAnalytics />} />
-          <Route path='lawyer/assigntasks' element={<AssignTasks />} />
+          {/* <Route path='lawyer/assigntasks' element={<AssignTasks />} /> */}
           {/* client case profiles  */}
           {/* <Route path="client/caseprofiles" element={<Clientcaseprofiles />} /> */}
           {/* <Route path="/invitation/:inviteToken" element={<ClientInvitation />} />   */}

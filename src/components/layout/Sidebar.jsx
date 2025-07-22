@@ -215,6 +215,7 @@ const getMenuItemsByRole = (role) => {
                 </svg>
             ),
         },
+
         {
            label: 'Assign Tasks',
             path: '/lawyer/assigntasks',
@@ -225,6 +226,7 @@ const getMenuItemsByRole = (role) => {
             ),
         },
         {
+
             label: 'Account Users',
             path: '/lawyer/accountusers',
             icon: (
@@ -234,8 +236,9 @@ const getMenuItemsByRole = (role) => {
             ),
         },
 
-
     ];
+
+
 
     // Menu items for the junior lawyer
     const juniorLawyerMenuItems = [
