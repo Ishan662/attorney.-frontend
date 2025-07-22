@@ -5,6 +5,38 @@ import Input1 from "../../components/UI/Input1";
 import { FaBriefcase, FaClock, FaCog } from "react-icons/fa";
 import CourtColorSettings from "./CourtColorSettings";
 
+// Mock cases data - in real app, this would come from the case service
+const mockCases = [
+  {
+    id: 1,
+    caseName: "John Doe vs ABC Company",
+    caseNumber: "DC/2024/001",
+    courtType: "District Court",
+    court: "District Court of Colombo"
+  },
+  {
+    id: 2,
+    caseName: "Jane Smith Land Dispute",
+    caseNumber: "HC/2024/045",
+    courtType: "High Court",
+    court: "High Court of Kandy"
+  },
+  {
+    id: 3,
+    caseName: "Mike Johnson Money Recovery",
+    caseNumber: "MC/2024/123",
+    courtType: "Magistrates Court",
+    court: "Magistrate's Court of Galle"
+  },
+  {
+    id: 4,
+    caseName: "Sarah Wilson Divorce Case",
+    caseNumber: "DC/2024/067",
+    courtType: "District Court",
+    court: "District Court of Gampaha"
+  },
+];
+
 const Lawyercalender = () => {
   // Updated user object with role property
   const user = {
@@ -18,6 +50,7 @@ const Lawyercalender = () => {
 
   // Popup state
   const [showPopup, setShowPopup] = useState(false);
+  const [showTaskPopup, setShowTaskPopup] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
 
   // Settings popup state
@@ -36,11 +69,21 @@ const Lawyercalender = () => {
 
   // Form state for popup
   const [title, setTitle] = useState("");
+  const [selectedCase, setSelectedCase] = useState("");
   const [location, setLocation] = useState("");
-  const [guests, setGuests] = useState("");
+  const [hearingDate, setHearingDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [specialNote, setSpecialNote] = useState("");
-  const [googleMeetEnabled, setGoogleMeetEnabled] = useState(false);
-  const [googleMeetLink, setGoogleMeetLink] = useState("");
+  const [showCaseDropdown, setShowCaseDropdown] = useState(false);
+
+  // Form state for task popup
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskLocation, setTaskLocation] = useState("");
+  const [taskDate, setTaskDate] = useState("");
+  const [taskStartTime, setTaskStartTime] = useState("");
+  const [taskEndTime, setTaskEndTime] = useState("");
+  const [taskNote, setTaskNote] = useState("");
 
   // Save court colors to localStorage when they change
   useEffect(() => {
@@ -165,6 +208,23 @@ const Lawyercalender = () => {
 
   const weekDays = ["S", "M", "T", "W", "T", "F", "S"];
 
+  // Handle case selection and auto-fill location
+  const handleCaseSelect = (caseId) => {
+    const selectedCaseData = mockCases.find(c => c.id === parseInt(caseId));
+    if (selectedCaseData) {
+      setSelectedCase(caseId);
+      setLocation(selectedCaseData.court);
+      setTitle(`${selectedCaseData.caseName} - Hearing`);
+    }
+    setShowCaseDropdown(false);
+  };
+
+  // Get selected case label
+  const getSelectedCaseLabel = () => {
+    const caseData = mockCases.find(c => c.id === parseInt(selectedCase));
+    return caseData ? `${caseData.caseName} (${caseData.caseNumber})` : "Select Case";
+  };
+
   // Open popup on time slot click
   const handleTimeSlotClick = (timeSlot) => {
     setSelectedTimeSlot(timeSlot);
@@ -204,28 +264,43 @@ const Lawyercalender = () => {
   // Handle popup form save
   const handleSave = (e) => {
     e.preventDefault();
+    const selectedCaseData = mockCases.find(c => c.id === parseInt(selectedCase));
     // Implement save logic here
     alert(
-      `Meeting saved!\nDate: ${formatDateDisplay(
-        selectedDate
-      )}\nTime: ${selectedTimeSlot}\nTitle: ${title}\nLocation: ${location}\nGuests: ${guests}\nNote: ${specialNote}\nGoogle Meet: ${
-        googleMeetEnabled ? googleMeetLink : "Not added"
-      }`
+      `Hearing saved!\nCase: ${selectedCaseData?.caseName || 'N/A'}\nCase Number: ${selectedCaseData?.caseNumber || 'N/A'}\nDate: ${hearingDate}\nTime: ${startTime} - ${endTime}\nTitle: ${title}\nLocation: ${location}\nNote: ${specialNote}`
     );
     // Reset form and close popup
     setTitle("");
+    setSelectedCase("");
     setLocation("");
-    setGuests("");
+    setHearingDate("");
+    setStartTime("");
+    setEndTime("");
     setSpecialNote("");
-    setGoogleMeetEnabled(false);
-    setGoogleMeetLink("");
     setShowPopup(false);
+  };
+
+  // Handle task popup form save
+  const handleTaskSave = (e) => {
+    e.preventDefault();
+    // Implement save logic here
+    alert(
+      `Task saved!\nTitle: ${taskTitle}\nDate: ${taskDate}\nTime: ${taskStartTime} - ${taskEndTime}\nLocation: ${taskLocation}\nNote: ${taskNote}`
+    );
+    // Reset form and close popup
+    setTaskTitle("");
+    setTaskLocation("");
+    setTaskDate("");
+    setTaskStartTime("");
+    setTaskEndTime("");
+    setTaskNote("");
+    setShowTaskPopup(false);
   };
 
   // Popup component
   const Popup = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full relative">
+      <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full relative max-h-[90vh] overflow-y-auto">
         <button
           className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
           onClick={() => setShowPopup(false)}
@@ -233,110 +308,127 @@ const Lawyercalender = () => {
         >
           &#x2715;
         </button>
-        <h2 className="text-2xl font-semibold mb-6">Hearings / Meetings</h2>
+        <h2 className="text-2xl font-semibold mb-6">Schedule Hearing</h2>
         <form onSubmit={handleSave}>
+          {/* Case Selection Dropdown */}
+          <div className="mb-4">
+            <label className="block mb-1 font-medium" htmlFor="caseSelect">
+              Select Case <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <div 
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 cursor-pointer flex justify-between items-center"
+                onClick={() => setShowCaseDropdown(!showCaseDropdown)}
+              >
+                <span className={selectedCase ? "text-gray-900" : "text-gray-500"}>
+                  {getSelectedCaseLabel()}
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${showCaseDropdown ? 'transform rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </div>
+              {showCaseDropdown && (
+                <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md border border-gray-200 overflow-auto">
+                  <div className="py-1">
+                    {mockCases.map((caseItem) => (
+                      <div
+                        key={caseItem.id}
+                        className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        onClick={() => handleCaseSelect(caseItem.id)}
+                      >
+                        <div className="font-medium text-gray-900">{caseItem.caseName}</div>
+                        <div className="text-sm text-gray-500">{caseItem.caseNumber}</div>
+                        <div className="text-xs text-gray-500">{caseItem.court}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Title Field */}
           <div className="mb-4">
             <label className="block mb-1 font-medium" htmlFor="title">
-              Title
+              Hearing Title <span className="text-red-500">*</span>
             </label>
             <Input1
               id="title"
               type="text"
-              placeholder="type title here"
+              placeholder="Enter hearing title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
             />
           </div>
 
+          {/* Date Field */}
           <div className="mb-4">
-            <label className="block mb-1 font-medium" htmlFor="location1">
-              Location
+            <label className="block mb-1 font-medium" htmlFor="hearingDate">
+              Hearing Date <span className="text-red-500">*</span>
             </label>
-            <select
-              id="location1"
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+            <Input1
+              id="hearingDate"
+              type="date"
+              value={hearingDate}
+              onChange={(e) => setHearingDate(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Time Slots */}
+          <div className="mb-4 grid grid-cols-2 gap-4">
+            <div>
+              <label className="block mb-1 font-medium" htmlFor="startTime">
+                Start Time <span className="text-red-500">*</span>
+              </label>
+              <Input1
+                id="startTime"
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium" htmlFor="endTime">
+                End Time <span className="text-red-500">*</span>
+              </label>
+              <Input1
+                id="endTime"
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Auto-filled Location */}
+          <div className="mb-4">
+            <label className="block mb-1 font-medium" htmlFor="location">
+              Court/Location
+            </label>
+            <Input1
+              id="location"
+              type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              required
-            >
-              <option value="">Select Court/Location</option>
-              {Object.keys(courtColors).map((court) => (
-                <option key={court} value={court}>
-                  {court}
-                </option>
-              ))}
-              <option value="Other">Other Location</option>
-            </select>
-            {location === "Other" && (
-              <Input1
-                type="text"
-                placeholder="Enter custom location"
-                className="mt-2"
-                onChange={(e) => setLocation(e.target.value)}
-              />
+              placeholder="Court location will be auto-filled"
+              readOnly={selectedCase !== ""}
+              className={selectedCase !== "" ? "bg-gray-100" : ""}
+            />
+            {selectedCase && (
+              <p className="text-xs text-gray-500 mt-1">
+                Location auto-filled from selected case
+              </p>
             )}
           </div>
 
-          <div className="mb-4">
-            <label className="block mb-1 font-medium" htmlFor="guests">
-              Add Guests
-            </label>
-            <Input1
-              id="guests"
-              type="text"
-              placeholder="type guest emails here"
-              value={guests}
-              onChange={(e) => setGuests(e.target.value)}
-            />
-          </div>
-
-          <div className="mb-4 flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              id="googleMeet"
-              checked={googleMeetEnabled}
-              onChange={(e) => {
-                setGoogleMeetEnabled(e.target.checked);
-                if (e.target.checked) {
-                  // Generate a dummy Google Meet link (in real app, integrate with API)
-                  const link = `https://meet.google.com/${Math.random()
-                    .toString(36)
-                    .substring(2, 11)}`;
-                  setGoogleMeetLink(link);
-                } else {
-                  setGoogleMeetLink("");
-                }
-              }}
-              className="cursor-pointer"
-            />
-            <label
-              htmlFor="googleMeet"
-              className="text-blue-600 underline text-sm cursor-pointer"
-            >
-              Add Google Meet video conferencing
-            </label>
-          </div>
-          {googleMeetEnabled && (
-            <div className="mb-4">
-              <label className="block mb-1 font-medium" htmlFor="googleMeetLink">
-                Google Meet Link
-              </label>
-              <a
-                href={googleMeetLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline break-all"
-                id="googleMeetLink"
-              >
-                {googleMeetLink}
-              </a>
-            </div>
-          )}
-
+          {/* Special Note */}
           <div className="mb-4">
             <label className="block mb-1 font-medium" htmlFor="specialNote">
-              Special note
+              Special Note
             </label>
             <textarea
               id="specialNote"
@@ -348,7 +440,112 @@ const Lawyercalender = () => {
             />
           </div>
 
-          <Button1 type="submit" text="Save" className="w-full" />
+          <Button1 type="submit" text="Schedule Hearing" className="w-full" />
+        </form>
+      </div>
+    </div>
+  );
+
+  // Task Popup component
+  const TaskPopup = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+      <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full relative max-h-[90vh] overflow-y-auto">
+        <button
+          className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+          onClick={() => setShowTaskPopup(false)}
+          aria-label="Close popup"
+        >
+          &#x2715;
+        </button>
+        <h2 className="text-2xl font-semibold mb-6">Schedule a Task</h2>
+        <form onSubmit={handleTaskSave}>
+          {/* Task Title */}
+          <div className="mb-4">
+            <label className="block mb-1 font-medium" htmlFor="taskTitle">
+              Task Title <span className="text-red-500">*</span>
+            </label>
+            <Input1
+              id="taskTitle"
+              type="text"
+              placeholder="Enter task title"
+              value={taskTitle}
+              onChange={(e) => setTaskTitle(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Task Date */}
+          <div className="mb-4">
+            <label className="block mb-1 font-medium" htmlFor="taskDate">
+              Task Date <span className="text-red-500">*</span>
+            </label>
+            <Input1
+              id="taskDate"
+              type="date"
+              value={taskDate}
+              onChange={(e) => setTaskDate(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Time Slots */}
+          <div className="mb-4 grid grid-cols-2 gap-4">
+            <div>
+              <label className="block mb-1 font-medium" htmlFor="taskStartTime">
+                Start Time <span className="text-red-500">*</span>
+              </label>
+              <Input1
+                id="taskStartTime"
+                type="time"
+                value={taskStartTime}
+                onChange={(e) => setTaskStartTime(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium" htmlFor="taskEndTime">
+                End Time <span className="text-red-500">*</span>
+              </label>
+              <Input1
+                id="taskEndTime"
+                type="time"
+                value={taskEndTime}
+                onChange={(e) => setTaskEndTime(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Location */}
+          <div className="mb-4">
+            <label className="block mb-1 font-medium" htmlFor="taskLocation">
+              Location
+            </label>
+            <Input1
+              id="taskLocation"
+              type="text"
+              value={taskLocation}
+              onChange={(e) => setTaskLocation(e.target.value)}
+              placeholder="Enter task location (office, client location, etc.)"
+            />
+          </div>
+
+          {/* Special Note */}
+          <div className="mb-4">
+            <label className="block mb-1 font-medium" htmlFor="taskNote">
+              Special Note
+            </label>
+            <textarea
+              id="taskNote"
+              rows={4}
+              className="w-full border border-gray-300 rounded px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Add any special notes or details about this task"
+              value={taskNote}
+              onChange={(e) => setTaskNote(e.target.value)}
+            />
+          </div>
+
+          <Button1 type="submit" text="Schedule Task" className="w-full" />
         </form>
       </div>
     </div>
@@ -369,7 +566,8 @@ const Lawyercalender = () => {
                 })}
               </div>
             </div>
-            <Button1 text="Add Hearing" className="mb-6" onClick={() => { setSelectedTimeSlot(""); setShowPopup(true); }} />
+            <Button1 text="Add Hearing" className="mb-3" onClick={() => { setSelectedTimeSlot(""); setShowPopup(true); }} />
+            <Button1 text="Schedule a Task" className="mb-6" onClick={() => { setShowTaskPopup(true); }} />
 
             <div className="grid grid-cols-7 text-center text-xs font-medium text-gray-500 mb-2">
               {weekDays.map((day, idx) => (
@@ -551,6 +749,7 @@ const Lawyercalender = () => {
         </div>
       </div>
       {showPopup && <Popup />}
+      {showTaskPopup && <TaskPopup />}
       
       {/* Court Color Settings Modal */}
       <CourtColorSettings 

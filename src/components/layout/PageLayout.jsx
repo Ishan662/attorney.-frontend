@@ -21,11 +21,6 @@ const PageLayout = ({
 
     const { currentUser, loading: authLoading } = useAuth();
 
-    // const user = {
-    //     name: currentUser.fullName,
-    //     email: currentUser.email,
-    //     role:  currentUser.role.toLowerCase()
-    // };
 
     // const user = {
     //     name: currentUser.fullName,

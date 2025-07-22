@@ -93,46 +93,43 @@ const CaseProfiles = () => {
                     filteredCases.map(c => (
                       <div
                         key={c.id}
-                        className="bg-gray-100 rounded-lg p-5 shadow-md border border-gray-200"
+                        className="bg-white rounded-lg p-5 shadow-md border border-gray-200"
                       >
-                        {/* Your DTO provides 'caseTitle', which matches your 'title' usage */}
-                        <div className="font-semibold text-base mb-2">{c.caseTitle}</div>
-                        
+                        {/* Title Section */}
+                        <div className="bg-gray-100 font-semibold text-base mb-4 px-4 py-2 rounded-md">
+                          {c.caseTitle}
+                        </div>
+
+                        {/* Case Details */}
                         <div className="text-sm text-gray-700 space-y-1 mb-4">
                           <div>
                             <span className="font-bold">Case Number:</span> {c.caseNumber}
                           </div>
                           <div>
-                            {/* Your DTO provides 'owner' */}
                             <span className="font-bold">Lawyer:</span> {c.ownerLawyerName || 'N/A'}
                           </div>
                           <div>
-                            {/* Your DTO provides 'caseType' */}
                             <span className="font-bold">Case Type:</span> {c.caseType || 'N/A'}
                           </div>
                           <div>
-                            {/* Your DTO provides 'nextHearing' as an ISO string date */}
-                            <span className="font-bold">Next Hearing:</span> 
+                            <span className="font-bold">Next Hearing:</span>{' '}
                             {c.nextHearing ? new Date(c.nextHearing).toLocaleDateString() : 'Not Scheduled'}
                           </div>
                           <div>
-                            {/* Your DTO provides 'junior' */}
                             <span className="font-bold">Junior Associate:</span> {c.junior || 'Not Assigned'}
                           </div>
                           <div>
-                            {/* Your DTO provides 'agreedFee' and 'paymentStatus' */}
                             <span className="font-bold">Fee:</span> ${c.agreedFee ? c.agreedFee.toFixed(2) : '0.00'}{' '}
                             <span className={c.paymentStatus === 'PAID IN FULL' ? 'text-green-600' : 'text-yellow-600'}>
                               ({c.paymentStatus.replace('_', ' ')})
                             </span>
                           </div>
                         </div>
+
+                        {/* Action Buttons */}
                         <div className="flex gap-3">
-                          {/* <Button1 text="Close Case" /> */}
-                          {/* Use onClick to navigate dynamically based on the case's ID */}
                           <Button1
                             text={<span>View Details →</span>}
-                            inverted={false}
                             className="flex items-center"
                             onClick={() => navigate(`/client/case/${c.id}`)}
                           />
