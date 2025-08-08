@@ -63,7 +63,7 @@ const Lawyercalender = () => {
 
   // Settings popup state
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  
+
   // Court colors state - can be loaded from localStorage or API
   const [courtColors, setCourtColors] = useState(() => {
     const savedColors = localStorage.getItem('courtColors');
@@ -270,10 +270,10 @@ const Lawyercalender = () => {
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 2), 16);
     const b = parseInt(hex.substr(4, 2), 16);
-    
+
     // Calculate brightness (0-255)
     const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    
+
     // Return white text for dark backgrounds, black for light
     return brightness > 128 ? 'text-gray-900' : 'text-white';
   };
@@ -358,7 +358,7 @@ const Lawyercalender = () => {
               Select Case <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <div 
+              <div
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 cursor-pointer flex justify-between items-center"
                 onClick={() => setShowCaseDropdown(!showCaseDropdown)}
               >
@@ -738,8 +738,8 @@ const Lawyercalender = () => {
                       key={idx}
                       onClick={() => setSelectedDate(date)}
                       className={`mini-day ${date.toDateString() === selectedDate.toDateString()
-                          ? "mini-day-selected"
-                          : ""
+                        ? "mini-day-selected"
+                        : ""
                         } ${date.toDateString() === new Date().toDateString()
                           ? "mini-day-today"
                           : ""
@@ -1043,9 +1043,9 @@ const Lawyercalender = () => {
           </div>
         </div>
       )}
-      
+
       {/* Court Color Settings Modal */}
-      <CourtColorSettings 
+      <CourtColorSettings
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
         courtColors={courtColors}
