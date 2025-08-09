@@ -9,12 +9,11 @@ This repo is part of **attorney.**, a modular legal support platform built for l
 Legal professionals face challenges managing case data, schedules, and research due to scattered tools.  
 **attorney.** solves this with:
 
-- 📅 Centralized case tracking  
-- 🧾 Secure document handling  
-- 💬 In-app messaging and notifications  
-- 📱 Cross-platform access  
-<!-- - 🌐 Sinhala + English interface   -->
-- 🤖 AI-powered legal research (via backend integration)
+- Centralized case tracking with a customized calander
+- In-app messaging and notifications
+- Cross-platform access  
+- AI-powered legal research about pass cases
+- Subcription plans
 
 ---
 
@@ -23,12 +22,11 @@ Legal professionals face challenges managing case data, schedules, and research 
 This is the **frontend module** of the attorney. ecosystem.  
 It includes user interfaces for:
 
-- 👨‍⚖️ Lawyers & Junior Lawyers  
-- 📂 Clients & Case Management  
-- 📱 Responsive layouts (Web & Mobile via React/React Native)  
+- Lawyers & Junior Lawyers  
+- Clients & Case Management  
+- Responsive layouts (with tailwindcss)
 <!-- - 🌐 Sinhala + English support -->
 
-> Designed to integrate with backend services and AI modules via shared APIs.
 
 ---
 
@@ -46,3 +44,5 @@ npm install
 
 # Start the development server
 npm run dev
+
+# and make shuwer the backend is running on localhost:8080(for development) 
