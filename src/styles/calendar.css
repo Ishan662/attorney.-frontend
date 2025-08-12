@@ -15,12 +15,15 @@
   border-bottom: 1px solid #e8eaed;
   background: #fff;
   height: 64px;
+  position: relative;
 }
 
 .header-left {
   display: flex;
   align-items: center;
   gap: 16px;
+  flex: 1;
+  min-width: 0;
 }
 
 .hamburger-menu {
@@ -98,6 +101,10 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  flex: 1;
+  justify-content: center;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
 .today-btn {
@@ -146,12 +153,17 @@
   color: #3c4043;
   margin: 0;
   font-family: 'Product Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-width: 200px;
+  text-align: center;
 }
 
 .header-right {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .view-dropdown {
@@ -795,6 +807,7 @@
   
   .current-month {
     font-size: 18px;
+    min-width: 160px;
   }
   
   .logo-text {
@@ -821,6 +834,8 @@
   .header-center {
     flex: 1;
     justify-content: center;
+    max-width: none;
+    gap: 8px;
   }
   
   .header-left .logo-text {

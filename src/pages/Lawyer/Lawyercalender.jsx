@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PageLayout from "../../components/layout/PageLayout";
 import Button1 from "../../components/UI/Button1";
 import Input1 from "../../components/UI/Input1";
@@ -47,6 +47,7 @@ const mockCases = [
 
 const Lawyercalender = () => {
   const navigate = useNavigate();
+  const calendarRef = useRef(null);
 
   const user = {
     name: "Thusitha",
@@ -101,6 +102,15 @@ const Lawyercalender = () => {
     localStorage.setItem('courtColors', JSON.stringify(courtColors));
   }, [courtColors]);
 
+  // Handle view mode changes
+  useEffect(() => {
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      const newView = viewMode === "month" ? "dayGridMonth" : "timeGridWeek";
+      calendarApi.changeView(newView);
+    }
+  }, [viewMode]);
+
   // Format date display like "21st of June, Saturday"
   const formatDateDisplay = (date) => {
     const day = date.getDate();
@@ -151,18 +161,24 @@ const Lawyercalender = () => {
     const today = new Date();
     setCurrentDate(today);
     setSelectedDate(today);
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      calendarApi.today();
+    }
   };
 
   const goToPreviousMonth = () => {
-    const newDate = new Date(currentDate);
-    newDate.setMonth(newDate.getMonth() - 1);
-    setCurrentDate(newDate);
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      calendarApi.prev();
+    }
   };
 
   const goToNextMonth = () => {
-    const newDate = new Date(currentDate);
-    newDate.setMonth(newDate.getMonth() + 1);
-    setCurrentDate(newDate);
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      calendarApi.next();
+    }
   };
 
   // Get current month/year display
@@ -858,11 +874,12 @@ const Lawyercalender = () => {
 
           {/* Main Calendar */}
           <div className="main-calendar">
-            {viewMode === "month" ? (
+            {viewMode === "month" || viewMode === "week" ? (
               <div className="calendar-view">
                 <FullCalendar
+                  ref={calendarRef}
                   plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                  initialView="dayGridMonth"
+                  initialView={viewMode === "month" ? "dayGridMonth" : "timeGridWeek"}
                   headerToolbar={false}
                   events={events}
                   dateClick={handleDateClick}
@@ -891,27 +908,6 @@ const Lawyercalender = () => {
                   initialDate={currentDate}
                   datesSet={(dateInfo) => {
                     // Update currentDate when FullCalendar view changes
-                    setCurrentDate(dateInfo.start);
-                  }}
-                />
-              </div>
-            ) : viewMode === "week" ? (
-              <div className="calendar-view">
-                <FullCalendar
-                  plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                  initialView="timeGridWeek"
-                  headerToolbar={false}
-                  events={events}
-                  dateClick={handleDateClick}
-                  editable={true}
-                  selectable={true}
-                  selectMirror={true}
-                  weekends={true}
-                  height="auto"
-                  eventDisplay="block"
-                  nowIndicator={true}
-                  initialDate={currentDate}
-                  datesSet={(dateInfo) => {
                     setCurrentDate(dateInfo.start);
                   }}
                 />
