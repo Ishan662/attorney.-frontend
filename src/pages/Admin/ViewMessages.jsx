@@ -1,4 +1,10 @@
 import { useState, useEffect } from "react";
+import {
+    fetchSupportCases,
+    fetchSupportCaseDetails,
+    postAdminReply,
+    closeSupportCase
+} from "../../services/adminSupportService";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../../components/layout/PageLayout";
 import Button1 from "../../components/UI/Button1";
@@ -21,133 +27,98 @@ const ViewMessages = () => {
         role: 'admin'
     };
 
-    // Sample support requests data
-    const [supportRequests, setSupportRequests] = useState([
-        {
-            id: 1,
-            from: "Nishagi Jewantha",
-            email: "nishagi@example.com",
-            role: "lawyer",
-            subject: "Package upgrade request",
-            category: "Subscription",
-            priority: "medium",
-            message: "I would like to request an upgrade to the premium package for my account. I need access to the additional features for a complex case I'm working on.",
-            date: "2025-07-05T10:30:00",
-            status: "open",
-            responded: false
-        },
-        {
-            id: 2,
-            from: "Jane Smith",
-            email: "jane@example.com",
-            role: "junior_lawyer",
-            subject: "Access permission issue",
-            category: "Technical",
-            priority: "high",
-            message: "I'm having trouble accessing case files shared by my senior lawyer. Could you please check the permissions on my account?",
-            date: "2025-07-04T14:15:00",
-            status: "resolved",
-            responded: true
-        },
-        {
-            id: 3,
-            from: "Robert Chen",
-            email: "robert@example.com",
-            role: "client",
-            subject: "Account verification",
-            category: "Account",
-            priority: "urgent",
-            message: "I registered 2 days ago but my account is still pending verification. I need to communicate with my lawyer urgently regarding an upcoming hearing.",
-            date: "2025-07-03T09:45:00",
-            status: "open",
-            responded: false
-        },
-        {
-            id: 4,
-            from: "Ramesh Kumar",
-            email: "ramesh@example.com",
-            role: "lawyer",
-            subject: "Technical support needed",
-            category: "Technical",
-            priority: "medium",
-            message: "The document upload feature is not working properly. I've tried multiple times but the files don't appear in my case folders after uploading.",
-            date: "2025-07-02T16:20:00",
-            status: "in_progress",
-            responded: false
-        },
-        {
-            id: 5,
-            from: "Priya Patel",
-            email: "priya@example.com",
-            role: "client",
-            subject: "Billing question",
-            category: "Billing",
-            priority: "low",
-            message: "I noticed a discrepancy in my last invoice. There seems to be an additional charge that I don't understand. Could you please clarify?",
-            date: "2025-07-01T11:05:00",
-            status: "resolved",
-            responded: true
-        },
-        {
-            id: 6,
-            from: "Michael Johnson",
-            email: "michael@example.com",
-            role: "junior_lawyer",
-            subject: "Calendar sync issue",
-            category: "Technical",
-            priority: "high",
-            message: "My hearing dates are not syncing properly with the main calendar. This has caused me to miss an important notification yesterday.",
-            date: "2025-06-30T08:50:00",
-            status: "open",
-            responded: false
-        },
-        {
-            id: 7,
-            from: "David Lee",
-            email: "david@example.com",
-            role: "client",
-            subject: "Password reset request",
-            category: "Account",
-            priority: "medium",
-            message: "I'm unable to reset my password using the forgot password link. Could you please help me regain access to my account?",
-            date: "2025-06-29T13:40:00",
-            status: "resolved",
-            responded: true
-        }
-    ]);
+    // Support requests state (fetched from backend)
+    const [supportRequests, setSupportRequests] = useState([]);
+    // Loading and error state for requests
+    const [requestsLoading, setRequestsLoading] = useState(true);
+    const [requestsError, setRequestsError] = useState(null);
 
-    // Get filtered requests based on active filter and search term
+    // Fetch all support requests only once on mount
+    useEffect(() => {
+        setRequestsLoading(true);
+        setRequestsError(null);
+        fetchSupportCases()
+            .then(data => {
+                setSupportRequests(data);
+                setRequestsLoading(false);
+            })
+            .catch(err => {
+                setRequestsError("Failed to load support requests");
+                setRequestsLoading(false);
+            });
+    }, []);
+
+    // Get filtered requests based on search term (searches subject, publicId, from)
     const getFilteredRequests = () => {
         return supportRequests.filter(request => {
-            // Filter by role
-            if (activeFilter !== "all" && request.role !== activeFilter) return false;
-            
-            // Filter by search term
-            if (searchTerm && !request.from.toLowerCase().includes(searchTerm.toLowerCase()) &&
-                !request.subject.toLowerCase().includes(searchTerm.toLowerCase()) &&
-                !request.message.toLowerCase().includes(searchTerm.toLowerCase()) &&
-                !request.category.toLowerCase().includes(searchTerm.toLowerCase())) {
+            const search = searchTerm.toLowerCase();
+            if (searchTerm &&
+                !(request.from && request.from.toLowerCase().includes(search)) &&
+                !(request.subject && request.subject.toLowerCase().includes(search)) &&
+                !(request.publicId && request.publicId.toLowerCase().includes(search))
+            ) {
                 return false;
             }
-            
             return true;
         });
     };
 
     // Update request status
-    const updateRequestStatus = (requestId, newStatus) => {
-        setSupportRequests(prevRequests => 
-            prevRequests.map(request => 
-                request.id === requestId ? { ...request, status: newStatus } : request
-            )
-        );
+    const updateRequestStatus = async (requestId, newStatus) => {
+        if (newStatus === "resolved") {
+            try {
+                await closeSupportCase(requestId);
+                setSupportRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: "resolved" } : r));
+                if (selectedRequest && selectedRequest.id === requestId) {
+                    setSelectedRequest({ ...selectedRequest, status: "resolved" });
+                }
+            } catch (err) {
+                alert("Failed to close support case");
+            }
+        } else if (newStatus === "open") {
+            setSupportRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: "open" } : r));
+            if (selectedRequest && selectedRequest.id === requestId) {
+                setSelectedRequest({ ...selectedRequest, status: "open" });
+            }
+        }
     };
 
     // Handle request click
-    const handleRequestClick = (request) => {
-        setSelectedRequest(request);
-        if (request.status === "open") {
-            updateRequestStatus(request.id, "in_progress");
+    const handleRequestClick = async (request) => {
+        try {
+            const details = await fetchSupportCaseDetails(request.id);
+            if (!details) {
+                setRequestsError("No details found for this request.");
+                setSelectedRequest(null);
+                return;
+            }
+            // Map backend fields to UI expected fields
+            const latestMessage = details.messages && details.messages.length > 0
+                ? details.messages[details.messages.length - 1]
+                : null;
+            setSelectedRequest({
+                id: details.id,
+                publicId: details.publicId,
+                subject: details.subject,
+                status: details.status ? details.status.toLowerCase() : '',
+                date: details.createdAt,
+                from: details.createdByUserName || (latestMessage ? latestMessage.sentByUserName : ''),
+                email: '', // If you have email, map it here
+                role: latestMessage ? latestMessage.sentByUserRole.toLowerCase() : '',
+                category: details.category || '',
+                priority: details.priority || '',
+                message: latestMessage ? latestMessage.messageBody : '',
+                responded: details.status && details.status.toLowerCase() === 'resolved',
+                messages: details.messages || []
+            });
+            // Optionally update status to in_progress if open
+            if (details.status && details.status.toLowerCase() === "open") {
+                setSupportRequests(prev => prev.map(r => r.id === details.id ? { ...r, status: "in_progress" } : r));
+            }
+        } catch (err) {
+            setRequestsError("Failed to load request details");
+            setSelectedRequest(null);
+            console.error("Error fetching request details:", err);
         }
     };
 
@@ -158,36 +129,36 @@ const ViewMessages = () => {
         setShowReplyModal(true);
     };
 
-    // Send reply
-    const sendReply = (e) => {
+    const sendReply = async (e) => {
         e.preventDefault();
-        
         if (!replyContent.trim()) {
             alert("Please enter a reply message");
             return;
         }
-        
         setIsLoading(true);
-        
-        // Simulate API call with timeout
-        setTimeout(() => {
-            setSupportRequests(prevRequests => 
-                prevRequests.map(request => 
-                    request.id === selectedRequest.id ? { 
-                        ...request, 
-                        responded: true, 
-                        status: "resolved"
-                    } : request
-                )
-            );
+        try {
+            await postAdminReply(selectedRequest.id, { messageBody: replyContent });
+            const updatedMessages = [...selectedRequest.messages, {
+                messageBody: replyContent,
+                sentByUserName: user.name, // Using the local admin user object
+                sentByUserRole: user.role.toUpperCase(),
+                createdAt: new Date().toISOString()
+            }];
+
+            const updatedRequest = { ...selectedRequest, messages: updatedMessages, status: 'pending_user_reply' };
+            setSelectedRequest(updatedRequest);
+            setSupportRequests(prev => prev.map(r => r.id === selectedRequest.id ? updatedRequest : r));
             
             setIsLoading(false);
             setShowReplyModal(false);
-            
-            // Show success message
             alert(`Support response sent to ${selectedRequest.from}`);
-        }, 800);
+        } catch (err) {
+            setIsLoading(false);
+            alert("Failed to send response");
+            console.error("Reply Error:", err);
+        }
     };
+
 
     // Format date for display
     const formatDate = (dateStr) => {
@@ -212,14 +183,16 @@ const ViewMessages = () => {
     };
 
     // Get initials from name
-    const getInitials = (name) => {
-        return name
-            .split(' ')
-            .map(part => part[0])
-            .join('')
-            .toUpperCase()
-            .substring(0, 2);
-    };
+        const getInitials = (name) => {
+            if (!name || typeof name !== 'string') return '';
+            const parts = name.trim().split(' ');
+            if (parts.length === 1) {
+                return parts[0] && parts[0].charAt(0) ? parts[0].charAt(0).toUpperCase() : '';
+            }
+            const first = parts[0] && parts[0].charAt(0) ? parts[0].charAt(0).toUpperCase() : '';
+            const last = parts[parts.length - 1] && parts[parts.length - 1].charAt(0) ? parts[parts.length - 1].charAt(0).toUpperCase() : '';
+            return (first + last);
+        };
 
     // Get color for avatar based on role
     const getAvatarColor = (role) => {
@@ -262,14 +235,14 @@ const ViewMessages = () => {
         }
     };
 
-    // Get count of open requests
+    // Get count of open requests (not closed)
     const getOpenCount = () => {
-        return supportRequests.filter(request => request.status === "open").length;
+        return supportRequests.filter(request => request.status && request.status.toLowerCase() !== "closed").length;
     };
 
-    // Get count of open requests by role
+    // Get count of open requests by role (not closed)
     const getOpenCountByRole = (role) => {
-        return supportRequests.filter(request => request.status === "open" && request.role === role).length;
+        return supportRequests.filter(request => request.status && request.status.toLowerCase() !== "closed" && request.role === role).length;
     };
 
     return (
@@ -287,63 +260,18 @@ const ViewMessages = () => {
                 </div>
             </div>
 
-            {/* Filters */}
+            {/* Search Only */}
             <div className="bg-white rounded-lg p-4 shadow-md mb-6">
                 <div className="flex flex-col md:flex-row justify-between gap-4">
                     <div className="w-full md:w-1/3">
                         <Input1
                             type="text"
-                            placeholder="Search requests..."
+                            placeholder="Search requests by subject, publicId, or name..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             variant="outlined"
                             className="w-full"
                         />
-                    </div>
-                    
-                    <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm text-gray-600">Filter by:</span>
-                        <div className="flex space-x-2">
-                            <button 
-                                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${activeFilter === "all" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
-                                onClick={() => setActiveFilter("all")}
-                            >
-                                All
-                            </button>
-                            <button 
-                                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors flex items-center ${activeFilter === "lawyer" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
-                                onClick={() => setActiveFilter("lawyer")}
-                            >
-                                Senior Lawyers
-                                {getOpenCountByRole("lawyer") > 0 && (
-                                    <span className="ml-1 w-4 h-4 bg-blue-600 text-white rounded-full text-xs flex items-center justify-center">
-                                        {getOpenCountByRole("lawyer")}
-                                    </span>
-                                )}
-                            </button>
-                            <button 
-                                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors flex items-center ${activeFilter === "junior_lawyer" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
-                                onClick={() => setActiveFilter("junior_lawyer")}
-                            >
-                                Junior Lawyers
-                                {getOpenCountByRole("junior_lawyer") > 0 && (
-                                    <span className="ml-1 w-4 h-4 bg-blue-600 text-white rounded-full text-xs flex items-center justify-center">
-                                        {getOpenCountByRole("junior_lawyer")}
-                                    </span>
-                                )}
-                            </button>
-                            <button 
-                                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors flex items-center ${activeFilter === "client" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
-                                onClick={() => setActiveFilter("client")}
-                            >
-                                Clients
-                                {getOpenCountByRole("client") > 0 && (
-                                    <span className="ml-1 w-4 h-4 bg-blue-600 text-white rounded-full text-xs flex items-center justify-center">
-                                        {getOpenCountByRole("client")}
-                                    </span>
-                                )}
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -373,15 +301,15 @@ const ViewMessages = () => {
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between">
                                                     <p className="truncate">{request.from}</p>
-                                                    <p className="text-xs text-gray-500">{new Date(request.date).toLocaleDateString()}</p>
+                                                    {/* <p className="text-xs text-gray-500">{new Date(request.date).toLocaleDateString()}</p> */}
                                                 </div>
-                                                <p className="text-sm truncate">{request.subject}</p>
+                                                <p className="text-sm truncate font-semibold">{request.subject} <span className="text-blue-700">: {request.publicId}</span></p>
                                                 <div className="flex mt-1 space-x-2">
                                                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                                         {request.category}
                                                     </span>
-                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColorClass(request.status)}`}>
-                                                        {getStatusDisplayName(request.status)}
+                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${request.status && request.status.toLowerCase() === 'closed' ? 'bg-gray-200 text-gray-700' : 'bg-blue-100 text-blue-800'}`}>
+                                                        {request.status && request.status.toLowerCase() === 'closed' ? 'Closed' : 'Open'}
                                                     </span>
                                                 </div>
                                             </div>
@@ -400,21 +328,36 @@ const ViewMessages = () => {
                 {/* Request Detail */}
                 <div className="md:col-span-2">
                     <div className="bg-white rounded-lg shadow-md overflow-hidden h-[calc(100vh-220px)]">
+                        {requestsError && (
+                            <div className="p-4 text-red-600 bg-red-50 border border-red-200 mb-2 rounded">
+                                {requestsError}
+                            </div>
+                        )}
                         {selectedRequest ? (
                             <>
                                 <div className="p-4 bg-gray-50 border-b border-gray-200">
                                     <div className="flex justify-between items-center">
-                                        <h2 className="font-bold text-xl">{selectedRequest.subject}</h2>
+                                        <h2 className="font-bold text-xl">
+                                            {selectedRequest.subject}
+                                            <span className="text-blue-700 font-normal"> : {selectedRequest.publicId}</span>
+                                        </h2>
                                         <div className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColorClass(selectedRequest.priority)}`}>
-                                            {selectedRequest.priority.charAt(0).toUpperCase() + selectedRequest.priority.slice(1)} Priority
+                                            {selectedRequest.priority && typeof selectedRequest.priority === 'string' && selectedRequest.priority.length > 0
+                                                ? selectedRequest.priority.charAt(0).toUpperCase() + selectedRequest.priority.slice(1)
+                                                : ''} Priority
                                         </div>
                                     </div>
                                     <div className="flex mt-2 space-x-3">
-                                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColorClass(selectedRequest.status)}`}>
-                                            {getStatusDisplayName(selectedRequest.status)}
+                                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${selectedRequest.status && selectedRequest.status.toLowerCase() === 'closed' ? 'bg-gray-200 text-gray-700' : 'bg-blue-100 text-blue-800'}`}>
+                                            {selectedRequest.status && selectedRequest.status.toLowerCase() === 'closed' ? 'Closed' : 'Open'}
                                         </span>
                                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                             {selectedRequest.category}
+                                        </span>
+                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200">
+                                            {selectedRequest.date && !isNaN(new Date(selectedRequest.date))
+                                                ? formatDate(selectedRequest.date)
+                                                : 'No Date'}
                                         </span>
                                     </div>
                                 </div>
@@ -427,11 +370,41 @@ const ViewMessages = () => {
                                             <div className="font-semibold">{selectedRequest.from}</div>
                                             <div className="text-sm text-gray-600">{selectedRequest.email}</div>
                                             <div className="text-sm text-gray-600">{getRoleDisplayName(selectedRequest.role)}</div>
-                                            <div className="text-sm text-gray-500 mt-1">{formatDate(selectedRequest.date)}</div>
+                                            {/* <div className="text-sm text-gray-500 mt-1">{formatDate(selectedRequest.date)}</div> */}
                                         </div>
                                     </div>
                                     <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                                        <p className="whitespace-pre-line">{selectedRequest.message}</p>
+                                        <div className="space-y-4">
+                                            {selectedRequest.messages && selectedRequest.messages.length > 0 ? (
+                                                selectedRequest.messages.map((msg) => {
+                                                    const isAdmin = msg.sentByUserRole && msg.sentByUserRole.toLowerCase() === 'admin';
+                                                    return (
+                                                        <div
+                                                            key={msg.id}
+                                                            className={`flex items-start space-x-3 mb-2 ${isAdmin ? 'justify-end' : ''}`}
+                                                        >
+                                                            {!isAdmin && (
+                                                                <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center text-xs font-medium ${getAvatarColor(msg.sentByUserRole && msg.sentByUserRole.toLowerCase())}`}>
+                                                                    {getInitials(msg.sentByUserName)}
+                                                                </div>
+                                                            )}
+                                                            <div className={`max-w-xs md:max-w-md rounded-lg p-3 ${isAdmin ? 'bg-blue-100 text-blue-900 ml-auto' : 'bg-gray-100 text-gray-900'}`}>
+                                                                <div className="font-semibold text-sm">{msg.sentByUserName}</div>
+                                                                <div className="text-xs text-gray-500">{formatDate(msg.createdAt)}</div>
+                                                                <div className="mt-1 text-sm whitespace-pre-line">{msg.messageBody}</div>
+                                                            </div>
+                                                            {isAdmin && (
+                                                                <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center text-xs font-medium ${getAvatarColor(msg.sentByUserRole && msg.sentByUserRole.toLowerCase())}`}>
+                                                                    {getInitials(msg.sentByUserName)}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })
+                                            ) : (
+                                                <p className="text-gray-500">No messages found for this request.</p>
+                                            )}
+                                        </div>
                                     </div>
                                     {selectedRequest.responded && (
                                         <div className="bg-green-50 p-4 rounded-lg border border-green-100">
@@ -446,7 +419,7 @@ const ViewMessages = () => {
                                 </div>
                                 <div className="p-4 border-t border-gray-200 bg-gray-50">
                                     <div className="flex justify-end space-x-3">
-                                        {selectedRequest.status !== "resolved" ? (
+                                        {selectedRequest.status && selectedRequest.status.toLowerCase() !== "closed" ? (
                                             <>
                                                 <Button2
                                                     text="Mark as Resolved"
