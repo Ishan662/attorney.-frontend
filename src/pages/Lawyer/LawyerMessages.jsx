@@ -23,23 +23,34 @@ const LawyerMessages = () => {
     // --- DATA FETCHING & REAL-TIME LISTENERS ---
 
     // Effect 1: Get the currently authenticated user from Firebase
+        // Effect 1: Get the currently authenticated user from Firebase
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // IMPORTANT: We need both the Firebase UID and our application's own user profile.
-                // After a user logs in with Firebase, you should have an endpoint to get their profile.
-                // For this demo, we'll mock that profile fetch.
-                // In a real app, you would call your backend here:
-                // const profile = await fetch('/api/users/me').then(res => res.json());
-                // setCurrentUser(profile);
-                
-                // Mocking the user profile based on your API response.
-                // The user with this ID MUST be a member of the chat channel you are testing.
-                setCurrentUser({
-                    uid: user.uid, // Firebase Auth UID
-                    userId: "8f06fe92-7db5-4646-8eca-666e90984c6d", // This is the UUID from your backend 'users' table
-                    name: "Nishagi Test"
-                });
+                try {
+                    const token = await user.getIdToken();
+                    const response = await fetch('http://localhost:8080/api/auth/session', {
+                        headers: { 
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const profile = await response.json();
+                        setCurrentUser({
+                            uid: user.uid,
+                            userId: profile.id,
+                            name: profile.name
+                        });
+                    } else {
+                        console.error('Failed to fetch user profile:', response.status);
+                        setCurrentUser(null);
+                    }
+                } catch (error) {
+                    console.error("Error fetching user profile:", error);
+                    setCurrentUser(null);
+                }
             } else {
                 setCurrentUser(null);
             }
@@ -91,7 +102,15 @@ const LawyerMessages = () => {
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const msgs = querySnapshot.docs.map(doc => {
                 const data = doc.data();
+
+                // Debug logging to help identify the issue
+                console.log('Message senderId:', data.senderId);
+                console.log('Available members:', selectedChat.members);
+
                 const senderInfo = selectedChat.members.find(m => m.userId === data.senderId) || { name: 'Unknown User', role: 'Unknown' };
+
+                console.log('Found sender info:', senderInfo);
+                
                 return {
                     id: doc.id,
                     content: data.text,
