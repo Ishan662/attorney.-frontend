@@ -11,9 +11,13 @@ const EditHearingModal = ({ isOpen, onClose, hearing, caseNumber, onSave, onDele
         label: '',
         date: '',
         time: '',
+        endTime: '',
         location: '',
         note: '',
-        status: 'PLANNED'
+        status: 'PLANNED',
+        guests: '',
+        googleMeetEnabled: false,
+        googleMeetLink: ''
     });
     
     // We bring back the error state to match the Add modal
@@ -41,14 +45,23 @@ const EditHearingModal = ({ isOpen, onClose, hearing, caseNumber, onSave, onDele
             // This logic correctly separates the date and time for the form fields
             const datePart = hearingDate.toISOString().split('T')[0]; // YYYY-MM-DD
             const timePart = hearingDate.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
+            
+            // Calculate end time (1 hour after start time by default)
+            const endTime = new Date(hearingDate);
+            endTime.setHours(endTime.getHours() + 1);
+            const endTimePart = endTime.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
 
             setFormData({
                 label: hearing.title || '',
                 date: datePart,
                 time: timePart,
+                endTime: hearing.endTime || endTimePart,
                 location: hearing.location || '',
                 note: hearing.note || '',
-                status: hearing.status || 'PLANNED'
+                status: hearing.status || 'PLANNED',
+                guests: hearing.guests || '',
+                googleMeetEnabled: hearing.googleMeetEnabled || false,
+                googleMeetLink: hearing.googleMeetLink || ''
             });
         }
     }, [hearing]); // This effect runs whenever the selected hearing changes
@@ -167,32 +180,49 @@ const EditHearingModal = ({ isOpen, onClose, hearing, caseNumber, onSave, onDele
 
                     {/* The form structure is now identical to your Add modal */}
                     <form onSubmit={handleUpdate} className="space-y-4">
-                        <Input1
-                            type="text"
-                            name="label"
-                            label="Hearing Label"
-                            placeholder="e.g. Final Hearing, Follow-up, etc."
-                            required
-                            value={formData.label}
-                            onChange={handleChange}
-                            error={errors.label}
-                        />
-                        
-                        <div className="grid grid-cols-2 gap-4">
+                        {/* Title Field */}
+                        <div className="mb-4">
+                            <label className="block mb-1 font-medium" htmlFor="label">
+                                Hearing Title <span className="text-red-500">*</span>
+                            </label>
                             <Input1
-                                type="date"
-                                name="date"
-                                label="Date"
+                                id="label"
+                                type="text"
+                                placeholder="Enter hearing title"
+                                value={formData.label}
+                                onChange={handleChange}
+                                name="label"
                                 required
+                            />
+                            {errors.label && (
+                                <p className="mt-1 text-sm text-red-600">{errors.label}</p>
+                            )}
+                        </div>
+
+                        {/* Date Field */}
+                        <div className="mb-4">
+                            <label className="block mb-1 font-medium" htmlFor="date">
+                                Hearing Date <span className="text-red-500">*</span>
+                            </label>
+                            <Input1
+                                id="date"
+                                type="date"
                                 value={formData.date}
                                 onChange={handleChange}
-                                error={errors.date}
-                                min={new Date().toISOString().split('T')[0]} // Set minimum date to today
+                                name="date"
+                                required
+                                min={new Date().toISOString().split('T')[0]}
                             />
-                            
+                            {errors.date && (
+                                <p className="mt-1 text-sm text-red-600">{errors.date}</p>
+                            )}
+                        </div>
+
+                        {/* Time Slots */}
+                        <div className="mb-4 grid grid-cols-2 gap-4">
                             <div className="relative">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Time (8 AM - 4 PM)
+                                <label className="block mb-1 font-medium">
+                                    Start Time <span className="text-red-500">*</span>
                                 </label>
                                 <div 
                                     onClick={() => setShowTimeDropdown(!showTimeDropdown)}
@@ -224,47 +254,101 @@ const EditHearingModal = ({ isOpen, onClose, hearing, caseNumber, onSave, onDele
                                     <p className="mt-1 text-sm text-red-600">{errors.time}</p>
                                 )}
                             </div>
+                            <div>
+                                <label className="block mb-1 font-medium" htmlFor="endTime">
+                                    End Time <span className="text-red-500">*</span>
+                                </label>
+                                <Input1
+                                    id="endTime"
+                                    type="time"
+                                    value={formData.endTime}
+                                    onChange={handleChange}
+                                    name="endTime"
+                                    required
+                                />
+                            </div>
                         </div>
                         
-                        <Input1
-                            type="text"
-                            name="location"
-                            label="Location"
-                            placeholder="Court name or address"
-                            required
-                            value={formData.location}
-                            onChange={handleChange}
-                            error={errors.location}
-                        />
-                        
+                        {/* Auto-filled Location */}
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Status
+                            <label className="block mb-1 font-medium" htmlFor="location">
+                                Court/Location
                             </label>
-                            <select
-                                name="status"
-                                value={formData.status}
+                            <Input1
+                                id="location"
+                                type="text"
+                                value={formData.location}
                                 onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            >
-                                <option value="PLANNED">Planned</option>
-                                <option value="COMPLETED">Completed</option>
-                                <option value="POSTPONED">Postponed</option>
-                                <option value="CANCELLED">Cancelled</option>
-                            </select>
+                                name="location"
+                                placeholder="Court location will be auto-filled"
+                                required
+                            />
+                            {errors.location && (
+                                <p className="mt-1 text-sm text-red-600">{errors.location}</p>
+                            )}
                         </div>
-                        
+
+                        {/* Guests/Participants */}
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Notes (optional)
+                            <label className="block mb-1 font-medium" htmlFor="guests">
+                                Guests/Participants
+                            </label>
+                            <Input1
+                                id="guests"
+                                type="text"
+                                value={formData.guests}
+                                onChange={handleChange}
+                                name="guests"
+                                placeholder="Enter email addresses separated by commas"
+                            />
+                        </div>
+
+                        {/* Google Meet Integration */}
+                        <div className="mb-4">
+                            <div className="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    id="googleMeet"
+                                    checked={formData.googleMeetEnabled}
+                                    onChange={(e) => setFormData(prev => ({...prev, googleMeetEnabled: e.target.checked}))}
+                                    className="mr-2"
+                                />
+                                <label htmlFor="googleMeet" className="font-medium">
+                                    Add Google Meet
+                                </label>
+                            </div>
+                        </div>
+
+                        {/* Google Meet Link (conditionally shown) */}
+                        {formData.googleMeetEnabled && (
+                            <div className="mb-4 p-3 bg-gray-50 rounded-md">
+                                <label className="block mb-1 font-medium text-sm" htmlFor="googleMeetLink">
+                                    Google Meet Link
+                                </label>
+                                <Input1
+                                    id="googleMeetLink"
+                                    type="url"
+                                    value={formData.googleMeetLink}
+                                    onChange={handleChange}
+                                    name="googleMeetLink"
+                                    placeholder="Enter or paste Google Meet link"
+                                />
+                            </div>
+                        )}
+                        
+                        {/* Special Note */}
+                        <div className="mb-4">
+                            <label className="block mb-1 font-medium" htmlFor="note">
+                                Special Note
                             </label>
                             <textarea
+                                id="note"
                                 name="note"
-                                rows={3}
+                                rows={4}
+                                className="w-full border border-gray-300 rounded px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Add any special notes here"
                                 value={formData.note}
                                 onChange={handleChange}
-                                placeholder="Any important details about this hearing"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             />
                         </div>
                         
