@@ -9,7 +9,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { FaBriefcase, FaClock, FaCog, FaPlus, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import CourtColorSettings from "./CourtColorSettings";
-import { getCasesForCalendar, createHearing, updateHearing, deleteHearing } from '../../services/caseService';
+import { getCasesForCalendar, createHearing, updateHearing, deleteHearing, getAllHearingsForCalendar } from '../../services/caseService';
 import EditHearingModal from './EditHearingModal';
 
 // Import Custom Calendar Styles
@@ -30,6 +30,11 @@ const Lawyercalender = () => {
   const [cases, setCases] = useState([]);
   const [loadingCases, setLoadingCases] = useState(true);
   const [casesError, setCasesError] = useState(null);
+
+  // Hearings state for calendar display
+  const [hearings, setHearings] = useState([]);
+  const [loadingHearings, setLoadingHearings] = useState(true);
+  const [hearingsError, setHearingsError] = useState(null);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentDate, setCurrentDate] = useState(new Date()); // For tracking the current viewing month
@@ -171,6 +176,26 @@ const Lawyercalender = () => {
     fetchCases();
   }, []);
 
+  // Fetch hearings when component mounts
+  useEffect(() => {
+    const fetchHearings = async () => {
+      try {
+        setLoadingHearings(true);
+        setHearingsError(null);
+        const fetchedHearings = await getAllHearingsForCalendar();
+        setHearings(fetchedHearings);
+      } catch (error) {
+        console.error('Failed to fetch hearings:', error);
+        setHearingsError('Failed to load hearings. Please try again.');
+        setHearings([]);
+      } finally {
+        setLoadingHearings(false);
+      }
+    };
+
+    fetchHearings();
+  }, []);
+
   // Format date display like "21st of June, Saturday"
   const formatDateDisplay = (date) => {
     const day = date.getDate();
@@ -307,12 +332,11 @@ const Lawyercalender = () => {
 
   const weekDays = ["S", "M", "T", "W", "T", "F", "S"];
 
-  // Handle case selection and auto-fill location
+  // Handle case selection
   const handleCaseSelect = (caseId) => {
     const selectedCaseData = cases.find(c => c.id === caseId);
     if (selectedCaseData) {
       setSelectedCase(caseId);
-      setLocation(selectedCaseData.court);
       setTitle(`${selectedCaseData.caseName} - Hearing`);
     }
     setShowCaseDropdown(false);
@@ -378,6 +402,20 @@ const Lawyercalender = () => {
   };
 
   // Enhanced handle popup form save
+  // Function to refresh hearings after creating/updating/deleting
+  const refreshHearings = async () => {
+    try {
+      setLoadingHearings(true);
+      const fetchedHearings = await getAllHearingsForCalendar();
+      setHearings(fetchedHearings);
+    } catch (error) {
+      console.error('Failed to refresh hearings:', error);
+      setHearingsError('Failed to refresh hearings.');
+    } finally {
+      setLoadingHearings(false);
+    }
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     
@@ -401,10 +439,10 @@ const Lawyercalender = () => {
         date: hearingDate,
         startTime: startTime,
         endTime: endTime,
-        location: location || selectedCaseData?.court || "",
+        location: location,
         guests: guests,
         specialNote: specialNote,
-        court: selectedCaseData?.court || location,
+        court: location,
         participants: guests
       };
       
@@ -422,7 +460,7 @@ const Lawyercalender = () => {
         textColor: "#ffffff",
         extendedProps: {
           type: "hearing",
-          location: location || selectedCaseData?.court || "",
+          location: location,
           caseId: selectedCase, // Include case ID
           caseNumber: selectedCaseData?.caseNumber || "",
           guests: guests,
@@ -438,6 +476,9 @@ const Lawyercalender = () => {
         `Date: ${hearingDate}\nTime: ${startTime} - ${endTime}\n` +
         `Title: ${title}\nLocation: ${location}`
       );
+      
+      // Refresh hearings to show the new hearing on calendar
+      await refreshHearings();
       
     } catch (error) {
       console.error('Error creating hearing:', error);
@@ -620,25 +661,19 @@ const Lawyercalender = () => {
             </div>
           </div>
 
-          {/* Auto-filled Location */}
+          {/* Location Field */}
           <div className="mb-4">
             <label className="block mb-1 font-medium" htmlFor="location">
-              Court/Location
+              Court/Location <span className="text-red-500">*</span>
             </label>
             <Input1
               id="location"
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Court location will be auto-filled"
-              readOnly={selectedCase !== ""}
-              className={selectedCase !== "" ? "bg-gray-100" : ""}
+              placeholder="Enter court or location address"
+              required
             />
-            {selectedCase && (
-              <p className="text-xs text-gray-500 mt-1">
-                Location auto-filled from selected case
-              </p>
-            )}
           </div>
 
           <div className="mb-4">
@@ -696,93 +731,48 @@ const Lawyercalender = () => {
     </div>
   );
 
-  // Sample events with colorful theme like Google Calendar
-  const events = [
-    {
-      id: "1",
-      title: "Court Hearing: John Doe vs ABC Company",
-      start: "2025-08-10T09:00:00",
-      end: "2025-08-10T10:00:00",
-      backgroundColor: "#1a73e8",
-      borderColor: "#1a73e8",
-      textColor: "#ffffff",
-      extendedProps: {
-        type: "hearing",
-        location: "Courtroom 3A",
-        priority: "high"
-      }
-    },
-    {
-      id: "2",
-      title: "Client Meeting: Case Review",
-      start: "2025-08-11T14:00:00",
-      end: "2025-08-11T15:00:00",
-      backgroundColor: "#34a853",
-      borderColor: "#34a853",
-      textColor: "#ffffff",
-      extendedProps: {
-        type: "meeting",
-        client: "Sarah Johnson",
-        priority: "medium"
-      }
-    },
-    {
-      id: "3",
-      title: "Nikini Full Moon Poya Day",
-      start: "2025-08-08",
-      end: "2025-08-09",
-      backgroundColor: "#137333",
-      borderColor: "#137333",
-      textColor: "#ffffff",
-      allDay: true,
-      extendedProps: {
-        type: "holiday",
-        priority: "low"
-      }
-    },
-    {
-      id: "4",
-      title: "Remind safaran",
-      start: "2025-08-10",
-      end: "2025-08-11",
-      backgroundColor: "#4285f4",
-      borderColor: "#4285f4",
-      textColor: "#ffffff",
-      allDay: true,
-      extendedProps: {
-        type: "reminder",
-        priority: "medium"
-      }
-    },
-    {
-      id: "5",
-      title: "Sahan bday",
-      start: "2025-08-25",
-      end: "2025-08-26",
-      backgroundColor: "#4285f4",
-      borderColor: "#4285f4",
-      textColor: "#ffffff",
-      allDay: true,
-      extendedProps: {
-        type: "birthday",
-        priority: "low"
-      }
-    },
-    {
-      id: "6",
-      title: "Bordime nanda bday",
-      start: "2025-08-23",
-      end: "2025-08-24",
-      backgroundColor: "#4285f4",
-      borderColor: "#4285f4",
-      textColor: "#ffffff",
-      allDay: true,
-      extendedProps: {
-        type: "birthday",
-        priority: "low"
-      }
+  // Transform hearings data into FullCalendar events format
+  const transformHearingsToEvents = (hearingsData) => {
+    console.log('Transforming hearings data:', hearingsData);
+    
+    if (!hearingsData || !Array.isArray(hearingsData)) {
+      console.log('No hearings data or not an array');
+      return [];
     }
-  ];
+
+    const transformedEvents = hearingsData.map((hearing) => {
+      console.log('Processing hearing:', hearing);
+      
+      // Determine court color from settings or use default
+      const courtName = hearing.location || hearing.court || 'Unknown Court';
+      const backgroundColor = courtColors[courtName] || '#1a73e8'; // Default blue
+
+      return {
+        id: hearing.id?.toString() || Math.random().toString(),
+        title: hearing.title || hearing.hearingTitle || 'Hearing',
+        start: hearing.hearingDate || hearing.startTime,
+        end: hearing.endTime,
+        backgroundColor: backgroundColor,
+        borderColor: backgroundColor,
+        textColor: '#ffffff',
+        extendedProps: {
+          type: 'hearing',
+          location: hearing.location || hearing.court,
+          caseNumber: hearing.caseNumber,
+          notes: hearing.note || hearing.notes,
+          participants: hearing.participants || hearing.guests,
+          googleMeet: hearing.googleMeetLink,
+          priority: 'high'
+        }
+      };
+    });
+
+    console.log('Transformed events:', transformedEvents);
+    return transformedEvents;
+  };
+
+  // Get events from real hearings data (fallback to empty array if loading)
+  const events = loadingHearings ? [] : transformHearingsToEvents(hearings);
 
   // Handle date click
   const handleDateClick = (info) => {
@@ -1012,6 +1002,22 @@ const Lawyercalender = () => {
 
           {/* Main Calendar */}
           <div className="main-calendar">
+            {loadingHearings && (
+              <div className="text-center py-4">
+                <div className="text-gray-600">Loading hearings...</div>
+              </div>
+            )}
+            {hearingsError && (
+              <div className="text-center py-4">
+                <div className="text-red-600">{hearingsError}</div>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="text-blue-600 hover:text-blue-800 underline ml-2"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
             {viewMode === "month" || viewMode === "week" ? (
               <div className="calendar-view">
                 <FullCalendar
@@ -1295,19 +1301,18 @@ const Lawyercalender = () => {
                   </div>
                 </div>
 
-                {/* Auto-filled Location */}
+                {/* Location Field */}
                 <div className="mb-4">
                   <label className="block mb-1 font-medium" htmlFor="location">
-                    Court/Location
+                    Court/Location <span className="text-red-500">*</span>
                   </label>
                   <Input1
                     id="location"
                     type="text"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Court location will be auto-filled"
-                    readOnly={selectedCase !== ""}
-                    className={selectedCase !== "" ? "bg-gray-100" : ""}
+                    placeholder="Enter court or location address"
+                    required
                   />
                 </div>
 

@@ -67,6 +67,13 @@ export const getHearingsForCase = async (caseId) => {
   return await authenticatedFetch(`/api/hearings/by-case/${caseId}`);
 };
 
+/**
+ * Fetches all hearings for the current lawyer (for calendar display)
+ */
+export const getAllHearingsForCalendar = async () => {
+  return await authenticatedFetch('/api/hearings/my-hearings');
+};
+
 export const updateCase = async (caseId, caseData) => {
   return await authenticatedFetch(`/api/cases/${caseId}`, {
     method: 'PUT',

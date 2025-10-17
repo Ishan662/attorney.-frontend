@@ -235,10 +235,10 @@ const AddNextHearingModal = ({ isOpen, onClose, caseNumber, courtName, onSave })
               </div>
             </div>
             
-            {/* Auto-filled Location */}
+            {/* Location Field */}
             <div className="mb-4">
               <label className="block mb-1 font-medium" htmlFor="location">
-                Court/Location
+                Court/Location <span className="text-red-500">*</span>
               </label>
               <Input1
                 id="location"
@@ -246,9 +246,8 @@ const AddNextHearingModal = ({ isOpen, onClose, caseNumber, courtName, onSave })
                 value={formData.location}
                 onChange={handleChange}
                 name="location"
-                placeholder="Court location will be auto-filled"
-                readOnly={true}
-                className="bg-gray-100"
+                placeholder="Enter court or location address"
+                required
               />
               {errors.location && (
                 <p className="mt-1 text-sm text-red-600">{errors.location}</p>
