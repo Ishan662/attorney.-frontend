@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import Input1 from '../../components/UI/Input1';
+import { updateHearing, deleteHearing } from '../../services/caseService';
 
 const EditHearingModal = ({ isOpen, onClose, hearing, caseNumber, onSave, onDelete }) => {
     // `hearing` is the object of the hearing being edited
@@ -135,11 +136,28 @@ const EditHearingModal = ({ isOpen, onClose, hearing, caseNumber, onSave, onDele
         if (validate()) {
             setIsSubmitting(true);
             try {
-                // The parent (CaseDetails) will handle the API call and closing the modal
-                await onSave(hearing.id, formData);
+                // Call the backend API to update the hearing
+                await updateHearing(hearing.id, {
+                    label: formData.label,
+                    date: formData.date,
+                    startTime: formData.time,
+                    endTime: formData.endTime,
+                    location: formData.location,
+                    note: formData.note,
+                    guests: formData.guests,
+                    status: formData.status
+                });
+                
+                // Call the parent's onSave callback to refresh the UI
+                if (onSave) {
+                    await onSave(hearing.id, formData);
+                }
+                
+                // Close the modal
+                onClose();
             } catch (error) {
                 console.error("Update failed:", error);
-                // The parent component will show an alert
+                alert("Failed to update hearing. Please try again.");
             } finally {
                 setIsSubmitting(false);
             }
@@ -150,10 +168,19 @@ const EditHearingModal = ({ isOpen, onClose, hearing, caseNumber, onSave, onDele
         if (window.confirm("Are you sure you want to delete this hearing? This action cannot be undone.")) {
             setIsSubmitting(true);
             try {
-                // The parent (CaseDetails) will handle the API call and closing the modal
-                await onDelete(hearing.id);
+                // Call the backend API to delete the hearing
+                await deleteHearing(hearing.id);
+                
+                // Call the parent's onDelete callback to refresh the UI
+                if (onDelete) {
+                    await onDelete(hearing.id);
+                }
+                
+                // Close the modal
+                onClose();
             } catch (error) {
                 console.error("Delete failed:", error);
+                alert("Failed to delete hearing. Please try again.");
             } finally {
                 setIsSubmitting(false);
             }

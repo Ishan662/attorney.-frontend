@@ -9,42 +9,12 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { FaBriefcase, FaClock, FaCog, FaPlus, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import CourtColorSettings from "./CourtColorSettings";
+import { getCasesForCalendar, createHearing, updateHearing, deleteHearing } from '../../services/caseService';
+import EditHearingModal from './EditHearingModal';
 
 // Import Custom Calendar Styles
 import "../../styles/calendar.css";
 import "../../styles/calendar-additions.css";
-
-// Mock cases data - in real app, this would come from the case service
-const mockCases = [
-  {
-    id: 1,
-    caseName: "John Doe vs ABC Company",
-    caseNumber: "DC/2024/001",
-    courtType: "District Court",
-    court: "District Court of Colombo"
-  },
-  {
-    id: 2,
-    caseName: "Jane Smith Land Dispute",
-    caseNumber: "HC/2024/045",
-    courtType: "High Court",
-    court: "High Court of Kandy"
-  },
-  {
-    id: 3,
-    caseName: "Mike Johnson Money Recovery",
-    caseNumber: "MC/2024/123",
-    courtType: "Magistrates Court",
-    court: "Magistrate's Court of Galle"
-  },
-  {
-    id: 4,
-    caseName: "Sarah Wilson Divorce Case",
-    caseNumber: "DC/2024/067",
-    courtType: "District Court",
-    court: "District Court of Gampaha"
-  },
-];
 
 const Lawyercalender = () => {
   const navigate = useNavigate();
@@ -55,6 +25,11 @@ const Lawyercalender = () => {
     email: "jeewanthadeherath@gmail.com",
     role: "lawyer",
   };
+
+  // State for cases from backend
+  const [cases, setCases] = useState([]);
+  const [loadingCases, setLoadingCases] = useState(true);
+  const [casesError, setCasesError] = useState(null);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentDate, setCurrentDate] = useState(new Date()); // For tracking the current viewing month
@@ -174,6 +149,27 @@ const Lawyercalender = () => {
       }
     }
   }, [createModalMode, selectedTimeSlot]);
+
+  // Fetch cases when component mounts
+  useEffect(() => {
+    const fetchCases = async () => {
+      try {
+        setLoadingCases(true);
+        setCasesError(null);
+        const fetchedCases = await getCasesForCalendar();
+        setCases(fetchedCases);
+      } catch (error) {
+        console.error('Failed to fetch cases:', error);
+        setCasesError('Failed to load cases. Please try again.');
+        // Fallback to empty array or show error message
+        setCases([]);
+      } finally {
+        setLoadingCases(false);
+      }
+    };
+
+    fetchCases();
+  }, []);
 
   // Format date display like "21st of June, Saturday"
   const formatDateDisplay = (date) => {
@@ -313,7 +309,7 @@ const Lawyercalender = () => {
 
   // Handle case selection and auto-fill location
   const handleCaseSelect = (caseId) => {
-    const selectedCaseData = mockCases.find(c => c.id === parseInt(caseId));
+    const selectedCaseData = cases.find(c => c.id === caseId);
     if (selectedCaseData) {
       setSelectedCase(caseId);
       setLocation(selectedCaseData.court);
@@ -324,7 +320,7 @@ const Lawyercalender = () => {
 
   // Get selected case label
   const getSelectedCaseLabel = () => {
-    const caseData = mockCases.find(c => c.id === parseInt(selectedCase));
+    const caseData = cases.find(c => c.id === selectedCase);
     return caseData ? `${caseData.caseName} (${caseData.caseNumber})` : "Select Case";
   };
 
@@ -382,40 +378,72 @@ const Lawyercalender = () => {
   };
 
   // Enhanced handle popup form save
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    const selectedCaseData = mockCases.find(c => c.id === parseInt(selectedCase));
-    // Implement save logic here - in a real app, this would be an API call
-    const meetText = googleMeetEnabled ? googleMeetLink : "Not added";
     
-    // Create a new event
-    const newEvent = {
-      id: `hearing-${Date.now()}`,
-      title: title || `${selectedCaseData?.caseNumber || ''} Hearing`,
-      start: `${hearingDate}T${startTime}:00`,
-      end: `${hearingDate}T${endTime}:00`,
-      backgroundColor: selectedCaseData ? courtColors[selectedCaseData.court] || "#1a73e8" : "#1a73e8",
-      borderColor: selectedCaseData ? courtColors[selectedCaseData.court] || "#1a73e8" : "#1a73e8",
-      textColor: "#ffffff",
-      extendedProps: {
-        type: "hearing",
+    // Validation
+    if (!selectedCase) {
+      alert('Please select a case');
+      return;
+    }
+    
+    if (!title || !hearingDate || !startTime || !endTime) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
+    const selectedCaseData = cases.find(c => c.id === selectedCase);
+    
+    try {
+      // Prepare hearing data for backend
+      const hearingFormData = {
+        label: title,
+        date: hearingDate,
+        startTime: startTime,
+        endTime: endTime,
         location: location || selectedCaseData?.court || "",
-        caseNumber: selectedCaseData?.caseNumber || "",
         guests: guests,
-        notes: specialNote,
-        googleMeet: googleMeetEnabled ? googleMeetLink : ""
-      }
-    };
-    
-    // In real app, save to API/backend here
-    
-    alert(
-      `Hearing saved!\nCase: ${selectedCaseData?.caseName || 'N/A'}\n` +
-      `Case Number: ${selectedCaseData?.caseNumber || 'N/A'}\n` +
-      `Date: ${hearingDate}\nTime: ${startTime} - ${endTime}\n` +
-      `Title: ${title}\nLocation: ${location}\nGuests: ${guests}\n` +
-      `Note: ${specialNote}\nGoogle Meet: ${meetText}`
-    );
+        specialNote: specialNote,
+        court: selectedCaseData?.court || location,
+        participants: guests
+      };
+      
+      // Call backend API with case ID
+      const response = await createHearing(selectedCase, hearingFormData);
+      
+      // Create a new event for the calendar display
+      const newEvent = {
+        id: response.id || `hearing-${Date.now()}`,
+        title: title || `${selectedCaseData?.caseNumber || ''} Hearing`,
+        start: `${hearingDate}T${startTime}:00`,
+        end: `${hearingDate}T${endTime}:00`,
+        backgroundColor: selectedCaseData ? courtColors[selectedCaseData.court] || "#1a73e8" : "#1a73e8",
+        borderColor: selectedCaseData ? courtColors[selectedCaseData.court] || "#1a73e8" : "#1a73e8",
+        textColor: "#ffffff",
+        extendedProps: {
+          type: "hearing",
+          location: location || selectedCaseData?.court || "",
+          caseId: selectedCase, // Include case ID
+          caseNumber: selectedCaseData?.caseNumber || "",
+          guests: guests,
+          notes: specialNote,
+          googleMeet: googleMeetEnabled ? googleMeetLink : ""
+        }
+      };
+      
+      alert(
+        `Hearing created successfully!\nCase: ${selectedCaseData?.caseName || 'N/A'}\n` +
+        `Case ID: ${selectedCase}\n` +
+        `Case Number: ${selectedCaseData?.caseNumber || 'N/A'}\n` +
+        `Date: ${hearingDate}\nTime: ${startTime} - ${endTime}\n` +
+        `Title: ${title}\nLocation: ${location}`
+      );
+      
+    } catch (error) {
+      console.error('Error creating hearing:', error);
+      alert('Failed to create hearing. Please try again.');
+      return;
+    }
     
     // Reset form and close modal
     setTitle("");
@@ -504,17 +532,31 @@ const Lawyercalender = () => {
               {showCaseDropdown && (
                 <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md border border-gray-200 overflow-auto">
                   <div className="py-1">
-                    {mockCases.map((caseItem) => (
-                      <div
-                        key={caseItem.id}
-                        className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                        onClick={() => handleCaseSelect(caseItem.id)}
-                      >
-                        <div className="font-medium text-gray-900">{caseItem.caseName}</div>
-                        <div className="text-sm text-gray-500">{caseItem.caseNumber}</div>
-                        <div className="text-xs text-gray-500">{caseItem.court}</div>
+                    {loadingCases ? (
+                      <div className="px-4 py-3 text-gray-500 text-center">
+                        Loading cases...
                       </div>
-                    ))}
+                    ) : casesError ? (
+                      <div className="px-4 py-3 text-red-500 text-center">
+                        {casesError}
+                      </div>
+                    ) : cases.length === 0 ? (
+                      <div className="px-4 py-3 text-gray-500 text-center">
+                        No cases available
+                      </div>
+                    ) : (
+                      cases.map((caseItem) => (
+                        <div
+                          key={caseItem.id}
+                          className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                          onClick={() => handleCaseSelect(caseItem.id)}
+                        >
+                          <div className="font-medium text-gray-900">{caseItem.caseName}</div>
+                          <div className="text-sm text-gray-500">{caseItem.caseNumber}</div>
+                          <div className="text-xs text-gray-500">{caseItem.court}</div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}
@@ -631,29 +673,7 @@ const Lawyercalender = () => {
               }}
               className="cursor-pointer"
             />
-            <label
-              htmlFor="googleMeet"
-              className="text-blue-600 underline text-sm cursor-pointer"
-            >
-              Add Google Meet video conferencing
-            </label>
           </div>
-          {googleMeetEnabled && (
-            <div className="mb-4">
-              <label className="block mb-1 font-medium" htmlFor="googleMeetLink">
-                Google Meet Link
-              </label>
-              <a
-                href={googleMeetLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline break-all"
-                id="googleMeetLink"
-              >
-                {googleMeetLink}
-              </a>
-            </div>
-          )}
 
           {/* Special Note */}
           <div className="mb-4">
@@ -1173,27 +1193,46 @@ const Lawyercalender = () => {
                       type="button"
                       className="w-full text-left border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white flex justify-between items-center"
                       onClick={() => setShowCaseDropdown(!showCaseDropdown)}
+                      disabled={loadingCases}
                     >
-                      {selectedCase
-                        ? mockCases.find((c) => c.id === parseInt(selectedCase))?.caseName
-                        : "Select a case"}
+                      {loadingCases ? (
+                        "Loading cases..."
+                      ) : selectedCase ? (
+                        cases.find((c) => c.id === selectedCase)?.caseName || "Select a case"
+                      ) : (
+                        "Select a case"
+                      )}
                       <span className="ml-2">▼</span>
                     </button>
                   </div>
                   {showCaseDropdown && (
                     <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-y-auto">
                       <div className="py-1">
-                        {mockCases.map((caseItem) => (
-                          <div
-                            key={caseItem.id}
-                            className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                            onClick={() => handleCaseSelect(caseItem.id)}
-                          >
-                            <div className="font-medium text-gray-900">{caseItem.caseName}</div>
-                            <div className="text-sm text-gray-500">{caseItem.caseNumber}</div>
-                            <div className="text-xs text-gray-500">{caseItem.court}</div>
+                        {loadingCases ? (
+                          <div className="px-4 py-3 text-gray-500 text-center">
+                            Loading cases...
                           </div>
-                        ))}
+                        ) : casesError ? (
+                          <div className="px-4 py-3 text-red-500 text-center">
+                            {casesError}
+                          </div>
+                        ) : cases.length === 0 ? (
+                          <div className="px-4 py-3 text-gray-500 text-center">
+                            No cases available
+                          </div>
+                        ) : (
+                          cases.map((caseItem) => (
+                            <div
+                              key={caseItem.id}
+                              className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                              onClick={() => handleCaseSelect(caseItem.id)}
+                            >
+                              <div className="font-medium text-gray-900">{caseItem.caseName}</div>
+                              <div className="text-sm text-gray-500">{caseItem.caseNumber}</div>
+                              <div className="text-xs text-gray-500">{caseItem.court}</div>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </div>
                   )}

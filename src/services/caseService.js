@@ -88,7 +88,6 @@ export const createHearing = async (caseId, hearingFormData) => {
     endTime: endISO,
     location: hearingFormData.court || hearingFormData.location,
     participants: hearingFormData.participants || hearingFormData.guests || null,
-    googleMeetLink: hearingFormData.googleMeetLink || null,
     note: hearingFormData.specialNote || hearingFormData.note || null,
   };
 
@@ -112,7 +111,6 @@ export const updateHearing = async (hearingId, hearingFormData) => {
     endTime: endISO,
     location: hearingFormData.court || hearingFormData.location,
     participants: hearingFormData.participants || hearingFormData.guests || null,
-    googleMeetLink: hearingFormData.googleMeetLink || null,
     note: hearingFormData.specialNote || hearingFormData.note || null,
     status: hearingFormData.status || null,
   };
@@ -121,6 +119,43 @@ export const updateHearing = async (hearingId, hearingFormData) => {
     method: 'PUT',
     body: JSON.stringify(payload),
   });
+};
+
+// Add this function to your existing caseService.js file
+
+/**
+ * Fetches cases formatted for calendar dropdown selection
+ * @returns {Promise<Array<object>>} Array of cases with calendar-specific formatting
+ */
+export const getCasesForCalendar = async () => {
+    try {
+        const cases = await getMyCases(); // Use your existing function
+        
+        // Transform the data to match your calendar dropdown format
+        return cases.map(caseData => ({
+            id: caseData.id,
+            caseName: caseData.caseTitle || caseData.caseName,
+            caseNumber: caseData.caseNumber,
+            court: caseData.court,
+            courtType: determineCourtType(caseData.court) // Helper function
+        }));
+    } catch (error) {
+        console.error('Error fetching cases for calendar:', error);
+        throw error;
+    }
+};
+
+// Helper function to determine court type from court name
+const determineCourtType = (courtName) => {
+    if (!courtName) return 'Unknown';
+    
+    const courtLower = courtName.toLowerCase();
+    if (courtLower.includes('high court')) return 'High Court';
+    if (courtLower.includes('district court')) return 'District Court';
+    if (courtLower.includes('magistrate')) return 'Magistrates Court';
+    if (courtLower.includes('supreme court')) return 'Supreme Court';
+    
+    return 'Other';
 };
 
 export const deleteHearing = async (hearingId) => {
