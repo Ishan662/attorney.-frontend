@@ -9,7 +9,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { FaBriefcase, FaClock, FaCog, FaPlus, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import CourtColorSettings from "./CourtColorSettings";
-import { getCasesForCalendar, createHearing, updateHearing, deleteHearing, getAllHearingsForCalendar, createTask, getAllTasksForCalendar, updateTask, deleteTask } from '../../services/caseService';
+import { getCasesForCalendar, createHearing, updateHearing, deleteHearing, getAllHearingsForCalendar, createTask, getAllTasksForCalendar, updateTask, deleteTask, validateHearing, validateTask, getCourtColors, updateCourtColors } from '../../services/caseService';
 import EditHearingModal from './EditHearingModal';
 
 // Import Custom Calendar Styles
@@ -41,6 +41,11 @@ const Lawyercalender = () => {
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [tasksError, setTasksError] = useState(null);
 
+  // Validation state
+  const [validationResult, setValidationResult] = useState(null);
+  const [isValidating, setIsValidating] = useState(false);
+  const [showValidationResult, setShowValidationResult] = useState(false);
+
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentDate, setCurrentDate] = useState(new Date()); // For tracking the current viewing month
   const [viewMode, setViewMode] = useState("month");
@@ -53,16 +58,9 @@ const Lawyercalender = () => {
   // Settings popup state
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
-  // Court colors state - can be loaded from localStorage or API
-  const [courtColors, setCourtColors] = useState(() => {
-    const savedColors = localStorage.getItem('courtColors');
-    return savedColors ? JSON.parse(savedColors) : {
-      "Galle High Court": "#EF4444", // Red
-      "Badulla District Court": "#3B82F6", // Blue
-      "Colombo Magistrate Court": "#10B981", // Green
-      "Kandy High Court": "#8B5CF6" // Purple
-    };
-  });
+  // Court colors state - loaded from backend API
+  const [courtColors, setCourtColors] = useState({});
+  const [loadingCourtColors, setLoadingCourtColors] = useState(true);
 
   // Enhanced form state for popup
   const [title, setTitle] = useState("");
@@ -85,10 +83,7 @@ const Lawyercalender = () => {
   const [taskEndTime, setTaskEndTime] = useState("");
   const [taskNote, setTaskNote] = useState("");
 
-  // Save court colors to localStorage when they change
-  useEffect(() => {
-    localStorage.setItem('courtColors', JSON.stringify(courtColors));
-  }, [courtColors]);
+  // Court colors are now managed through backend API
 
   // Handle view mode changes
   useEffect(() => {
@@ -219,6 +214,24 @@ const Lawyercalender = () => {
     };
 
     fetchTasks();
+  }, []);
+
+  // Fetch court colors when component mounts
+  useEffect(() => {
+    const fetchCourtColors = async () => {
+      try {
+        setLoadingCourtColors(true);
+        const fetchedCourtColors = await getCourtColors();
+        setCourtColors(fetchedCourtColors); // Use exactly what backend returns
+      } catch (error) {
+        console.error('Failed to fetch court colors:', error);
+        setCourtColors({}); // Start with empty court colors on error
+      } finally {
+        setLoadingCourtColors(false);
+      }
+    };
+
+    fetchCourtColors();
   }, []);
 
   // Format date display like "21st of June, Saturday"
@@ -379,8 +392,32 @@ const Lawyercalender = () => {
   };
 
   // Handle save court colors from settings modal
-  const handleSaveCourtColors = (newCourtColors) => {
-    setCourtColors(newCourtColors);
+  const handleSaveCourtColors = async (newCourtColors) => {
+    try {
+      console.log('Attempting to save court colors:', newCourtColors);
+      
+      // Update court colors in the backend
+      await updateCourtColors(newCourtColors);
+      
+      // Update local state - this will automatically trigger re-rendering of events with new colors
+      setCourtColors(newCourtColors);
+      
+      // Show success message
+      alert('Court colors saved successfully! Calendar events will now reflect the new colors.');
+    } catch (error) {
+      console.error('Failed to save court colors:', error);
+      
+      let errorMessage = 'Failed to save court colors. ';
+      if (error.message.includes('403')) {
+        errorMessage += 'Access denied. Please make sure you are logged in as a lawyer.';
+      } else if (error.message.includes('401')) {
+        errorMessage += 'Authentication failed. Please log in again.';
+      } else {
+        errorMessage += 'Please try again.';
+      }
+      
+      alert(errorMessage);
+    }
   };
 
   // Get background color based on court location
@@ -455,6 +492,38 @@ const Lawyercalender = () => {
     }
   };
 
+  // Function to validate hearing before saving
+  const validateAndShowResult = async (hearingFormData, isTask = false) => {
+    try {
+      setIsValidating(true);
+      setShowValidationResult(false);
+      
+      let result;
+      if (isTask) {
+        result = await validateTask(hearingFormData);
+      } else {
+        result = await validateHearing(hearingFormData);
+      }
+      
+      setValidationResult(result);
+      setShowValidationResult(true);
+      
+      return result;
+    } catch (error) {
+      console.error('Validation error:', error);
+      setValidationResult({
+        valid: false,
+        message: 'Failed to validate. Please try again.',
+        travelSeconds: 0,
+        travelText: ''
+      });
+      setShowValidationResult(true);
+      return { valid: false };
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     
@@ -485,17 +554,26 @@ const Lawyercalender = () => {
         participants: guests
       };
       
+      // Validate hearing before creating
+      const validationResult = await validateAndShowResult(hearingFormData, false);
+      
+      if (!validationResult.valid) {
+        // Don't proceed if validation fails
+        return;
+      }
+      
       // Call backend API with case ID
       const response = await createHearing(selectedCase, hearingFormData);
       
       // Create a new event for the calendar display
+      const backgroundColor = courtColors[location] || "#1a73e8"; // Use location from form, not case court
       const newEvent = {
         id: response.id || `hearing-${Date.now()}`,
         title: title || `${selectedCaseData?.caseNumber || ''} Hearing`,
         start: `${hearingDate}T${startTime}:00`,
         end: `${hearingDate}T${endTime}:00`,
-        backgroundColor: selectedCaseData ? courtColors[selectedCaseData.court] || "#1a73e8" : "#1a73e8",
-        borderColor: selectedCaseData ? courtColors[selectedCaseData.court] || "#1a73e8" : "#1a73e8",
+        backgroundColor: backgroundColor,
+        borderColor: backgroundColor,
         textColor: "#ffffff",
         extendedProps: {
           type: "hearing",
@@ -561,6 +639,14 @@ const Lawyercalender = () => {
         note: taskNote,
         priority: 'MEDIUM' // Default priority
       };
+      
+      // Validate task before creating
+      const validationResult = await validateAndShowResult(taskFormData, true);
+      
+      if (!validationResult.valid) {
+        // Don't proceed if validation fails
+        return;
+      }
       
       // Call backend API to create task
       const response = await createTask(taskFormData);
@@ -830,8 +916,9 @@ const Lawyercalender = () => {
     }
 
     return tasksData.map((task) => {
-      // Use green color for tasks by default
-      const backgroundColor = '#34a853'; // Green for tasks
+      // Use court color based on task location, or green as default for tasks
+      const locationName = task.location || 'General';
+      const backgroundColor = courtColors[locationName] || '#34a853'; // Green for tasks without court color
       
       return {
         id: `task-${task.id?.toString()}` || Math.random().toString(),
@@ -853,8 +940,8 @@ const Lawyercalender = () => {
   };
 
   // Get events from real hearings and tasks data (fallback to empty array if loading)
-  const hearingEvents = loadingHearings ? [] : transformHearingsToEvents(hearings);
-  const taskEvents = loadingTasks ? [] : transformTasksToEvents(tasks);
+  const hearingEvents = (loadingHearings || loadingCourtColors) ? [] : transformHearingsToEvents(hearings);
+  const taskEvents = (loadingTasks || loadingCourtColors) ? [] : transformTasksToEvents(tasks);
   const events = [...hearingEvents, ...taskEvents];
 
   // Handle date click
@@ -1085,9 +1172,9 @@ const Lawyercalender = () => {
 
           {/* Main Calendar */}
           <div className="main-calendar">
-            {(loadingHearings || loadingTasks) && (
+            {(loadingHearings || loadingTasks || loadingCourtColors) && (
               <div className="text-center py-4">
-                <div className="text-gray-600">Loading calendar events...</div>
+                <div className="text-gray-600">Loading calendar data...</div>
               </div>
             )}
             {(hearingsError || tasksError) && (
@@ -1416,16 +1503,6 @@ const Lawyercalender = () => {
                 {/* Google Meet Integration */}
                 <div className="mb-4">
                   <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="googleMeet"
-                      checked={googleMeetEnabled}
-                      onChange={(e) => setGoogleMeetEnabled(e.target.checked)}
-                      className="mr-2"
-                    />
-                    <label htmlFor="googleMeet" className="font-medium">
-                      Add Google Meet
-                    </label>
                   </div>
                 </div>
 
@@ -1564,6 +1641,119 @@ const Lawyercalender = () => {
       {showPopup && <Popup />}
 
       {/* Court Color Settings Modal */}
+      {/* Validation Result Modal */}
+      {showValidationResult && validationResult && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full relative">
+            <button
+              className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+              onClick={() => setShowValidationResult(false)}
+              aria-label="Close validation result"
+            >
+              &#x2715;
+            </button>
+            
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-3">
+                {validationResult.valid ? "✅ Validation Successful" : "⚠️ Validation Warning"}
+              </h3>
+              
+              <div className={`p-3 rounded-md ${validationResult.valid ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
+                <p className={`text-sm ${validationResult.valid ? 'text-green-800' : 'text-yellow-800'}`}>
+                  {validationResult.message}
+                </p>
+                
+                {validationResult.travelText && (
+                  <div className="mt-2">
+                    <p className={`text-xs font-medium ${validationResult.valid ? 'text-green-700' : 'text-yellow-700'}`}>
+                      Travel Information:
+                    </p>
+                    <p className={`text-xs ${validationResult.valid ? 'text-green-600' : 'text-yellow-600'}`}>
+                      {validationResult.travelText}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex justify-end space-x-3 mt-4">
+                <button
+                  onClick={() => setShowValidationResult(false)}
+                  className="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  Close
+                </button>
+                {!validationResult.valid && (
+                  <button
+                    onClick={async () => {
+                      setShowValidationResult(false);
+                      // Proceed with creation despite warning
+                      if (createModalMode === "hearing") {
+                        // Continue with hearing creation
+                        const hearingFormData = {
+                          label: title,
+                          date: hearingDate,
+                          startTime: startTime,
+                          endTime: endTime,
+                          location: location,
+                          guests: guests,
+                          specialNote: specialNote,
+                          court: location,
+                          participants: guests
+                        };
+                        try {
+                          const response = await createHearing(selectedCase, hearingFormData);
+                          await refreshHearings();
+                          alert(`Hearing created successfully with warnings!\nTitle: ${title}\nDate: ${hearingDate}\nTime: ${startTime} - ${endTime}`);
+                          // Reset form and close modal
+                          setTitle(""); setSelectedCase(""); setLocation(""); setHearingDate(""); setStartTime(""); setEndTime(""); setGuests(""); setSpecialNote(""); setGoogleMeetEnabled(false); setGoogleMeetLink(""); setShowPopup(false); setShowCreateModal(false);
+                        } catch (error) {
+                          console.error('Error creating hearing:', error);
+                          alert('Failed to create hearing. Please try again.');
+                        }
+                      } else {
+                        // Continue with task creation
+                        const taskFormData = {
+                          title: taskTitle,
+                          date: taskDate,
+                          startTime: taskStartTime,
+                          endTime: taskEndTime,
+                          location: taskLocation,
+                          note: taskNote,
+                          priority: 'MEDIUM'
+                        };
+                        try {
+                          const response = await createTask(taskFormData);
+                          await refreshTasks();
+                          alert(`Task created successfully with warnings!\nTitle: ${taskTitle}\nDate: ${taskDate}\nTime: ${taskStartTime} - ${taskEndTime}`);
+                          // Reset form and close modal
+                          setTaskTitle(""); setTaskDate(""); setTaskStartTime(""); setTaskEndTime(""); setTaskLocation(""); setTaskNote(""); setShowTaskPopup(false); setShowCreateModal(false);
+                        } catch (error) {
+                          console.error('Error creating task:', error);
+                          alert('Failed to create task. Please try again.');
+                        }
+                      }
+                    }}
+                    className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors"
+                  >
+                    Proceed Anyway
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loading overlay for validation */}
+      {isValidating && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-700">Validating...</p>
+          </div>
+        </div>
+      )}
+
       <CourtColorSettings
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}

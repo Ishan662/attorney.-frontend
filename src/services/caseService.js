@@ -252,3 +252,87 @@ export const validateNewHearingTravel = async (newHearingData) => {
         body: JSON.stringify(newHearingData),
     });
 };
+
+// --------------------- CALENDAR VALIDATION ---------------------
+
+/**
+ * Validates a new hearing before creating it
+ */
+export const validateHearing = async (hearingFormData) => {
+  const startISO = new Date(`${hearingFormData.date}T${parseTimeTo24h(hearingFormData.startTime || hearingFormData.time)}`).toISOString();
+  const endISO = new Date(`${hearingFormData.date}T${parseTimeTo24h(hearingFormData.endTime)}`).toISOString();
+
+  const payload = {
+    startTime: startISO,
+    endTime: endISO,
+    location: hearingFormData.location || hearingFormData.court,
+    title: hearingFormData.label || hearingFormData.title
+  };
+
+  return await authenticatedFetch('/api/calendar/validate/hearing', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+};
+
+/**
+ * Validates a new task before creating it
+ */
+export const validateTask = async (taskFormData) => {
+  const startISO = new Date(`${taskFormData.date}T${parseTimeTo24h(taskFormData.startTime)}`).toISOString();
+  const endISO = new Date(`${taskFormData.date}T${parseTimeTo24h(taskFormData.endTime)}`).toISOString();
+
+  const payload = {
+    title: taskFormData.title,
+    description: taskFormData.note || taskFormData.description,
+    startTime: startISO,
+    endTime: endISO,
+    location: taskFormData.location,
+    priority: taskFormData.priority || 'MEDIUM'
+  };
+
+  return await authenticatedFetch('/api/calendar/validate/task', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+};
+
+// --------------------- COURT COLORS ---------------------
+
+/**
+ * Fetches court colors for the current lawyer
+ */
+export const getCourtColors = async () => {
+  try {
+    const courtColors = await authenticatedFetch('/api/lawyers/court-colors');
+    // Return the court colors directly from the API
+    return courtColors || {};
+  } catch (error) {
+    console.error('Failed to fetch court colors:', error);
+    // Return empty object so user can set their own colors
+    return {};
+  }
+};
+
+/**
+ * Updates court colors for the current lawyer
+ */
+export const updateCourtColors = async (courtColors) => {
+  const payload = {
+    courtColors: courtColors
+  };
+
+  console.log('Updating court colors with payload:', payload);
+
+  try {
+    const response = await authenticatedFetch('/api/lawyers/court-colors', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+    console.log('Court colors updated successfully:', response);
+    return response;
+  } catch (error) {
+    console.error('Failed to update court colors:', error);
+    throw error;
+  }
+};
