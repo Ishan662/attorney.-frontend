@@ -332,18 +332,6 @@ const EditHearingModal = ({ isOpen, onClose, hearing, caseNumber, onSave, onDele
 
                         {/* Google Meet Integration */}
                         <div className="mb-4">
-                            <div className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    id="googleMeet"
-                                    checked={formData.googleMeetEnabled}
-                                    onChange={(e) => setFormData(prev => ({...prev, googleMeetEnabled: e.target.checked}))}
-                                    className="mr-2"
-                                />
-                                <label htmlFor="googleMeet" className="font-medium">
-                                    Add Google Meet
-                                </label>
-                            </div>
                         </div>
 
                         {/* Google Meet Link (conditionally shown) */}
