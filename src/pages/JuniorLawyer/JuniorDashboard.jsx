@@ -17,7 +17,6 @@ const JuniorDashboard = () => {
         // Custom notification logic
     };
 
-    // Navigation for junior lawyer
     const handleStatCardClick = (title) => {
         if (title === "Assigned Cases") {
             navigate("/junior/cases");
@@ -28,30 +27,37 @@ const JuniorDashboard = () => {
         }
     };
 
-    // Example stats for junior lawyer
-
     const stats = [
         {
             title: "Assigned Cases",
             value: "8",
-            icon: "📂",
-            bgColor: "bg-white",
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+            ),
             iconBg: "bg-blue-100",
             textColor: "text-blue-800"
         },
         {
             title: "Upcoming Hearings",
             value: "1",
-            icon: "⚖️",
-            bgColor: "bg-white",
+            icon: (
+               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            ),
             iconBg: "bg-green-100",
             textColor: "text-green-800"
         },
         {
             title: "Tasks",
             value: "5",
-            icon: "📝",
-            bgColor: "bg-white",
+            icon: (
+                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+            ),
             iconBg: "bg-yellow-100",
             textColor: "text-yellow-800"
         }
@@ -86,7 +92,7 @@ const JuniorDashboard = () => {
                         onClick={() => handleStatCardClick(stat.title)}
                     >
                         <div className="flex flex-col items-center">
-                            <div className={`w-14 h-6 flex items-center justify-center text-2xl mb-3 rounded-full ${stat.iconBg}`}>
+                            <div className={`w-14 h-14 flex items-center justify-center mb-3 rounded-full ${stat.iconBg}`}>
                                 {stat.icon}
                             </div>
                             <div className="text-sm text-gray-600 font-medium">{stat.title}</div>
@@ -98,7 +104,7 @@ const JuniorDashboard = () => {
 
             {/* Hearings Section */}
             <div className="mb-8">
-                <h2 className="text-xl font-bold mb-4">Your Hearings</h2>
+                <h2 className="text-xl font-bold mb-4">Your Upcoming Cases</h2>
                 <div className="bg-white rounded-lg shadow-md overflow-hidden">
                     {hearings.map((hearing, index) => (
                         <div key={index} className="flex justify-between items-center p-4 border-b last:border-b-0">

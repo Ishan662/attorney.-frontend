@@ -10,7 +10,7 @@ import Timeline from './pages/Lawyer/Timeline';
 import Incomes from './pages/Lawyer/Incomes';
 // import DaySummary from './pages/Lawyer/DaySummary';
 import AddClient from './pages/Lawyer/AddNewClient';
-// import Meetings from './pages/Lawyer/MeetingRequest';
+import Meetings from './pages/Lawyer/MeetingRequest';
 import Clients from './pages/Lawyer/Clients';
 import ScheduleMeeting from './pages/Client/ScheduleMeeting';
 import Lawyercalander from './pages/Lawyer/Lawyercalender';
@@ -30,22 +30,36 @@ import NotFoundPage from './pages/Common/404';
 import JuniorDashboard from './pages/JuniorLawyer/JuniorDashboard';
 import AssignedCases from './pages/JuniorLawyer/AssignedCases';
 import Tasks from './pages/JuniorLawyer/Tasks';
-import JuniorMessages from './pages/JuniorLawyer/JuniorMessages';
+import JuniorMessages from './pages/JuniorLawyer/JuniorMessage';
 import JuniorHearings from './pages/JuniorLawyer/JuniorHearing';
 import AccountUsers from './pages/Lawyer/AccountUsers';
 import UserManagement from './pages/Admin/UserManagement';
 import ViewMessages from './pages/Admin/ViewMessages';
 import AdminAnalytics from './pages/Admin/ViewAnalytics';
 import ClientDashboard from './pages/Client/Clientdashboard';
+
 import Clientcaseprofiles from './pages/Client/Clientcaseprofiles';
+
 import ClientCalendar from './pages/Client/Clientcalendar';
 import AddNextHearingModal from './pages/Lawyer/AddNextHearingDate';
 import LawyerDashboard from './pages/Lawyer/LawyerDashboard';
 import AcceptInvitationPage from './pages/Common/AcceptInvitationPage';
-
+import ClientCaseDetails from './pages/Client/ClientCaseDetails';
 import ClientInvitation from './pages/Client/ClientInvitation';
 import UserOTP from './pages/Common/UserOTP';
 import LawyerAddDocuments from './pages/Lawyer/AddDocuments';
+import EditCasePage from './pages/Lawyer/EditCasePage';
+import Settings from './pages/JuniorLawyer/Settings';
+import clientSettings from './pages/Client/Settings';
+import LawyerSettings from './pages/Lawyer/Settings';
+
+import DaySummary from './pages/Lawyer/Daysummary';
+import ClientMessages from './pages/Client/ClientMessages';
+import Clientpayments from './pages/Client/Clientpayments';
+import LawyerMessages from './pages/Lawyer/LawyerMessages';
+import AssignTasks from './pages/Lawyer/AssignTasks';
+import LawyerSupportRequest from './pages/Lawyer/LawyerSupportRequest';
+
 
 export default function App() {
   return (
@@ -62,14 +76,14 @@ export default function App() {
           {/* <Route path="lawyer/dashboard" element={<Dashboard />} /> */}
           <Route path="lawyer/timeline" element={<Timeline />} />
           <Route path="lawyer/incomes" element={<Incomes />} />
-          {/* <Route path="lawyer/day-summary" element={<DaySummary />} /> */}
-          {/* <Route path="lawyer/meetingrequest" element={<Meetings />} /> */}
+          <Route path="lawyer/day-summary" element={<DaySummary />} />
+          <Route path="lawyer/meetingrequest" element={<Meetings />} />
           <Route path="lawyer/clients" element={<Clients />} />
           <Route path="client/schedulemeeting" element={<ScheduleMeeting />} />
           {/* client case profiles  */}
-          <Route path="client/caseprofiles" element={<CaseProfiles />} />
+          <Route path="client/caseprofiles" element={<Clientcaseprofiles />} />
+          <Route path="client/case/:caseId" element={<ClientCaseDetails />} />
           <Route path="client/clientcalendar" element={<ClientCalendar />} />
-          <Route path='/lawyer/messages' element={<Messages />} />
           <Route path="user/signup" element={<UserSignUp />} />
           <Route path="user/login" element={<UserLogin />} />
           <Route path="user/otp" element={<UserOTP />} />
@@ -85,28 +99,45 @@ export default function App() {
           <Route path="junior/tasks" element={<Tasks/>} />
           <Route path="junior/messages" element={<JuniorMessages/>} />
           <Route path="junior/hearings" element={<JuniorHearings/>} />
+          <Route path="lawyer/support" element={<LawyerSupportRequest/>} />
           <Route path="lawyer/accountusers" element={<AccountUsers />} />
+          <Route path="lawyer/messages" element={<LawyerMessages />} />
           <Route path="*" element={<NotFoundPage />} />
           <Route path="admin/usermanagement" element={<UserManagement />} />
           <Route path="admin/viewmessages" element={<ViewMessages />} />
           <Route path="admin/viewanalytics" element={<AdminAnalytics />} />
+          <Route path='lawyer/assigntasks' element={<AssignTasks />} />
           {/* client case profiles  */}
           {/* <Route path="client/caseprofiles" element={<Clientcaseprofiles />} /> */}
           {/* <Route path="/invitation/:inviteToken" element={<ClientInvitation />} />   */}
 
-          <Route path="lawyer/dashboard" element={<ProtectedRoute allowedRoles={['LAWYER']}>
+
+          {/* <Route path="lawyer/dashboard" element={<ProtectedRoute allowedRoles={['LAWYER']}>
             <Dashboard />
-          </ProtectedRoute>} />
+          </ProtectedRoute>} /> */}
+          <Route path="lawyer/dashboard" element={<Dashboard />} />
+            
           <Route path="lawyer/:caseId/addnewclient" element={<ProtectedRoute allowedRoles={['LAWYER']}>
             <AddClient />
-          </ProtectedRoute>} /> */}
+
+         </ProtectedRoute>} />
 
           {/* testing routes */}
           <Route path="lawyer/dashboard" element={<Dashboard />} />
           <Route path="accept-invitation/:token" element={<AcceptInvitationPage />} />
  
           <Route path="/invitation/:inviteToken" element={<ClientInvitation />} /> 
-          <Route path="lawyer/addnexthearing" element={<AddNextHearingModal />} />  
+          <Route path="lawyer/addnexthearing" element={<AddNextHearingModal />} />
+            
+          <Route path="/lawyer/case/:caseId/edit" element={<EditCasePage />} />
+
+          <Route path="/junior/settings" element={<Settings />} />
+          <Route path="/client/settings" element={<clientSettings />} />
+          <Route path="/lawyer/settings" element={<LawyerSettings/>} />
+
+          <Route path="/client/chat" element={<ClientMessages />} />
+          <Route path="/client/payments" element={<Clientpayments />} />
+
 
         </Routes>
       </div>

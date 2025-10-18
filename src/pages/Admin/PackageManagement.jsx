@@ -5,6 +5,7 @@ import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import Input1 from '../../components/UI/Input1';
 import { useNavigate } from 'react-router-dom';
+import packageService from '../../services/packageService';
 
 const PackageManagement = () => {
     const navigate = useNavigate();
@@ -14,6 +15,10 @@ const PackageManagement = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [currentPackage, setCurrentPackage] = useState(null);
     
+    // Loading and error states
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
+    
     // Admin user data
     const user = {
         name: 'Admin',
@@ -21,78 +26,8 @@ const PackageManagement = () => {
         role: 'admin'
     };
 
-    // Initial packages
-    const [packages, setPackages] = useState([
-        {
-            id: 1,
-            name: "Basic",
-            price: 29.99,
-            billingCycle: "monthly",
-            description: "Essential features for small practices",
-            userLimit: 3,
-            active: true,
-            features: {
-                caseManagement: true,
-                clientManagement: true,
-                documentStorage: true,
-                calendar: false,
-                billing: true,
-                timeTracking: false,
-                reports: false,
-                messaging: true,
-                notifications: true,
-                timeline: false,
-                multiUser: false,
-                api: false
-            }
-        },
-        {
-            id: 2,
-            name: "Professional",
-            price: 59.99,
-            billingCycle: "monthly",
-            description: "Complete solution for growing law firms",
-            userLimit: 10,
-            active: true,
-            features: {
-                caseManagement: true,
-                clientManagement: true,
-                documentStorage: true,
-                calendar: true,
-                billing: true,
-                timeTracking: true,
-                reports: true,
-                messaging: true,
-                notifications: true,
-                timeline: true,
-                multiUser: true,
-                api: false
-            }
-        },
-        {
-            id: 3,
-            name: "Enterprise",
-            price: 99.99,
-            billingCycle: "monthly",
-            description: "Advanced features for large legal practices",
-            userLimit: 50,
-            active: true,
-            features: {
-                caseManagement: true,
-                clientManagement: true,
-                documentStorage: true,
-                calendar: true,
-                billing: true,
-                timeTracking: true,
-                reports: true,
-                messaging: true,
-                notifications: true,
-                timeline: true,
-                multiUser: true,
-                api: true
-            }
-        }
-    ]);
+    // Packages state - will be populated from backend
+    const [packages, setPackages] = useState([]);
 
     const [newPackage, setNewPackage] = useState({
         name: "",
@@ -102,20 +37,42 @@ const PackageManagement = () => {
         userLimit: "",
         active: true,
         features: {
-            caseManagement: true,
-            clientManagement: true,
-            documentStorage: true,
-            calendar: false,
-            billing: true,
-            timeTracking: false,
-            reports: false,
-            messaging: true,
-            notifications: true,
-            timeline: false,
-            multiUser: false,
-            api: false
+            unlimitedAI: true,
+            premiumSupport: true,
+            customerCare: true,
+            collaborationTools: true,
+            thirdPartyIntegrations: false,
+            advancedAnalytics: false,
+            teamPerformance: false,
+            topGradeSecurity: false,
+            customizableSolutions: false,
+            customReports: false,
+            performanceUsage: false,
+            enterpriseSecurity: false,
+            seamlessIntegration: false,
+            dedicatedManager: false
         }
     });
+
+    // Load packages from backend on component mount
+    useEffect(() => {
+        const loadPackages = async () => {
+            try {
+                setIsLoading(true);
+                setError('');
+                const transformedPlans = await packageService.fetchAllPlans();
+                console.log('Transformed plans:', transformedPlans);
+                setPackages(transformedPlans);
+            } catch (err) {
+                setError(`Failed to load packages: ${err.message}`);
+                console.error('Error loading packages:', err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadPackages();
+    }, []);
 
     const handleNotificationClick = () => {
         console.log('Admin notifications clicked');
@@ -152,18 +109,20 @@ const PackageManagement = () => {
             userLimit: "",
             active: true,
             features: {
-                caseManagement: true,
-                clientManagement: true,
-                documentStorage: true,
-                calendar: false,
-                billing: true,
-                timeTracking: false,
-                reports: false,
-                messaging: true,
-                notifications: true,
-                timeline: false,
-                multiUser: false,
-                api: false
+                unlimitedAI: true,
+                premiumSupport: true,
+                customerCare: true,
+                collaborationTools: true,
+                thirdPartyIntegrations: false,
+                advancedAnalytics: false,
+                teamPerformance: false,
+                topGradeSecurity: false,
+                customizableSolutions: false,
+                customReports: false,
+                performanceUsage: false,
+                enterpriseSecurity: false,
+                seamlessIntegration: false,
+                dedicatedManager: false
             }
         });
     };
@@ -207,44 +166,98 @@ const PackageManagement = () => {
         }
     };
 
-    const handleAddPackage = () => {
-        // Check if we already have 3 packages
-        if (packages.length >= 3) {
-            alert("Maximum of 3 packages allowed. Please delete one before adding a new package.");
-            return;
+    const handleAddPackage = async () => {
+        try {
+            setIsLoading(true);
+            setError('');
+            
+            // Transform frontend data to backend format
+            const backendPlan = packageService.transformPlanToBackendFormat(newPackage);
+            
+            // Create plan via API
+            const createdPlan = await packageService.createPlan(backendPlan);
+            
+            // Transform back to frontend format and add to state
+            const frontendPlan = packageService.transformPlanToFrontendFormat(createdPlan);
+            setPackages([...packages, frontendPlan]);
+            
+            closeAllModals();
+            resetNewPackageForm();
+        } catch (err) {
+            setError(`Failed to create package: ${err.message}`);
+            console.error('Error creating package:', err);
+        } finally {
+            setIsLoading(false);
         }
-        
-        const newId = Math.max(...packages.map(p => p.id)) + 1;
-        
-        setPackages([...packages, { 
-            ...newPackage, 
-            id: newId
-        }]);
-        
-        closeAllModals();
     };
 
-    const handleUpdatePackage = () => {
-        const updatedPackages = packages.map(pkg => 
-            pkg.id === currentPackage.id ? currentPackage : pkg
-        );
-        
-        setPackages(updatedPackages);
-        closeAllModals();
+    const handleUpdatePackage = async () => {
+        try {
+            setIsLoading(true);
+            setError('');
+            
+            // Transform frontend data to backend format
+            const backendPlan = packageService.transformPlanToBackendFormat(currentPackage);
+            
+            // Update plan via API
+            const updatedPlan = await packageService.updatePlan(currentPackage.id, backendPlan);
+            
+            // Transform back to frontend format and update state
+            const frontendPlan = packageService.transformPlanToFrontendFormat(updatedPlan);
+            const updatedPackages = packages.map(pkg => 
+                pkg.id === currentPackage.id ? frontendPlan : pkg
+            );
+            
+            setPackages(updatedPackages);
+            closeAllModals();
+        } catch (err) {
+            setError(`Failed to update package: ${err.message}`);
+            console.error('Error updating package:', err);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleDeletePackage = () => {
-        const updatedPackages = packages.filter(pkg => pkg.id !== currentPackage.id);
-        setPackages(updatedPackages);
-        closeAllModals();
+    const handleDeletePackage = async () => {
+        try {
+            setIsLoading(true);
+            setError('');
+            
+            // Delete plan via API
+            await packageService.deletePlan(currentPackage.id);
+            
+            // Remove from state
+            const updatedPackages = packages.filter(pkg => pkg.id !== currentPackage.id);
+            setPackages(updatedPackages);
+            closeAllModals();
+        } catch (err) {
+            setError(`Failed to delete package: ${err.message}`);
+            console.error('Error deleting package:', err);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const togglePackageStatus = (id) => {
-        const updatedPackages = packages.map(pkg => 
-            pkg.id === id ? { ...pkg, active: !pkg.active } : pkg
-        );
-        
-        setPackages(updatedPackages);
+    const togglePackageStatus = async (id) => {
+        try {
+            const packageToToggle = packages.find(pkg => pkg.id === id);
+            if (!packageToToggle) return;
+            
+            const newActiveStatus = !packageToToggle.active;
+            
+            // Update status via API
+            await packageService.togglePlanStatus(id, newActiveStatus);
+            
+            // Update state
+            const updatedPackages = packages.map(pkg => 
+                pkg.id === id ? { ...pkg, active: newActiveStatus } : pkg
+            );
+            
+            setPackages(updatedPackages);
+        } catch (err) {
+            setError(`Failed to toggle package status: ${err.message}`);
+            console.error('Error toggling package status:', err);
+        }
     };
 
     const renderFeatureRow = (featureName, label, description, state, isEditing) => {
@@ -272,32 +285,52 @@ const PackageManagement = () => {
         );
     };
 
-    // Feature definitions for form rendering
+    // Updated feature definitions to match those from Pricings.jsx
     const featureDefinitions = [
-        { name: "caseManagement", label: "Case Management", description: "Create and manage legal cases" },
-        { name: "clientManagement", label: "Client Management", description: "Client database and contact management" },
-        { name: "documentStorage", label: "Document Storage", description: "Store and organize legal documents" },
-        { name: "calendar", label: "Calendar & Scheduling", description: "Calendar integration and appointment scheduling" },
-        { name: "billing", label: "Billing & Invoicing", description: "Generate invoices and track payments" },
-        { name: "timeTracking", label: "Time Tracking", description: "Track billable hours and activities" },
-        { name: "reports", label: "Reports & Analytics", description: "Generate business insights and reports" },
-        { name: "messaging", label: "Messaging", description: "Internal and client communication" },
-        { name: "notifications", label: "Notifications", description: "System and case update alerts" },
-        { name: "timeline", label: "Timeline View", description: "Visual timeline of case progress" },
-        { name: "multiUser", label: "Multi-User Access", description: "Team collaboration and shared access" },
-        { name: "api", label: "API Access", description: "Integration with other systems" }
+        // Free Trial features
+        { name: "unlimitedAI", label: "Unlimited AI usage", description: "Full access to AI-powered legal tools and assistants" },
+        { name: "premiumSupport", label: "Premium support", description: "Priority access to our support team" },
+        { name: "customerCare", label: "Customer care", description: "Dedicated customer service for your needs" },
+        { name: "collaborationTools", label: "Collaboration tools", description: "Tools to work together with your team and clients" },
+        
+        // Pro features
+        { name: "thirdPartyIntegrations", label: "Integrations with 3rd-party", description: "Connect with other popular legal and business tools" },
+        
+        // Educator features
+        { name: "customReports", label: "Custom reports & dashboards", description: "Create specialized reports for academic purposes" },
+        { name: "performanceUsage", label: "Most performance usage", description: "Optimized performance for research and educational needs" },
+        { name: "seamlessIntegration", label: "Seamless Integration", description: "Easy integration with academic and research tools" },
     ];
+
+    // Get display name for billing cycle
+    const getBillingCycleDisplayName = (cycle) => {
+        switch (cycle) {
+            case 'monthly': return 'Monthly';
+            case 'quarterly': return 'Quarterly';
+            case 'annually': return 'Annually';
+            default: return cycle.charAt(0).toUpperCase() + cycle.slice(1);
+        }
+    };
 
     return (
         <PageLayout user={user}>
-            {/* PageHeader component */}
-            <div className="mb-8">
-                <PageHeader 
-                    user={user} 
-                    notificationCount={notificationCount} 
-                    onNotificationClick={handleNotificationClick}
-                />
-            </div>
+
+            {/* Error Message */}
+            {error && (
+                <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <div className="flex items-center">
+                        <span className="mr-2">⚠️</span>
+                        {error}
+                    </div>
+                </div>
+            )}
+
+            {/* Loading State */}
+            {isLoading && (
+                <div className="flex items-center justify-center min-h-[200px]">
+                    <div className="text-lg text-gray-600">Loading packages...</div>
+                </div>
+            )}
 
             {/* Page Title and Back button */}
             <div className="flex justify-between items-center mb-8">
@@ -320,7 +353,7 @@ const PackageManagement = () => {
                 {packages.map((pkg) => (
                     <div key={pkg.id} className={`bg-white rounded-lg shadow-md overflow-hidden border-t-4 ${
                         pkg.active ? 'border-green-500' : 'border-gray-300'
-                    }`}>
+                    } ${pkg.name === 'Pro' ? 'border-gray-900 shadow-lg' : ''}`}>
                         <div className="p-6">
                             <div className="flex justify-between items-start">
                                 <h2 className="text-xl font-bold text-gray-800">{pkg.name}</h2>
@@ -333,14 +366,11 @@ const PackageManagement = () => {
                             
                             <div className="mt-2">
                                 <span className="text-3xl font-bold">${pkg.price}</span>
-                                <span className="text-gray-600">/{pkg.billingCycle}</span>
+                                <span className="text-gray-600">/user/{pkg.billingCycle}</span>
                             </div>
                             
                             <p className="mt-2 text-gray-600">{pkg.description}</p>
                             
-                            <div className="mt-4">
-                                <p className="text-sm"><span className="font-semibold">User Limit:</span> {pkg.userLimit} users</p>
-                            </div>
                             
                             <div className="mt-6 space-y-3">
                                 <h3 className="font-semibold text-gray-700">Features</h3>
@@ -444,7 +474,7 @@ const PackageManagement = () => {
                                     name="name"
                                     value={newPackage.name}
                                     onChange={handleInputChange}
-                                    placeholder="e.g. Basic, Professional, Enterprise"
+                                    placeholder="e.g. Free Trial, Pro, Educator"
                                     required
                                 />
                                 
@@ -455,7 +485,7 @@ const PackageManagement = () => {
                                     step="0.01"
                                     value={newPackage.price}
                                     onChange={handleInputChange}
-                                    placeholder="29.99"
+                                    placeholder="0, 5, 2, etc."
                                     required
                                 />
                                 
@@ -479,7 +509,7 @@ const PackageManagement = () => {
                                     type="number"
                                     value={newPackage.userLimit}
                                     onChange={handleInputChange}
-                                    placeholder="10"
+                                    placeholder="1, 5, 10, etc."
                                     required
                                 />
                                 
@@ -555,7 +585,7 @@ const PackageManagement = () => {
                                     name="name"
                                     value={currentPackage.name}
                                     onChange={handleInputChange}
-                                    placeholder="e.g. Basic, Professional, Enterprise"
+                                    placeholder="e.g. Free Trial, Pro, Educator"
                                     required
                                 />
                                 
@@ -566,7 +596,7 @@ const PackageManagement = () => {
                                     step="0.01"
                                     value={currentPackage.price}
                                     onChange={handleInputChange}
-                                    placeholder="29.99"
+                                    placeholder="0, 5, 2, etc."
                                     required
                                 />
                                 
@@ -590,7 +620,7 @@ const PackageManagement = () => {
                                     type="number"
                                     value={currentPackage.userLimit}
                                     onChange={handleInputChange}
-                                    placeholder="10"
+                                    placeholder="1, 5, 10, etc."
                                     required
                                 />
                                 

@@ -1,0 +1,78 @@
+/* Event type styling */
+.event-hearing {
+  border-left: 4px solid #1a73e8 !important;
+  position: relative;
+}
+
+.event-task {
+  border-left: 4px solid #34a853 !important;
+  background-color: rgba(52, 168, 83, 0.1) !important;
+  position: relative;
+}
+
+.event-meeting {
+  border-left: 4px solid #fbbc04 !important;
+  position: relative;
+}
+
+/* Event priority styling */
+.priority-high {
+  border-right: 4px solid #ea4335 !important;
+}
+
+.priority-medium {
+  border-right: 4px solid #fbbc04 !important;
+}
+
+.priority-low {
+  border-right: 4px solid #34a853 !important;
+}
+
+/* Custom event content styling */
+.event-content {
+  padding: 3px 4px;
+  overflow: hidden;
+}
+
+.event-title {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.event-time {
+  font-size: 0.8em;
+  opacity: 0.8;
+  margin-bottom: 2px;
+}
+
+.event-location {
+  font-size: 0.8em;
+  opacity: 0.7;
+}
+
+.event-type {
+  font-size: 0.8em;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* Tab styling for modal */
+.tab-active {
+  border-bottom: 2px solid #1a73e8;
+  color: #1a73e8;
+  font-weight: 500;
+}
+
+/* Unified modal styling */
+.create-modal {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}

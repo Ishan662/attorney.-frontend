@@ -24,7 +24,43 @@ const CaseDetails = () => {
     const navigate = useNavigate();
     const [showClientModal, setShowClientModal] = useState(false);
     const [showEditHearingModal, setShowEditHearingModal] = useState(false);
+    const [showJuniorModal, setShowJuniorModal] = useState(false);
+    const [showChatModal, setShowChatModal] = useState(false);
     const [selectedHearing, setSelectedHearing] = useState(null);
+    const [chatMessage, setChatMessage] = useState('');
+    const [chatMessages, setChatMessages] = useState([
+        {
+            id: 1,
+            sender: 'System',
+            message: 'Welcome to the case team chat. You can discuss case details and coordinate with your team here.',
+            timestamp: '14/07/2025, 19:35:16',
+            isSystem: true
+        },
+        {
+            id: 2,
+            sender: 'Client',
+            message: 'Thank you for your preference. We have a 2018 BMW M2 Coupe available. It\'s a petrol car with an automatic transmission and has done 61,465km. The price is $49,990. Would you like more information about this car?',
+            timestamp: '14/07/2025, 19:35:16',
+            isSystem: false,
+            isClient: true
+        },
+        {
+            id: 3,
+            sender: 'Lawyer',
+            message: 'yes',
+            timestamp: '14/07/2025, 19:36:27',
+            isSystem: false,
+            isClient: false
+        },
+        {
+            id: 4,
+            sender: 'Client',
+            message: 'Absolutely! This 2018 BMW M2 Coupe is a New Zealand new car with low mileage. It has a 2993cc twin-turbo DOHC inline-six petrol engine that produces 272kW and 465Nm of torque. It can go from 0 to 100kph in 4 seconds. The car is in Snapper Rocks blue metallic color and has a 7-Speed DCT transmission. Would you like to know about its interior features?',
+            timestamp: '14/07/2025, 19:36:38',
+            isSystem: false,
+            isClient: true
+        }
+    ]);
     
     const [caseData, setCaseData] = useState(null); 
     const [isLoading, setIsLoading] = useState(true);
@@ -32,23 +68,58 @@ const CaseDetails = () => {
 
     const { currentUser, loading: authLoading } = useAuth();
 
-    // const user = {
-    //     name: currentUser.fullName,
-    //     email: currentUser.email,
-    //     role:  currentUser.role.toLowerCase()
-    // };
-
     const user = {
-        name: "nishagi jewantha",
-        email: "jewanthadheerath@gmail.com",
-        role:  "lawyer"
-    }
+        name: currentUser.fullName,
+        email: currentUser.email,
+        role:  currentUser.role.toLowerCase()
+    };
+
+    // const user = {
+    //     name: "nishagi jewantha",
+    //     email: "jewanthadheerath@gmail.com",
+    //     role:  "lawyer"
+    // }
+
+    // console.log("Current User:", currentUser);
+    // console.log("User Role:", currentUser.role);
 
     // This state is for managing the modal's visibility
     const [showHearingModal, setShowHearingModal] = useState(false);
     
     // This state will now manage the list of hearings, populated from the API
     const [hearings, setHearings] = useState([]);
+
+    // Sample junior lawyers data - in a real app, this would come from an API
+    const [availableJuniors] = useState([
+        {
+            id: 1,
+            name: "Jane Smith",
+            email: "jane.smith@example.com",
+            specialization: "Corporate Law",
+            experience: "2 years"
+        },
+        {
+            id: 2,
+            name: "Michael Johnson", 
+            email: "michael.johnson@example.com",
+            specialization: "Criminal Law",
+            experience: "3 years"
+        },
+        {
+            id: 3,
+            name: "Sarah Williams",
+            email: "sarah.williams@example.com", 
+            specialization: "Family Law",
+            experience: "1.5 years"
+        },
+        {
+            id: 4,
+            name: "Robert Chen",
+            email: "robert.chen@example.com",
+            specialization: "Estate Planning",
+            experience: "4 years"
+        }
+    ]);
 
     // --- DATA FETCHING ---
     useEffect(() => {
@@ -68,7 +139,8 @@ const CaseDetails = () => {
                 ]);
                 
                 setCaseData(caseDetailsData);
-                setHearings(hearingsData || []); // Ensure hearings is an array even if null
+                console.log("Case Details:", caseDetailsData);
+                setHearings(hearingsData || caseDetailsData.hearings || []); // Use hearings from API or fallback to case data hearings
             } catch (err) {
                 setError("Failed to fetch case details. You may not have permission to view this case.");
                 console.error(err);
@@ -129,6 +201,51 @@ const CaseDetails = () => {
         }
     };
 
+    // Handle junior lawyer assignment
+    const handleAssignJunior = async (juniorId) => {
+        try {
+            // In a real app, you would call an API to assign the junior to the case
+            // await assignJuniorToCase(caseId, juniorId);
+            
+            // For now, we'll just update the local state
+            const selectedJunior = availableJuniors.find(junior => junior.id === juniorId);
+            if (selectedJunior) {
+                setCaseData(prev => ({
+                    ...prev,
+                    junior: selectedJunior.name
+                }));
+                setShowJuniorModal(false);
+                alert(`Successfully assigned ${selectedJunior.name} to this case.`);
+            }
+        } catch (err) {
+            console.error("Failed to assign junior lawyer:", err);
+            alert("Error: Could not assign junior lawyer to case.");
+        }
+    };
+
+    // Handle chat functionality
+    const handleSendMessage = () => {
+        if (chatMessage.trim()) {
+            const newMessage = {
+                id: chatMessages.length + 1,
+                sender: user.name,
+                message: chatMessage,
+                timestamp: new Date().toLocaleString('en-GB', {
+                    day: '2-digit',
+                    month: '2-digit', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                }),
+                isSystem: false,
+                isClient: false
+            };
+            setChatMessages(prev => [...prev, newMessage]);
+            setChatMessage('');
+        }
+    };
+
     // --- DYNAMIC TIMELINE GENERATION ---
     // This now uses the 'hearings' state variable
     const timelineEvents = hearings
@@ -146,24 +263,59 @@ const CaseDetails = () => {
 
     return (
         <PageLayout user={user}>
-            <div className="mb-2">
-                <Button1 text="← Back" onClick={() => navigate('/lawyer/caseprofile')} className="mb-4" />
+            {/* Chat Button - Fixed position */}
+            <div className="fixed bottom-6 right-6 z-40">
+                <button
+                    onClick={() => setShowChatModal(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 shadow-lg transition-colors duration-200"
+                    title="Team Chat"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.02-5.874A8.955 8.955 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z" />
+                    </svg>
+                </button>
             </div>
-            <h1 className="text-2xl font-bold mb-6">Case No = {caseData.caseNumber}</h1>
+
+            <div className="flex items-center justify-between mb-6">
+                {/* Left side: The "Back" button */}
+                <Button1 
+                    text="← Back" 
+                    onClick={() => navigate('/lawyer/caseprofile')} 
+                    // Let's assume Button2 is for secondary actions.
+                    variant="secondary" // Assuming your Button component has variants
+                />
+
+                {/* Right side: The "Edit Case" button, conditionally rendered */}
+                {currentUser && currentUser.role === 'LAWYER' && (
+                    <Button1
+                        text="Edit Case →" // Added the arrow as requested
+                        // className="text-sm py-2 px-4" // Adjusted padding for a better feel
+                        onClick={() => navigate(`/lawyer/case/${caseId}/edit`)}
+                    />
+                )}
+            </div>
+            <h1 className="text-2xl font-bold mb-6">Case No : {caseData.caseNumber}</h1>
 
             {/* Case Overview */}
             <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
                 <h2 className="text-xl font-semibold mb-6">Case Overview</h2>
+
+
+
                 <div className="flex flex-col md:flex-row">
                     <div className="flex-1">
                         <div className="font-semibold">Case Name:</div>
                         <p className="mb-2">{caseData.caseTitle}</p>
                         <div className="font-semibold">Description:</div>
-                        <p>{caseData.description || 'N/A'}</p>
+                        <p className="mb-2">{caseData.description || 'N/A'}</p>
+                        <div className="font-semibold">Court Type:</div>
+                        <p>{caseData.courtType || 'N/A'}</p>
                     </div>
                     <div className="flex-1 md:ml-12 mt-8 md:mt-0">
                         <div className="font-semibold">Case Type:</div>
                         <p className="mb-2">{caseData.caseType || 'N/A'}</p>
+                        <div className="font-semibold">Court Name:</div>
+                        <p className="mb-2">{caseData.courtName || 'N/A'}</p>
                         <div className="font-semibold">Status:</div>
                         <div><span className="inline-block px-4 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-sm">{caseData.status}</span></div>
                     </div>
@@ -174,11 +326,18 @@ const CaseDetails = () => {
             <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold">Parties Involved</h2>
-                    <Button1 
-                        text="Add / Invite Client" 
-                        className="text-sm py-1 px-4" 
-                        onClick={() => setShowClientModal(true)} 
-                    />
+                    <div className="flex gap-2">
+                        <Button1 
+                            text="Add / Invite Client" 
+                            className="text-sm py-1 px-4" 
+                            onClick={() => setShowClientModal(true)} 
+                        />
+                        <Button1 
+                            text="Associate Junior" 
+                            className="text-sm py-1 px-4" 
+                            onClick={() => setShowJuniorModal(true)} 
+                        />
+                    </div>
                 </div>
                 <div className="flex flex-col md:flex-row">
                     <div className="flex-1 mb-6 md:mb-0">
@@ -218,37 +377,6 @@ const CaseDetails = () => {
             </section>
 
             {/* Hearings & Key Dates */}
-            {/* <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
-                <h2 className="text-xl font-semibold mb-6">Hearings & Key Dates</h2>
-                <div className="flex flex-col md:flex-row md:justify-between">
-                    <div className="flex-1 mb-6 md:mb-0 md:pr-4">
-                        {hearings.slice(0, Math.ceil(hearings.length / 2)).map((h, idx) => (
-                            <div key={h.id || idx} className="mb-4" onClick={() => handleOpenEditModal(h)}>
-                                <div className="font-semibold">{h.title || h.label}:</div>
-                                <div className="mb-1">{h.hearingDate ? new Date(h.hearingDate).toLocaleDateString() : h.date}</div>
-                                {h.location && <><div className="font-semibold">Location:</div><div className="mb-1">{h.location}</div></>}
-                                {h.status && <><div className="font-semibold">Status:</div><div className="mb-1"><span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${h.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>{h.status}</span></div></>}
-                                {h.note && <><div className="font-semibold">Note:</div><div>{h.note}</div></>}
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex-1 md:ml-12">
-                         {hearings.slice(Math.ceil(hearings.length / 2)).map((h, idx) => (
-                            <div key={h.id || idx} className="mb-4">
-                                <div className="font-semibold">{h.title || h.label}:</div>
-                                <div className="mb-1">{h.hearingDate ? new Date(h.hearingDate).toLocaleDateString() : h.date}</div>
-                                {h.location && <><div className="font-semibold">Location:</div><div className="mb-1">{h.location}</div></>}
-                                {h.status && <><div className="font-semibold">Status:</div><div className="mb-1"><span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${h.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>{h.status}</span></div></>}
-                                {h.note && <><div className="font-semibold">Note:</div><div>{h.note}</div></>}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                <div className="flex justify-center mt-4">
-                    <Button1 text="Add Next Hearing Date" className="mt-2" onClick={() => setShowHearingModal(true)} />
-                </div>
-            </section> */}
-
             <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
                 <h2 className="text-xl font-semibold mb-6">Hearings & Key Dates</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
@@ -259,10 +387,17 @@ const CaseDetails = () => {
                             className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors" 
                             onClick={() => handleOpenEditModal(hearing)}
                         >
-                            <div className="font-bold text-gray-800">{hearing.title}</div>
-                            <div className="text-sm text-gray-600 mb-2">{new Date(hearing.hearingDate).toLocaleString()}</div>
-                            {hearing.location && <p className="text-sm"><span className="font-semibold">Location:</span> {hearing.location}</p>}
-                            {hearing.note && <p className="text-sm mt-1"><span className="font-semibold">Note:</span> {hearing.note}</p>}
+                            <div className="font-bold text-gray-800 text-base">{hearing.title}</div>
+                            <div className="text-gray-600 mb-2">{new Date(hearing.hearingDate).toLocaleString('en-US', { 
+                                year: 'numeric', 
+                                month: 'short', 
+                                day: 'numeric', 
+                                hour: 'numeric', 
+                                minute: '2-digit', 
+                                hour12: true 
+                            })}</div>
+                            {hearing.location && <p className=""><span className="font-semibold">Location:</span> {hearing.location}</p>}
+                            {hearing.note && <p className="mt-1"><span className="font-semibold">Note:</span> {hearing.note}</p>}
                             <div className="mt-2">
                                 <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${hearing.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
                                     {hearing.status}
@@ -324,6 +459,7 @@ const CaseDetails = () => {
                     isOpen={showHearingModal}
                     onClose={() => setShowHearingModal(false)}
                     caseNumber={caseData.caseNumber}
+                    courtName={caseData.courtName} // Pass court name as default location
                     onSave={handleAddHearing}
                 />
             )}
@@ -335,6 +471,132 @@ const CaseDetails = () => {
                     onSave={handleUpdateHearing}
                     onDelete={handleDeleteHearing}
                 />
+            )}
+
+            {/* Junior Lawyer Selection Modal */}
+            {showJuniorModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg mx-4">
+                        <h2 className="text-xl font-bold mb-4">
+                            Associate Junior Lawyer
+                        </h2>
+                        
+                        <p className="text-sm text-gray-600 mb-4">
+                            Select a junior lawyer to associate with this case:
+                        </p>
+                        
+                        <div className="space-y-3 max-h-96 overflow-y-auto mb-6">
+                            {availableJuniors.map((junior) => (
+                                <div 
+                                    key={junior.id}
+                                    className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                                    onClick={() => handleAssignJunior(junior.id)}
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex-1">
+                                            <h4 className="font-medium text-gray-900">{junior.name}</h4>
+                                            <p className="text-sm text-gray-600">{junior.email}</p>
+                                            <div className="mt-2 flex items-center space-x-4">
+                                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                                    {junior.specialization}
+                                                </span>
+                                                <span className="text-xs text-gray-500">
+                                                    {junior.experience} experience
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="ml-4">
+                                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        
+                        <div className="flex justify-end space-x-3">
+                            <Button2
+                                text="Cancel"
+                                onClick={() => setShowJuniorModal(false)}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Team Chat Modal */}
+            {showChatModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-end z-50" onClick={() => setShowChatModal(false)}>
+                    <div className="bg-white rounded-lg shadow-lg w-96 mx-4 mt-4 h-[calc(100vh-2rem)] flex flex-col" onClick={(e) => e.stopPropagation()}>
+                        {/* Chat Header */}
+                        <div className="border-b px-4 py-3 flex justify-er45555t6yhb  between items-center">
+                            <div>
+                                <h3 className="text-base font-semibold">Chat Box</h3>
+                                <p className="text-xs text-gray-600">Case: {caseData.caseNumber}</p>
+                            </div>
+                            <button 
+                                className="text-gray-400 hover:text-gray-500" 
+                                onClick={() => setShowChatModal(false)}
+                            >
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Chat Messages Area */}
+                        <div className="flex-1 overflow-y-auto p-3 bg-gray-50">
+                            <div className="space-y-3">
+                                {chatMessages.map((msg) => (
+                                    <div key={msg.id} className={`flex ${msg.isSystem ? 'justify-center' : msg.isClient ? 'justify-start' : 'justify-end'}`}>
+                                        <div className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
+                                            msg.isSystem 
+                                                ? 'bg-yellow-100 text-yellow-800 text-center text-xs px-2 py-1'
+                                                : msg.isClient
+                                                    ? 'bg-white text-gray-800 rounded-bl-none border' 
+                                                    : 'bg-gray-400 bg-opacity-60 text-gray-800 rounded-br-none'
+                                        }`}>
+                                            {!msg.isSystem && (
+                                                <div className="text-xs font-medium mb-1 opacity-70">
+                                                    {msg.isClient ? 'Client' : msg.sender}
+                                                </div>
+                                            )}
+                                            <div>{msg.message}</div>
+                                            <div className={`text-xs mt-1 ${
+                                                msg.isSystem 
+                                                    ? 'text-yellow-600' 
+                                                    : 'text-gray-500'
+                                            }`}>
+                                                {msg.timestamp}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Chat Input Area */}
+                        <div className="border-t p-3 bg-white">
+                            <div className="flex space-x-2">
+                                <input
+                                    type="text"
+                                    value={chatMessage}
+                                    onChange={(e) => setChatMessage(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                    placeholder="Type your message..."
+                                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                />
+                                <button
+                                    onClick={handleSendMessage}
+                                    className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-4 py-2 transition-colors duration-200 flex items-center justify-center"
+                                >
+                                    <span className="text-sm font-medium">Send</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </PageLayout>
     );

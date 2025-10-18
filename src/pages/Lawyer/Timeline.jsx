@@ -6,10 +6,6 @@ import PageHeader from "../../components/layout/PageHeader";
 import Input1 from "../../components/UI/Input1";
 
 const Timeline = () => {
-    const user = {
-        name: 'Thusitha',
-        email: 'jeewanthadeherath@gmail.com',
-    };
 
     const [notificationCount, setNotificationCount] = useState(2);
     
@@ -108,15 +104,7 @@ const Timeline = () => {
     };
 
     return (
-        <PageLayout user={user}>
-            {/* Header */}
-            <div className="mb-8">
-                <PageHeader 
-                    user={user} 
-                    notificationCount={notificationCount}
-                    onNotificationClick={handleNotificationClick}
-                />
-            </div>
+        <PageLayout>
             
             {/* Timeline specific header */}
             <div className="flex justify-between items-center mb-8">

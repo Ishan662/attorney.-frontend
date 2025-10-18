@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import contactImage from '../../assets/images/contact2.jpeg';
+import formImage from '../../assets/images/contact3.jpeg';
 
 const Contact = () => {
     const [formData, setFormData] = useState({
@@ -26,17 +28,17 @@ const Contact = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white py-20 px-6 snap-start relative overflow-hidden">
+        <div className="min-h-screen bg-white py-20 px-6 snap-start relative overflow-hidden ">
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
                 <div
-                    className="w-full h-full bg-cover bg-center bg-no-repeat opacity-10"
+                    className="w-full h-full bg-cover bg-center bg-no-repeat opacity-85"
                     style={{
-                        backgroundImage: "url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')"
+                        backgroundImage: `url(${contactImage})`
                     }}
                 ></div>
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-white/80"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-100/30 via-gray-200/90 to-gray-300/90"></div>
             </div>
 
             <div className="max-w-7xl mx-auto relative z-10">
@@ -93,15 +95,26 @@ const Contact = () => {
                     </div>
 
                     {/* Right Side - Form */}
-                    <div className="bg-blue-600 rounded-3xl p-8 relative overflow-hidden">
+                    <div className="bg-gray-800 rounded-3xl p-8 relative overflow-hidden ">
+                        {/* Form Background Image */}
+                        <div className="absolute inset-0 rounded-3xl overflow-hidden">
+                            <div
+                                className="w-full h-full bg-cover bg-center bg-no-repeat opacity-30"
+                                style={{
+                                    backgroundImage: `url(${formImage})`
+                                }}
+                            ></div>
+                            <div className="absolute inset-0 bg-black/10"></div>
+                        </div>
+
                         {/* Background decoration */}
-                        <div className="absolute bottom-0 right-0 w-48 h-48 bg-green-400 opacity-20 rounded-tl-full"></div>
+                        {/* <div className="absolute bottom-0 right-0 w-48 h-48 bg-green-400 opacity-20 rounded-tl-full"></div> */}
 
                         <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
                             {/* Name Fields */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-white text-sm font-medium mb-2">
+                                    <label className="block text-white text-md font-black mb-2">
                                         First Name*
                                     </label>
                                     <input
@@ -114,7 +127,7 @@ const Contact = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-white text-sm font-medium mb-2">
+                                    <label className="block text-white text-md font-black mb-2">
                                         Last Name*
                                     </label>
                                     <input
@@ -131,7 +144,7 @@ const Contact = () => {
                             {/* Email and Company */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-white text-sm font-medium mb-2">
+                                    <label className="block text-white text-md font-black mb-2">
                                         Email*
                                     </label>
                                     <input
@@ -145,7 +158,7 @@ const Contact = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-white text-sm font-medium mb-2">
+                                    <label className="block text-white text-md font-black mb-2">
                                         Company*
                                     </label>
                                     <input
@@ -161,7 +174,7 @@ const Contact = () => {
 
                             {/* Work Phone */}
                             <div>
-                                <label className="block text-white text-sm font-medium mb-2">
+                                <label className="block text-white text-md font-black mb-2">
                                     Work Phone #*
                                 </label>
                                 <input
@@ -176,7 +189,7 @@ const Contact = () => {
 
                             {/* Company Size */}
                             <div>
-                                <label className="block text-white text-sm font-medium mb-2">
+                                <label className="block text-white text-md font-black mb-2">
                                     Company Size*
                                 </label>
                                 <select
@@ -197,7 +210,7 @@ const Contact = () => {
 
                             {/* Job Title */}
                             <div>
-                                <label className="block text-white text-sm font-medium mb-2">
+                                <label className="block text-white text-md font-black mb-2">
                                     Job Title*
                                 </label>
                                 <input

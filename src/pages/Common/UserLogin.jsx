@@ -16,10 +16,77 @@ const UserLogin = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { currentUser } = useAuth();
+
+    // Function to convert Firebase error messages to user-friendly messages
+    const formatFirebaseError = (errorMessage) => {
+        console.log('Original error message:', errorMessage); // Debug log
+        
+        // First check for specific email verification message from authService
+        if (errorMessage.includes('Your email is not verified') || 
+            errorMessage.includes('Please check your inbox for the verification link')) {
+            return 'Please verify your email address before logging in. Check your inbox for a verification link.';
+        }
+        
+        // Extract the error code from Firebase error message using multiple patterns
+        let errorCode = null;
+        
+        // Try different patterns to extract the error code
+        const patterns = [
+            /auth\/([^)]+)\)/,  // Firebase: Error (auth/invalid-credential).
+            /auth\/([^\s]+)/,   // auth/invalid-credential
+            /\(auth\/([^)]+)\)/, // (auth/invalid-credential)
+        ];
+        
+        for (const pattern of patterns) {
+            const match = errorMessage.match(pattern);
+            if (match) {
+                errorCode = match[1];
+                break;
+            }
+        }
+        
+        console.log('Extracted error code:', errorCode); // Debug log
+        
+        const errorMessages = {
+            'invalid-credential': 'Invalid email or password. Please check your credentials and try again.',
+            'user-not-found': 'No account found with this email address.',
+            'wrong-password': 'Incorrect password. Please try again.',
+            'invalid-email': 'Please enter a valid email address.',
+            'user-disabled': 'This account has been disabled. Please contact support.',
+            'too-many-requests': 'Too many failed login attempts. Please try again later.',
+            'email-not-verified': 'Please verify your email address before logging in. Check your inbox for a verification link.',
+            'network-request-failed': 'Network error. Please check your connection and try again.',
+            'internal-error': 'An internal error occurred. Please try again later.',
+            'invalid-api-key': 'Authentication service unavailable. Please try again later.',
+            'app-deleted': 'Authentication service unavailable. Please try again later.',
+            'expired-action-code': 'This link has expired. Please request a new one.',
+            'invalid-action-code': 'Invalid or expired link. Please request a new one.',
+            'weak-password': 'Password is too weak. Please choose a stronger password.',
+            'email-already-in-use': 'An account with this email already exists.',
+            'operation-not-allowed': 'This operation is not allowed. Please contact support.',
+            'requires-recent-login': 'Please log out and log back in to continue.',
+        };
+
+        // Special handling for email verification issues
+        // Sometimes Firebase returns 'too-many-requests' for unverified emails
+        if (errorCode === 'too-many-requests' && errorMessage.toLowerCase().includes('email') && errorMessage.toLowerCase().includes('verify')) {
+            return errorMessages['email-not-verified'];
+        }
+        
+        // Also check for specific patterns that indicate email verification issues
+        if (errorMessage.toLowerCase().includes('email not verified') || 
+            errorMessage.toLowerCase().includes('please verify your email') ||
+            errorMessage.toLowerCase().includes('verification required')) {
+            return errorMessages['email-not-verified'];
+        }
+
+        const friendlyMessage = errorMessages[errorCode] || 'An error occurred during login. Please try again.';
+        console.log('Friendly message:', friendlyMessage); // Debug log
+        
+        return friendlyMessage;
+    };
+
     const navigateUserByRole = (currentUser) => {
-        // if (!currentUser || !currentUser.role) {
-        //     throw new Error("Login succeeded but user profile is incomplete.");
-        // }
 
         if (currentUser.status === "PENDING_PHONE_VERIFICATION") {
             navigate('/user/otp', { state: { phoneNumber: currentUser.phoneNumber } });
@@ -28,9 +95,9 @@ const UserLogin = () => {
 
         const rolePaths = {
             LAWYER: '/lawyer/dashboard',
-            JUNIOR: '/junior/cases',
-            CLIENT: '/client/caseprofiles',
-            ADMIN: '/admin/systemsettings',
+            JUNIOR: '/junior/dashboard',
+            CLIENT: '/client/dashboard',
+            ADMIN: '/admin/dashboard',
             RESEARCHER: '/researcher/chatbot',
         };
 
@@ -84,10 +151,16 @@ const UserLogin = () => {
                 
                 await loginWithEmail(formData.email, formData.password);
                 const userProfile = await getFullSession();
+
+                if (userProfile.status === "PENDING_PHONE_VERIFICATION") {
+                    navigate('/user/otp', { state: { phoneNumber: userProfile.phoneNumber } });
+                    return;
+                }
                 navigateUserByRole(userProfile);
 
             } catch (error) {
-                setErrors({ form: error.message });
+                const friendlyMessage = formatFirebaseError(error.message);
+                setErrors({ form: friendlyMessage });
             } finally {
                 setIsSubmitting(false);
             }
@@ -106,19 +179,18 @@ const UserLogin = () => {
             navigate('lawyer/dashboard');
         } catch (error) {
             console.error('Google login error:', error);
-            setErrors({ form: error.message || 'Google login failed.' });
+            const friendlyMessage = formatFirebaseError(error.message);
+            setErrors({ form: friendlyMessage });
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleAppleLogin = () => {
-        // Implement Apple login
-        // console.log('Apple login clicked');
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8 pt-20">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8 pt-20 pb-10">
             <AuthHeader />
             <div className="max-w-md w-full mt-8 space-y-8">
                 <div className="text-center">
@@ -216,7 +288,7 @@ const UserLogin = () => {
                             Continue with Google
                         </button>
 
-                        <button
+                        {/* <button
                             type="button"
                             onClick={handleAppleLogin}
                             className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
@@ -225,16 +297,16 @@ const UserLogin = () => {
                                 <path d="M17.05 20.28c-.98.95-2.05.88-3.08.44-1.07-.46-2.07-.48-3.24 0-1.45.62-2.21.44-3.1-.44C2.18 15.89 2.85 7.03 8.68 6.56c1.84-.05 2.88.82 3.73.82.87 0 2.37-1.03 3.96-.87 3 .15 5.27 3.67 5.23 3.71-.14.12-2.46 1.44-2.43 4.31.03 3.37 2.96 4.55 2.98 4.57-.03.07-.44 1.55-1.46 3.02-.87 1.28-1.83 2.38-3.64 2.17zm-3.59-17.1c-1.97 0-3.57 1.42-3.34 3.09 1.43 0 2.74-1.38 3.34-3.09z" />
                             </svg>
                             Continue with Apple
-                        </button>
+                        </button> */}
                     </div>
 
-                    <div className="flex items-center my-4">
+                    {/* <div className="flex items-center my-4">
                         <div className="flex-grow h-px bg-gray-300"></div>
                         <div className="mx-4 text-gray-500">or</div>
                         <div className="flex-grow h-px bg-gray-300"></div>
-                    </div>
+                    </div> */}
 
-                    <div className="text-center">
+                    {/* <div className="text-center">
                         <button
                             type="button"
                             className="flex items-center justify-center w-full py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
@@ -244,7 +316,7 @@ const UserLogin = () => {
                             </svg>
                             Log in with QR code
                         </button>
-                    </div>
+                    </div> */}
                 </form>
 
                 <div className="text-center mt-4">

@@ -5,11 +5,6 @@ import Button1 from "../../components/UI/Button1";
 import Button2 from "../../components/UI/Button2";
 
 const DaySummary = () => {
-    const user = {
-        name: 'Thusitha',
-        email: 'jeewanthadeherath@gmail.com',
-    };
-
     const [notificationCount, setNotificationCount] = useState(1);
     const [currentDate, setCurrentDate] = useState('');
     
@@ -83,15 +78,7 @@ const DaySummary = () => {
     ];
 
     return (
-        <PageLayout user={user}>
-            {/* PageHeader component */}
-            <div className="mb-8">
-                <PageHeader 
-                    user={user} 
-                    notificationCount={notificationCount}
-                    onNotificationClick={handleNotificationClick}
-                />
-            </div>
+        <PageLayout>
             
             {/* Day Summary specific header */}
             <div className="flex justify-between items-center mb-8">
