@@ -21,10 +21,11 @@ const PageLayout = ({
 
     const { currentUser, loading: authLoading } = useAuth();
 
+
     const user = {
-        name: currentUser?.fullName || 'Admin User',
-        email: currentUser?.email || 'admin@example.com',
-        role: currentUser?.role?.toLowerCase() || 'admin'
+        name: currentUser.fullName,
+        email: currentUser.email,
+        role:  currentUser.role.toLowerCase()
     };
 
     

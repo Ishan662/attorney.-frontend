@@ -1,9 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PageLayout from "../../components/layout/PageLayout";
 import Button1 from "../../components/UI/Button1";
 import Input1 from "../../components/UI/Input1";
-import { FaBriefcase, FaClock, FaCog } from "react-icons/fa";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import { FaBriefcase, FaClock, FaCog, FaPlus, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import CourtColorSettings from "./CourtColorSettings";
+
+// Import Custom Calendar Styles
+import "../../styles/calendar.css";
 
 // Mock cases data - in real app, this would come from the case service
 const mockCases = [
@@ -38,24 +46,25 @@ const mockCases = [
 ];
 
 const Lawyercalender = () => {
-  // Updated user object with role property
+  const navigate = useNavigate();
+  const calendarRef = useRef(null);
+
   const user = {
     name: "Thusitha",
     email: "jeewanthadeherath@gmail.com",
-    role: "lawyer" // Added role for consistent sidebar display
+    role: "lawyer",
   };
 
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date()); // For tracking the current viewing month
   const [viewMode, setViewMode] = useState("month");
-
-  // Popup state
   const [showPopup, setShowPopup] = useState(false);
   const [showTaskPopup, setShowTaskPopup] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
 
   // Settings popup state
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  
+
   // Court colors state - can be loaded from localStorage or API
   const [courtColors, setCourtColors] = useState(() => {
     const savedColors = localStorage.getItem('courtColors');
@@ -67,14 +76,17 @@ const Lawyercalender = () => {
     };
   });
 
-  // Form state for popup
+  // Enhanced form state for popup
   const [title, setTitle] = useState("");
   const [selectedCase, setSelectedCase] = useState("");
   const [location, setLocation] = useState("");
   const [hearingDate, setHearingDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [guests, setGuests] = useState("");
   const [specialNote, setSpecialNote] = useState("");
+  const [googleMeetEnabled, setGoogleMeetEnabled] = useState(false);
+  const [googleMeetLink, setGoogleMeetLink] = useState("");
   const [showCaseDropdown, setShowCaseDropdown] = useState(false);
 
   // Form state for task popup
@@ -89,6 +101,15 @@ const Lawyercalender = () => {
   useEffect(() => {
     localStorage.setItem('courtColors', JSON.stringify(courtColors));
   }, [courtColors]);
+
+  // Handle view mode changes
+  useEffect(() => {
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      const newView = viewMode === "month" ? "dayGridMonth" : "timeGridWeek";
+      calendarApi.changeView(newView);
+    }
+  }, [viewMode]);
 
   // Format date display like "21st of June, Saturday"
   const formatDateDisplay = (date) => {
@@ -113,8 +134,8 @@ const Lawyercalender = () => {
 
   // Generate calendar days for current month
   const generateCalendarDays = () => {
-    const year = selectedDate.getFullYear();
-    const month = selectedDate.getMonth();
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const days = [];
@@ -135,63 +156,81 @@ const Lawyercalender = () => {
     return days;
   };
 
-  // Month navigation handlers
-  const prevMonth = () => {
-    setSelectedDate(
-      new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, 1)
-    );
-  };
-
-  const nextMonth = () => {
-    setSelectedDate(
-      new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1)
-    );
-  };
-
-  // Mock hearings and free time slots for selected date
-  const hearings = [
-    {
-      time: "9:00 AM - 10:00 AM",
-      location: "Galle High Court",
-    },
-  ];
-
-  const freeTimeSlots = [
-    {
-      time: "11:00 AM - 12:00 PM",
-      location: "Badulla District Court",
-    },
-    {
-      time: "2:00 PM - 3:00 PM",
-      available: true,
-    },
-    {
-      time: "4:00 PM - 5:00 PM",
-      available: true,
-    },
-  ];
-
-  // Sample calendar events with court locations
-  const calendarEvents = [
-    { 
-      date: 4, 
-      month: 6, 
-      title: "client meeting", 
-      location: "Galle High Court" 
-    },
-    { 
-      date: 8, 
-      month: 6, 
-      title: "galle high court", 
-      location: "Galle High Court" 
-    },
-    { 
-      date: 17, 
-      month: 6, 
-      title: "badulla court meeting", 
-      location: "Badulla District Court" 
+  // Navigation functions
+  const goToToday = () => {
+    const today = new Date();
+    setCurrentDate(today);
+    setSelectedDate(today);
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      calendarApi.today();
     }
-  ];
+  };
+
+  const goToPreviousMonth = () => {
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      calendarApi.prev();
+    }
+  };
+
+  const goToNextMonth = () => {
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      calendarApi.next();
+    }
+  };
+
+  // Get current month/year display
+  const getCurrentMonthYear = () => {
+    return currentDate.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  // Get free slots and scheduled events for selected date
+  const getFreeSlotsForDate = (date) => {
+    const dateStr = date.toDateString();
+    const today = new Date().toDateString();
+    const tomorrow = new Date(Date.now() + 86400000).toDateString();
+    const dayAfterTomorrow = new Date(Date.now() + 172800000).toDateString();
+
+    // Mock free slots based on selected date
+    const freeSlotsByDate = {
+      [today]: [
+        { time: "11:00 AM - 12:00 PM", available: true },
+        { time: "2:00 PM - 3:00 PM", available: true },
+        { time: "4:00 PM - 5:00 PM", available: true },
+      ],
+      [tomorrow]: [
+        { time: "9:00 AM - 10:00 AM", available: true },
+        { time: "1:00 PM - 2:00 PM", available: true },
+        { time: "3:00 PM - 4:00 PM", available: true },
+        { time: "5:00 PM - 6:00 PM", available: true },
+      ],
+      [dayAfterTomorrow]: [
+        { time: "10:00 AM - 11:00 AM", available: true },
+        { time: "2:00 PM - 3:00 PM", available: true },
+        { time: "4:30 PM - 5:30 PM", available: true },
+      ],
+    };
+
+    return freeSlotsByDate[dateStr] || [
+      { time: "9:00 AM - 10:00 AM", available: true },
+      { time: "11:00 AM - 12:00 PM", available: true },
+      { time: "2:00 PM - 3:00 PM", available: true },
+      { time: "4:00 PM - 5:00 PM", available: true },
+    ];
+  };
+
+  const getScheduledEventsForDate = (date) => {
+    const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+    return events.filter(event => {
+      const eventStart = new Date(event.start).toISOString().split('T')[0];
+      return eventStart === dateStr;
+    });
+  };
 
   // Time slots for day summary panel
   const dayTimeSlots = [
@@ -225,12 +264,6 @@ const Lawyercalender = () => {
     return caseData ? `${caseData.caseName} (${caseData.caseNumber})` : "Select Case";
   };
 
-  // Open popup on time slot click
-  const handleTimeSlotClick = (timeSlot) => {
-    setSelectedTimeSlot(timeSlot);
-    setShowPopup(true);
-  };
-
   // Handle settings button click
   const handleSettingsClick = () => {
     setShowSettingsModal(true);
@@ -253,21 +286,41 @@ const Lawyercalender = () => {
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 2), 16);
     const b = parseInt(hex.substr(4, 2), 16);
-    
+
     // Calculate brightness (0-255)
     const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    
+
     // Return white text for dark backgrounds, black for light
     return brightness > 128 ? 'text-gray-900' : 'text-white';
   };
 
-  // Handle popup form save
+  // Open popup on time slot click
+  const handleTimeSlotClick = (timeSlot) => {
+    setSelectedTimeSlot(timeSlot);
+    setShowPopup(true);
+  };
+
+  // Navigation to different forms
+  const navigateToHearingForm = () => {
+    navigate("/lawyer/add-hearing");
+  };
+
+  const navigateToTaskForm = () => {
+    navigate("/lawyer/add-task");
+  };
+
+  // Enhanced handle popup form save
   const handleSave = (e) => {
     e.preventDefault();
     const selectedCaseData = mockCases.find(c => c.id === parseInt(selectedCase));
     // Implement save logic here
+    const meetText = googleMeetEnabled ? googleMeetLink : "Not added";
     alert(
-      `Hearing saved!\nCase: ${selectedCaseData?.caseName || 'N/A'}\nCase Number: ${selectedCaseData?.caseNumber || 'N/A'}\nDate: ${hearingDate}\nTime: ${startTime} - ${endTime}\nTitle: ${title}\nLocation: ${location}\nNote: ${specialNote}`
+      `Hearing saved!\nCase: ${selectedCaseData?.caseName || 'N/A'}\n` +
+      `Case Number: ${selectedCaseData?.caseNumber || 'N/A'}\n` +
+      `Date: ${hearingDate}\nTime: ${startTime} - ${endTime}\n` +
+      `Title: ${title}\nLocation: ${location}\nGuests: ${guests}\n` +
+      `Note: ${specialNote}\nGoogle Meet: ${meetText}`
     );
     // Reset form and close popup
     setTitle("");
@@ -276,7 +329,10 @@ const Lawyercalender = () => {
     setHearingDate("");
     setStartTime("");
     setEndTime("");
+    setGuests("");
     setSpecialNote("");
+    setGoogleMeetEnabled(false);
+    setGoogleMeetLink("");
     setShowPopup(false);
   };
 
@@ -285,7 +341,9 @@ const Lawyercalender = () => {
     e.preventDefault();
     // Implement save logic here
     alert(
-      `Task saved!\nTitle: ${taskTitle}\nDate: ${taskDate}\nTime: ${taskStartTime} - ${taskEndTime}\nLocation: ${taskLocation}\nNote: ${taskNote}`
+      `Task saved!\nTitle: ${taskTitle}\nDate: ${taskDate}\n` +
+      `Time: ${taskStartTime} - ${taskEndTime}\n` +
+      `Location: ${taskLocation}\nNote: ${taskNote}`
     );
     // Reset form and close popup
     setTaskTitle("");
@@ -297,7 +355,7 @@ const Lawyercalender = () => {
     setShowTaskPopup(false);
   };
 
-  // Popup component
+  // Enhanced Popup component with case selection
   const Popup = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full relative max-h-[90vh] overflow-y-auto">
@@ -316,7 +374,7 @@ const Lawyercalender = () => {
               Select Case <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <div 
+              <div
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500 cursor-pointer flex justify-between items-center"
                 onClick={() => setShowCaseDropdown(!showCaseDropdown)}
               >
@@ -425,6 +483,62 @@ const Lawyercalender = () => {
             )}
           </div>
 
+          <div className="mb-4">
+            <label className="block mb-1 font-medium" htmlFor="guests">
+              Add Guests
+            </label>
+            <Input1
+              id="guests"
+              type="text"
+              placeholder="type guest emails here"
+              value={guests}
+              onChange={(e) => setGuests(e.target.value)}
+            />
+          </div>
+
+          <div className="mb-4 flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              id="googleMeet"
+              checked={googleMeetEnabled}
+              onChange={(e) => {
+                setGoogleMeetEnabled(e.target.checked);
+                if (e.target.checked) {
+                  // Generate a dummy Google Meet link (in real app, integrate with API)
+                  const link = `https://meet.google.com/${Math.random()
+                    .toString(36)
+                    .substring(2, 11)}`;
+                  setGoogleMeetLink(link);
+                } else {
+                  setGoogleMeetLink("");
+                }
+              }}
+              className="cursor-pointer"
+            />
+            <label
+              htmlFor="googleMeet"
+              className="text-blue-600 underline text-sm cursor-pointer"
+            >
+              Add Google Meet video conferencing
+            </label>
+          </div>
+          {googleMeetEnabled && (
+            <div className="mb-4">
+              <label className="block mb-1 font-medium" htmlFor="googleMeetLink">
+                Google Meet Link
+              </label>
+              <a
+                href={googleMeetLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline break-all"
+                id="googleMeetLink"
+              >
+                {googleMeetLink}
+              </a>
+            </div>
+          )}
+
           {/* Special Note */}
           <div className="mb-4">
             <label className="block mb-1 font-medium" htmlFor="specialNote">
@@ -446,313 +560,488 @@ const Lawyercalender = () => {
     </div>
   );
 
-  // Task Popup component
-  const TaskPopup = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full relative max-h-[90vh] overflow-y-auto">
-        <button
-          className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
-          onClick={() => setShowTaskPopup(false)}
-          aria-label="Close popup"
-        >
-          &#x2715;
-        </button>
-        <h2 className="text-2xl font-semibold mb-6">Schedule a Task</h2>
-        <form onSubmit={handleTaskSave}>
-          {/* Task Title */}
-          <div className="mb-4">
-            <label className="block mb-1 font-medium" htmlFor="taskTitle">
-              Task Title <span className="text-red-500">*</span>
-            </label>
-            <Input1
-              id="taskTitle"
-              type="text"
-              placeholder="Enter task title"
-              value={taskTitle}
-              onChange={(e) => setTaskTitle(e.target.value)}
-              required
-            />
-          </div>
+  // Sample events with colorful theme like Google Calendar
+  const events = [
+    {
+      id: "1",
+      title: "Court Hearing: John Doe vs ABC Company",
+      start: "2025-08-10T09:00:00",
+      end: "2025-08-10T10:00:00",
+      backgroundColor: "#1a73e8",
+      borderColor: "#1a73e8",
+      textColor: "#ffffff",
+      extendedProps: {
+        type: "hearing",
+        location: "Courtroom 3A",
+        priority: "high"
+      }
+    },
+    {
+      id: "2",
+      title: "Client Meeting: Case Review",
+      start: "2025-08-11T14:00:00",
+      end: "2025-08-11T15:00:00",
+      backgroundColor: "#34a853",
+      borderColor: "#34a853",
+      textColor: "#ffffff",
+      extendedProps: {
+        type: "meeting",
+        client: "Sarah Johnson",
+        priority: "medium"
+      }
+    },
+    {
+      id: "3",
+      title: "Nikini Full Moon Poya Day",
+      start: "2025-08-08",
+      end: "2025-08-09",
+      backgroundColor: "#137333",
+      borderColor: "#137333",
+      textColor: "#ffffff",
+      allDay: true,
+      extendedProps: {
+        type: "holiday",
+        priority: "low"
+      }
+    },
+    {
+      id: "4",
+      title: "Remind safaran",
+      start: "2025-08-10",
+      end: "2025-08-11",
+      backgroundColor: "#4285f4",
+      borderColor: "#4285f4",
+      textColor: "#ffffff",
+      allDay: true,
+      extendedProps: {
+        type: "reminder",
+        priority: "medium"
+      }
+    },
+    {
+      id: "5",
+      title: "Sahan bday",
+      start: "2025-08-25",
+      end: "2025-08-26",
+      backgroundColor: "#4285f4",
+      borderColor: "#4285f4",
+      textColor: "#ffffff",
+      allDay: true,
+      extendedProps: {
+        type: "birthday",
+        priority: "low"
+      }
+    },
+    {
+      id: "6",
+      title: "Bordime nanda bday",
+      start: "2025-08-23",
+      end: "2025-08-24",
+      backgroundColor: "#4285f4",
+      borderColor: "#4285f4",
+      textColor: "#ffffff",
+      allDay: true,
+      extendedProps: {
+        type: "birthday",
+        priority: "low"
+      }
+    }
+  ];
 
-          {/* Task Date */}
-          <div className="mb-4">
-            <label className="block mb-1 font-medium" htmlFor="taskDate">
-              Task Date <span className="text-red-500">*</span>
-            </label>
-            <Input1
-              id="taskDate"
-              type="date"
-              value={taskDate}
-              onChange={(e) => setTaskDate(e.target.value)}
-              required
-            />
-          </div>
+  // Handle date click
+  const handleDateClick = (info) => {
+    setSelectedDate(info.date);
+    // Don't automatically open task popup, just update the selected date
+  };
 
-          {/* Time Slots */}
-          <div className="mb-4 grid grid-cols-2 gap-4">
-            <div>
-              <label className="block mb-1 font-medium" htmlFor="taskStartTime">
-                Start Time <span className="text-red-500">*</span>
-              </label>
-              <Input1
-                id="taskStartTime"
-                type="time"
-                value={taskStartTime}
-                onChange={(e) => setTaskStartTime(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="block mb-1 font-medium" htmlFor="taskEndTime">
-                End Time <span className="text-red-500">*</span>
-              </label>
-              <Input1
-                id="taskEndTime"
-                type="time"
-                value={taskEndTime}
-                onChange={(e) => setTaskEndTime(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          {/* Location */}
-          <div className="mb-4">
-            <label className="block mb-1 font-medium" htmlFor="taskLocation">
-              Location
-            </label>
-            <Input1
-              id="taskLocation"
-              type="text"
-              value={taskLocation}
-              onChange={(e) => setTaskLocation(e.target.value)}
-              placeholder="Enter task location (office, client location, etc.)"
-            />
-          </div>
-
-          {/* Special Note */}
-          <div className="mb-4">
-            <label className="block mb-1 font-medium" htmlFor="taskNote">
-              Special Note
-            </label>
-            <textarea
-              id="taskNote"
-              rows={4}
-              className="w-full border border-gray-300 rounded px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Add any special notes or details about this task"
-              value={taskNote}
-              onChange={(e) => setTaskNote(e.target.value)}
-            />
-          </div>
-
-          <Button1 type="submit" text="Schedule Task" className="w-full" />
-        </form>
-      </div>
-    </div>
-  );
+  // Handle mini calendar date click
+  const handleMiniCalendarDateClick = (date) => {
+    setSelectedDate(date);
+    // If clicking on a date from a different month, navigate to that month
+    if (date.getMonth() !== currentDate.getMonth() || date.getFullYear() !== currentDate.getFullYear()) {
+      setCurrentDate(new Date(date.getFullYear(), date.getMonth(), 1));
+    }
+  };
 
   return (
     <PageLayout user={user}>
-      <div className="p-6">
-        <div className="flex gap-6">
-          {/* Left Panel */}
-          <div className="w-80 bg-white rounded-lg shadow-md p-6 flex flex-col h-screen overflow-y-auto">
-            {/* Month view with weekday headers and calendar days */}
-            <div className="flex justify-between items-center font-semibold mb-4 px-2">
-              <div>
-                {selectedDate.toLocaleDateString("en-US", {
-                  month: "long",
-                  year: "numeric",
-                })}
+      <div className="google-calendar-layout">
+        {/* Main Header */}
+        <div className="calendar-header">
+          <div className="header-left">
+            <div className="hamburger-menu">
+              <div className="hamburger-line"></div>
+              <div className="hamburger-line"></div>
+              <div className="hamburger-line"></div>
+            </div>
+            <div className="calendar-logo">
+              <div className="logo-icon">
+                <div className="logo-calendar">
+                  <div className="logo-header"></div>
+                  <div className="logo-body">
+                    <div className="logo-date">9</div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <Button1 text="Add Hearing" className="mb-3" onClick={() => { setSelectedTimeSlot(""); setShowPopup(true); }} />
-            <Button1 text="Schedule a Task" className="mb-6" onClick={() => { setShowTaskPopup(true); }} />
-
-            <div className="grid grid-cols-7 text-center text-xs font-medium text-gray-500 mb-2">
-              {weekDays.map((day, idx) => (
-                <div key={idx}>{day}</div>
-              ))}
-            </div>
-            <div className="grid grid-cols-7 gap-1 mb-6 h-[300px] overflow-y-auto">
-              {generateCalendarDays().map((date, idx) =>
-                date ? (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedDate(date)}
-                    className={`flex flex-col items-center justify-start text-xs pt-1 rounded ${
-                      date.toDateString() === selectedDate.toDateString()
-                        ? "bg-black-600 text-white"
-                        : "hover:bg-black-100"
-                    }`}
-                    style={{ height: "3rem" }}
-                  >
-                    <div className="self-start pl-1">
-                      {date.getDate()}
-                    </div>
-                  </button>
-                ) : (
-                  <div key={idx}></div>
-                )
-              )}
-            </div>
-
-            {/* Hearings */}
-            <div className="mb-6">
-              <h3 className="font-semibold mb-2">Hearings</h3>
-              {hearings.map((hearing, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-3 mb-2 text-gray-700"
-                >
-                  <div 
-                    className="p-2 rounded"
-                    style={{
-                      backgroundColor: getCourtBackgroundColor(hearing.location)
-                    }}
-                  >
-                    <FaBriefcase className={getTextColor(getCourtBackgroundColor(hearing.location))} />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">{hearing.time}</div>
-                    <div className="text-xs text-gray-500">{hearing.location}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Free Time Slots */}
-            <div className="overflow-y-auto flex-grow">
-              <h3 className="font-semibold mb-2">Free Time Slots</h3>
-              {freeTimeSlots.map((slot, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-3 mb-2 text-gray-700"
-                >
-                  <div 
-                    className="p-2 rounded"
-                    style={{
-                      backgroundColor: slot.available 
-                        ? "#D1D5DB" // Gray for available slots
-                        : getCourtBackgroundColor(slot.location)
-                    }}
-                  >
-                    <FaClock className={slot.available ? "text-gray-700" : getTextColor(getCourtBackgroundColor(slot.location))} />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">{slot.time}</div>
-                    <div className="text-xs text-gray-500">
-                      {slot.available ? "Available" : slot.location}
-                    </div>
-                  </div>
-                </div>
-              ))}
+              <span className="logo-text">Calendar</span>
             </div>
           </div>
 
-          {/* Right Panel - Day Summary with dropdown */}
-          <div className="flex-grow bg-white rounded-lg shadow-md p-6 min-h-[600px]">
-            {/* Dropdown to select view mode */}
-            <div className="mb-4">
+          <div className="header-center">
+            <button className="today-btn" onClick={goToToday}>Today</button>
+            <div className="nav-controls">
+              <button className="nav-btn" onClick={goToPreviousMonth}>
+                <FaChevronLeft />
+              </button>
+              <button className="nav-btn" onClick={goToNextMonth}>
+                <FaChevronRight />
+              </button>
+            </div>
+            <h1 className="current-month">{getCurrentMonthYear()}</h1>
+          </div>
+
+          <div className="header-right">
+            <div className="view-selector">
               <select
                 value={viewMode}
                 onChange={(e) => setViewMode(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1 text-sm"
-                aria-label="Select view mode"
+                className="view-dropdown"
               >
-                <option value="date">Date</option>
                 <option value="month">Month</option>
+                <option value="week">Week</option>
+                <option value="day">Day</option>
               </select>
             </div>
+            <button
+              className="settings-btn"
+              onClick={handleSettingsClick}
+              aria-label="Settings"
+            >
+              <FaCog />
+            </button>
+          </div>
+        </div>
 
-            {viewMode === "date" ? (
-              <>
-                <h2 className="text-lg font-semibold mb-4">
+        <div className="calendar-container-wrapper">
+          {/* Left Sidebar */}
+          <div className="calendar-sidebar">
+            <button className="create-btn" onClick={() => { setSelectedTimeSlot(""); setShowPopup(true); }}>
+              <FaPlus className="create-icon" />
+              Create
+            </button>
+
+            {/* Mini Calendar */}
+            <div className="mini-calendar">
+              <div className="mini-header">
+                <span className="mini-month">
+                  {currentDate.toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
+
+              <div className="mini-weekdays">
+                {weekDays.map((day, idx) => (
+                  <div key={idx} className="mini-weekday">{day}</div>
+                ))}
+              </div>
+
+              <div className="mini-days">
+                {generateCalendarDays().map((date, idx) =>
+                  date ? (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedDate(date)}
+                      className={`mini-day ${date.toDateString() === selectedDate.toDateString()
+                        ? "mini-day-selected"
+                        : ""
+                        } ${date.toDateString() === new Date().toDateString()
+                          ? "mini-day-today"
+                          : ""
+                        }`}
+                    >
+                      {date.getDate()}
+                    </button>
+                  ) : (
+                    <div key={idx} className="mini-day-empty"></div>
+                  )
+                )}
+              </div>
+            </div>
+
+            {/* Free Slots */}
+            <div className="free-slots">
+              <h3 className="sidebar-title">
+                Free Slots - {selectedDate.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric"
+                })}
+              </h3>
+              <div className="slots-list">
+                {getFreeSlotsForDate(selectedDate).map((slot, idx) => (
+                  <div key={idx} className="slot-item">
+                    <div className="slot-time-icon">
+                      <FaClock className="slot-icon" />
+                    </div>
+                    <div className="slot-details">
+                      <div className="slot-time">{slot.time}</div>
+                      <div className="slot-status available">Available</div>
+                    </div>
+                    <button
+                      className="book-slot-btn"
+                      onClick={() => handleTimeSlotClick(slot.time)}
+                    >
+                      Book
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Scheduled Events */}
+            <div className="scheduled-events">
+              <h3 className="sidebar-title">
+                Scheduled Events - {selectedDate.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric"
+                })}
+              </h3>
+              <div className="events-list">
+                {getScheduledEventsForDate(selectedDate).length > 0 ? (
+                  getScheduledEventsForDate(selectedDate).map((event) => (
+                    <div key={event.id} className="event-item">
+                      <div
+                        className="event-color-indicator"
+                        style={{ backgroundColor: event.backgroundColor }}
+                      ></div>
+                      <div className="event-details">
+                        <div className="event-title">{event.title}</div>
+                        <div className="event-time">
+                          {event.allDay
+                            ? "All day"
+                            : new Date(event.start).toLocaleTimeString("en-US", {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                              hour12: true
+                            }) + " - " + new Date(event.end).toLocaleTimeString("en-US", {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                              hour12: true
+                            })
+                          }
+                        </div>
+                        {event.extendedProps?.location && (
+                          <div className="event-location">{event.extendedProps.location}</div>
+                        )}
+                      </div>
+                      <div className="event-type-badge">
+                        {event.extendedProps?.type || 'Event'}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="no-events">
+                    <div className="no-events-icon">📅</div>
+                    <div className="no-events-text">No events scheduled</div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Other Calendars */}
+            <div className="other-calendars">
+              <h3 className="sidebar-title">Calendar Settings</h3>
+              <div className="calendar-list">
+                <div className="calendar-item">
+                  <input type="checkbox" id="holidays" defaultChecked />
+                  <div className="color-dot holidays"></div>
+                  <label htmlFor="holidays">Holidays in Sri Lanka</label>
+                </div>
+                <div className="calendar-item">
+                  <input type="checkbox" id="personal" defaultChecked />
+                  <div className="color-dot personal"></div>
+                  <label htmlFor="personal">Personal Events</label>
+                </div>
+                <div className="calendar-item">
+                  <input type="checkbox" id="work" defaultChecked />
+                  <div className="color-dot work"></div>
+                  <label htmlFor="work">Work Events</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Calendar */}
+          <div className="main-calendar">
+            {viewMode === "month" || viewMode === "week" ? (
+              <div className="calendar-view">
+                <FullCalendar
+                  ref={calendarRef}
+                  plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                  initialView={viewMode === "month" ? "dayGridMonth" : "timeGridWeek"}
+                  headerToolbar={false}
+                  events={events}
+                  dateClick={handleDateClick}
+                  editable={true}
+                  selectable={true}
+                  selectMirror={true}
+                  dayMaxEvents={false}
+                  weekends={true}
+                  height="auto"
+                  eventDisplay="block"
+                  dayHeaderFormat={{ weekday: 'short' }}
+                  eventTimeFormat={{
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    meridiem: false
+                  }}
+                  slotLabelFormat={{
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    meridiem: false
+                  }}
+                  nowIndicator={true}
+                  eventClassNames="google-event"
+                  dayHeaderClassNames="google-day-header"
+                  dayCellClassNames="google-day-cell"
+                  initialDate={currentDate}
+                  datesSet={(dateInfo) => {
+                    // Update currentDate when FullCalendar view changes
+                    setCurrentDate(dateInfo.start);
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="day-view">
+                <h2 className="day-title">
                   {formatDateDisplay(selectedDate)}
                 </h2>
-                <div className="divide-y divide-gray-200">
+                <div className="time-slots">
                   {dayTimeSlots.map((slot, idx) => (
                     <button
                       key={idx}
-                      className={`w-full text-left py-3 px-4 ${
-                        idx % 2 === 0 ? "bg-gray-50" : "bg-white"
-                      } hover:bg-blue-100 rounded`}
+                      className="time-slot"
                       onClick={() => handleTimeSlotClick(slot)}
                     >
                       {slot}
                     </button>
                   ))}
                 </div>
-              </>
-            ) : (
-              <>
-                {/* Month view with weekday headers and calendar days */}
-                <div className="flex justify-between items-center text-lg font-semibold mb-4">
-                  <div>
-                    {selectedDate.toLocaleDateString("en-US", {
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </div>
-                  <button
-                    aria-label="Settings"
-                    className="text-gray-600 hover:text-gray-900 cursor-pointer p-1 rounded-full -mt-1"
-                    onClick={handleSettingsClick}
-                  >
-                    <FaCog size={26} />
-                  </button>
-                </div>
-                <div className="grid grid-cols-7 text-center text-xs font-medium text-gray-500 mb-2">
-                  {weekDays.map((day, idx) => (
-                    <div key={idx}>{day}</div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-7 gap-1 mb-6 h-[500px] overflow-y-auto">
-                  {generateCalendarDays().map((date, idx) =>
-                    date ? (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedDate(date)}
-                        className={`text-center py-1 rounded relative ${
-                          date.toDateString() === selectedDate.toDateString()
-                            ? "bg-black-600 text-white"
-                            : "hover:bg-black-100"
-                        }`}
-                      >
-                        {date.getDate()}
-                        {/* Events with custom colors based on court */}
-                        {calendarEvents.map((event, eventIdx) => {
-                          if (date.getDate() === event.date && date.getMonth() === event.month) {
-                            const bgColor = getCourtBackgroundColor(event.location);
-                            const textColorClass = getTextColor(bgColor);
-                            return (
-                              <div 
-                                key={eventIdx}
-                                className={`absolute bottom-1 left-1 right-1 text-xs rounded px-1 truncate ${textColorClass}`}
-                                style={{ backgroundColor: bgColor }}
-                              >
-                                {event.title}
-                              </div>
-                            );
-                          }
-                          return null;
-                        })}
-                      </button>
-                    ) : (
-                      <div key={idx}></div>
-                    )
-                  )}
-                </div>
-              </>
+              </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Popups */}
       {showPopup && <Popup />}
-      {showTaskPopup && <TaskPopup />}
-      
+      {showTaskPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full relative max-h-[90vh] overflow-y-auto">
+            <button
+              className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+              onClick={() => setShowTaskPopup(false)}
+              aria-label="Close popup"
+            >
+              &#x2715;
+            </button>
+            <h2 className="text-2xl font-semibold mb-6">Schedule a Task</h2>
+            <form onSubmit={handleTaskSave}>
+              {/* Task Title */}
+              <div className="mb-4">
+                <label className="block mb-1 font-medium" htmlFor="taskTitle">
+                  Task Title <span className="text-red-500">*</span>
+                </label>
+                <Input1
+                  id="taskTitle"
+                  type="text"
+                  placeholder="Enter task title"
+                  value={taskTitle}
+                  onChange={(e) => setTaskTitle(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Task Date */}
+              <div className="mb-4">
+                <label className="block mb-1 font-medium" htmlFor="taskDate">
+                  Task Date <span className="text-red-500">*</span>
+                </label>
+                <Input1
+                  id="taskDate"
+                  type="date"
+                  value={taskDate}
+                  onChange={(e) => setTaskDate(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Time Slots */}
+              <div className="mb-4 grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-1 font-medium" htmlFor="taskStartTime">
+                    Start Time <span className="text-red-500">*</span>
+                  </label>
+                  <Input1
+                    id="taskStartTime"
+                    type="time"
+                    value={taskStartTime}
+                    onChange={(e) => setTaskStartTime(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 font-medium" htmlFor="taskEndTime">
+                    End Time <span className="text-red-500">*</span>
+                  </label>
+                  <Input1
+                    id="taskEndTime"
+                    type="time"
+                    value={taskEndTime}
+                    onChange={(e) => setTaskEndTime(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Location */}
+              <div className="mb-4">
+                <label className="block mb-1 font-medium" htmlFor="taskLocation">
+                  Location
+                </label>
+                <Input1
+                  id="taskLocation"
+                  type="text"
+                  value={taskLocation}
+                  onChange={(e) => setTaskLocation(e.target.value)}
+                  placeholder="Enter task location (office, client location, etc.)"
+                />
+              </div>
+
+              {/* Special Note */}
+              <div className="mb-4">
+                <label className="block mb-1 font-medium" htmlFor="taskNote">
+                  Special Note
+                </label>
+                <textarea
+                  id="taskNote"
+                  rows={4}
+                  className="w-full border border-gray-300 rounded px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Add any special notes or details about this task"
+                  value={taskNote}
+                  onChange={(e) => setTaskNote(e.target.value)}
+                />
+              </div>
+
+              <Button1 type="submit" text="Schedule Task" className="w-full" />
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Court Color Settings Modal */}
-      <CourtColorSettings 
+      <CourtColorSettings
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
         courtColors={courtColors}
