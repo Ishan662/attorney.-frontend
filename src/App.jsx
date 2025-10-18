@@ -30,7 +30,7 @@ import NotFoundPage from './pages/Common/404';
 import JuniorDashboard from './pages/JuniorLawyer/JuniorDashboard';
 import AssignedCases from './pages/JuniorLawyer/AssignedCases';
 import Tasks from './pages/JuniorLawyer/Tasks';
-import JuniorMessages from './pages/JuniorLawyer/JuniorMessages';
+import JuniorMessages from './pages/JuniorLawyer/JuniorMessage';
 import JuniorHearings from './pages/JuniorLawyer/JuniorHearing';
 import AccountUsers from './pages/Lawyer/AccountUsers';
 import UserManagement from './pages/Admin/UserManagement';
@@ -56,6 +56,8 @@ import LawyerSettings from './pages/Lawyer/Settings';
 import DaySummary from './pages/Lawyer/Daysummary';
 import ClientMessages from './pages/Client/ClientMessages';
 import Clientpayments from './pages/Client/Clientpayments';
+import LawyerMessages from './pages/Lawyer/LawyerMessages';
+import AssignTasks from './pages/Lawyer/AssignTasks';
 
 
 export default function App() {
@@ -81,7 +83,6 @@ export default function App() {
           <Route path="client/caseprofiles" element={<Clientcaseprofiles />} />
           <Route path="client/case/:caseId" element={<ClientCaseDetails />} />
           <Route path="client/clientcalendar" element={<ClientCalendar />} />
-          <Route path='/lawyer/messages' element={<Messages />} />
           <Route path="user/signup" element={<UserSignUp />} />
           <Route path="user/login" element={<UserLogin />} />
           <Route path="user/otp" element={<UserOTP />} />
@@ -98,10 +99,12 @@ export default function App() {
           <Route path="junior/messages" element={<JuniorMessages/>} />
           <Route path="junior/hearings" element={<JuniorHearings/>} />
           <Route path="lawyer/accountusers" element={<AccountUsers />} />
+          <Route path="lawyer/messages" element={<LawyerMessages />} />
           <Route path="*" element={<NotFoundPage />} />
           <Route path="admin/usermanagement" element={<UserManagement />} />
           <Route path="admin/viewmessages" element={<ViewMessages />} />
           <Route path="admin/viewanalytics" element={<AdminAnalytics />} />
+          <Route path='lawyer/assigntasks' element={<AssignTasks />} />
           {/* client case profiles  */}
           {/* <Route path="client/caseprofiles" element={<Clientcaseprofiles />} /> */}
           {/* <Route path="/invitation/:inviteToken" element={<ClientInvitation />} />   */}
@@ -126,9 +129,9 @@ export default function App() {
             
           <Route path="/lawyer/case/:caseId/edit" element={<EditCasePage />} />
 
-          <Route path="/junior/setting" element={<Settings />} />
-          <Route path="/client/setting" element={<clientSettings />} />
-          <Route path="/lawyer/setting" element={<LawyerSettings/>} />
+          <Route path="/junior/settings" element={<Settings />} />
+          <Route path="/client/settings" element={<clientSettings />} />
+          <Route path="/lawyer/settings" element={<LawyerSettings/>} />
 
           <Route path="/client/chat" element={<ClientMessages />} />
           <Route path="/client/payments" element={<Clientpayments />} />

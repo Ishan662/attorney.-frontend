@@ -19,6 +19,60 @@ const UserSignUp = () => {
         password: '',
         confirmPassword: ''
     });
+
+    // Function to convert Firebase error messages to user-friendly messages
+    const formatFirebaseError = (errorMessage) => {
+        console.log('Original error message:', errorMessage); // Debug log
+        
+        // First check for specific email verification message from authService
+        if (errorMessage.includes('Your email is not verified') || 
+            errorMessage.includes('Please check your inbox for the verification link')) {
+            return 'Please verify your email address before logging in. Check your inbox for a verification link.';
+        }
+        
+        // Extract the error code from Firebase error message using multiple patterns
+        let errorCode = null;
+        
+        // Try different patterns to extract the error code
+        const patterns = [
+            /auth\/([^)]+)\)/,  // Firebase: Error (auth/invalid-credential).
+            /auth\/([^\s]+)/,   // auth/invalid-credential
+            /\(auth\/([^)]+)\)/, // (auth/invalid-credential)
+        ];
+        
+        for (const pattern of patterns) {
+            const match = errorMessage.match(pattern);
+            if (match) {
+                errorCode = match[1];
+                break;
+            }
+        }
+        
+        console.log('Extracted error code:', errorCode); // Debug log
+        
+        const errorMessages = {
+            'weak-password': 'Password should be at least 6 characters long.',
+            'email-already-in-use': 'An account with this email already exists. Please use a different email or try logging in.',
+            'invalid-email': 'Please enter a valid email address.',
+            'operation-not-allowed': 'Account creation is currently disabled. Please contact support.',
+            'too-many-requests': 'Too many requests. Please try again later.',
+            'network-request-failed': 'Network error. Please check your connection and try again.',
+            'internal-error': 'An internal error occurred. Please try again later.',
+            'invalid-api-key': 'Authentication service unavailable. Please try again later.',
+            'app-deleted': 'Authentication service unavailable. Please try again later.',
+            'user-disabled': 'This account has been disabled. Please contact support.',
+            'requires-recent-login': 'Please log out and log back in to continue.',
+            'invalid-credential': 'Invalid credentials provided.',
+            'user-not-found': 'No account found with this information.',
+            'wrong-password': 'Incorrect password provided.',
+        };
+
+        const friendlyMessage = errorMessages[errorCode] || 'Registration failed. Please try again.';
+        console.log('Friendly message:', friendlyMessage); // Debug log
+        
+        return friendlyMessage;
+    };
+
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -73,11 +127,28 @@ const UserSignUp = () => {
             tempErrors.phoneNumber = 'Phone number is invalid';
         }
 
-        // Validate password
+        // Validate password - Enhanced with strong password requirements
         if (!formData.password) {
             tempErrors.password = 'Password is required';
-        } else if (formData.password.length < 8) {
-            tempErrors.password = 'Password must be at least 8 characters';
+        } else {
+            const password = formData.password;
+            const minLength = 8;
+            const hasUpperCase = /[A-Z]/.test(password);
+            const hasLowerCase = /[a-z]/.test(password);
+            const hasNumbers = /\d/.test(password);
+            const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+            
+            if (password.length < minLength) {
+                tempErrors.password = 'Password must be at least 8 characters long';
+            } else if (!hasUpperCase) {
+                tempErrors.password = 'Password must contain at least one uppercase letter';
+            } else if (!hasLowerCase) {
+                tempErrors.password = 'Password must contain at least one lowercase letter';
+            } else if (!hasNumbers) {
+                tempErrors.password = 'Password must contain at least one number';
+            } else if (!hasSpecialChar) {
+                tempErrors.password = 'Password must contain at least one special character (!@#$%^&*(),.?":{}|<>)';
+            }
         }
 
         // Validate confirm password
@@ -130,7 +201,8 @@ const UserSignUp = () => {
 
             } catch (error) {
                 console.error('Registration error:', error);
-                setErrors({ form: error.message || 'Registration failed. Please try again.' });
+                const friendlyMessage = formatFirebaseError(error.message);
+                setErrors({ form: friendlyMessage });
             } finally {
                 setIsSubmitting(false);
             }
@@ -160,7 +232,8 @@ const UserSignUp = () => {
             navigate('/dashboard');
         } catch (error) {
             console.error('Google registration error:', error);
-            setErrors({ form: error.message || 'Google sign-up failed.' });
+            const friendlyMessage = formatFirebaseError(error.message);
+            setErrors({ form: friendlyMessage });
         } finally {
             setIsSubmitting(false);
         }
@@ -312,6 +385,13 @@ const UserSignUp = () => {
                                     </svg>
                                 )}
                             </button>
+                            
+                            {/* Password Requirements Note */}
+                            <div className="mt-2">
+                                <p className="text-xs text-gray-500">
+                                    Password must contain at least 8 characters with uppercase, lowercase, number, and special character.
+                                </p>
+                            </div>
                         </div>
 
                         <div className="relative">

@@ -10,7 +10,7 @@ const ViewMessages = () => {
     const [activeFilter, setActiveFilter] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
     const [showReplyModal, setShowReplyModal] = useState(false);
-    const [selectedMessage, setSelectedMessage] = useState(null);
+    const [selectedRequest, setSelectedRequest] = useState(null);
     const [replyContent, setReplyContent] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     
@@ -21,18 +21,20 @@ const ViewMessages = () => {
         role: 'admin'
     };
 
-    // Sample messages data
-    const [messages, setMessages] = useState([
+    // Sample support requests data
+    const [supportRequests, setSupportRequests] = useState([
         {
             id: 1,
             from: "Nishagi Jewantha",
             email: "nishagi@example.com",
             role: "lawyer",
             subject: "Package upgrade request",
+            category: "Subscription",
+            priority: "medium",
             message: "I would like to request an upgrade to the premium package for my account. I need access to the additional features for a complex case I'm working on.",
             date: "2025-07-05T10:30:00",
-            status: "unread",
-            replied: false
+            status: "open",
+            responded: false
         },
         {
             id: 2,
@@ -40,10 +42,12 @@ const ViewMessages = () => {
             email: "jane@example.com",
             role: "junior_lawyer",
             subject: "Access permission issue",
+            category: "Technical",
+            priority: "high",
             message: "I'm having trouble accessing case files shared by my senior lawyer. Could you please check the permissions on my account?",
             date: "2025-07-04T14:15:00",
-            status: "read",
-            replied: true
+            status: "resolved",
+            responded: true
         },
         {
             id: 3,
@@ -51,10 +55,12 @@ const ViewMessages = () => {
             email: "robert@example.com",
             role: "client",
             subject: "Account verification",
+            category: "Account",
+            priority: "urgent",
             message: "I registered 2 days ago but my account is still pending verification. I need to communicate with my lawyer urgently regarding an upcoming hearing.",
             date: "2025-07-03T09:45:00",
-            status: "unread",
-            replied: false
+            status: "open",
+            responded: false
         },
         {
             id: 4,
@@ -62,10 +68,12 @@ const ViewMessages = () => {
             email: "ramesh@example.com",
             role: "lawyer",
             subject: "Technical support needed",
+            category: "Technical",
+            priority: "medium",
             message: "The document upload feature is not working properly. I've tried multiple times but the files don't appear in my case folders after uploading.",
             date: "2025-07-02T16:20:00",
-            status: "read",
-            replied: false
+            status: "in_progress",
+            responded: false
         },
         {
             id: 5,
@@ -73,10 +81,12 @@ const ViewMessages = () => {
             email: "priya@example.com",
             role: "client",
             subject: "Billing question",
+            category: "Billing",
+            priority: "low",
             message: "I noticed a discrepancy in my last invoice. There seems to be an additional charge that I don't understand. Could you please clarify?",
             date: "2025-07-01T11:05:00",
-            status: "read",
-            replied: true
+            status: "resolved",
+            responded: true
         },
         {
             id: 6,
@@ -84,10 +94,12 @@ const ViewMessages = () => {
             email: "michael@example.com",
             role: "junior_lawyer",
             subject: "Calendar sync issue",
+            category: "Technical",
+            priority: "high",
             message: "My hearing dates are not syncing properly with the main calendar. This has caused me to miss an important notification yesterday.",
             date: "2025-06-30T08:50:00",
-            status: "unread",
-            replied: false
+            status: "open",
+            responded: false
         },
         {
             id: 7,
@@ -95,23 +107,26 @@ const ViewMessages = () => {
             email: "david@example.com",
             role: "client",
             subject: "Password reset request",
+            category: "Account",
+            priority: "medium",
             message: "I'm unable to reset my password using the forgot password link. Could you please help me regain access to my account?",
             date: "2025-06-29T13:40:00",
-            status: "read",
-            replied: true
+            status: "resolved",
+            responded: true
         }
     ]);
 
-    // Get filtered messages based on active filter and search term
-    const getFilteredMessages = () => {
-        return messages.filter(message => {
+    // Get filtered requests based on active filter and search term
+    const getFilteredRequests = () => {
+        return supportRequests.filter(request => {
             // Filter by role
-            if (activeFilter !== "all" && message.role !== activeFilter) return false;
+            if (activeFilter !== "all" && request.role !== activeFilter) return false;
             
             // Filter by search term
-            if (searchTerm && !message.from.toLowerCase().includes(searchTerm.toLowerCase()) &&
-                !message.subject.toLowerCase().includes(searchTerm.toLowerCase()) &&
-                !message.message.toLowerCase().includes(searchTerm.toLowerCase())) {
+            if (searchTerm && !request.from.toLowerCase().includes(searchTerm.toLowerCase()) &&
+                !request.subject.toLowerCase().includes(searchTerm.toLowerCase()) &&
+                !request.message.toLowerCase().includes(searchTerm.toLowerCase()) &&
+                !request.category.toLowerCase().includes(searchTerm.toLowerCase())) {
                 return false;
             }
             
@@ -119,26 +134,26 @@ const ViewMessages = () => {
         });
     };
 
-    // Mark message as read
-    const markAsRead = (messageId) => {
-        setMessages(prevMessages => 
-            prevMessages.map(message => 
-                message.id === messageId ? { ...message, status: "read" } : message
+    // Update request status
+    const updateRequestStatus = (requestId, newStatus) => {
+        setSupportRequests(prevRequests => 
+            prevRequests.map(request => 
+                request.id === requestId ? { ...request, status: newStatus } : request
             )
         );
     };
 
-    // Handle message click
-    const handleMessageClick = (message) => {
-        setSelectedMessage(message);
-        if (message.status === "unread") {
-            markAsRead(message.id);
+    // Handle request click
+    const handleRequestClick = (request) => {
+        setSelectedRequest(request);
+        if (request.status === "open") {
+            updateRequestStatus(request.id, "in_progress");
         }
     };
 
     // Handle reply
-    const handleReply = (message) => {
-        setSelectedMessage(message);
+    const handleReply = (request) => {
+        setSelectedRequest(request);
         setReplyContent("");
         setShowReplyModal(true);
     };
@@ -156,9 +171,13 @@ const ViewMessages = () => {
         
         // Simulate API call with timeout
         setTimeout(() => {
-            setMessages(prevMessages => 
-                prevMessages.map(message => 
-                    message.id === selectedMessage.id ? { ...message, replied: true } : message
+            setSupportRequests(prevRequests => 
+                prevRequests.map(request => 
+                    request.id === selectedRequest.id ? { 
+                        ...request, 
+                        responded: true, 
+                        status: "resolved"
+                    } : request
                 )
             );
             
@@ -166,7 +185,7 @@ const ViewMessages = () => {
             setShowReplyModal(false);
             
             // Show success message
-            alert(`Reply sent to ${selectedMessage.from}`);
+            alert(`Support response sent to ${selectedRequest.from}`);
         }, 800);
     };
 
@@ -212,14 +231,45 @@ const ViewMessages = () => {
         }
     };
 
-    // Get count of unread messages
-    const getUnreadCount = () => {
-        return messages.filter(message => message.status === "unread").length;
+    // Get priority color class
+    const getPriorityColorClass = (priority) => {
+        switch (priority) {
+            case 'urgent': return 'bg-red-100 text-red-800';
+            case 'high': return 'bg-orange-100 text-orange-800';
+            case 'medium': return 'bg-yellow-100 text-yellow-800';
+            case 'low': return 'bg-green-100 text-green-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
     };
 
-    // Get count of unread messages by role
-    const getUnreadCountByRole = (role) => {
-        return messages.filter(message => message.status === "unread" && message.role === role).length;
+    // Get status color class
+    const getStatusColorClass = (status) => {
+        switch (status) {
+            case 'open': return 'bg-blue-100 text-blue-800';
+            case 'in_progress': return 'bg-yellow-100 text-yellow-800';
+            case 'resolved': return 'bg-green-100 text-green-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    // Get status display name
+    const getStatusDisplayName = (status) => {
+        switch (status) {
+            case 'open': return 'Open';
+            case 'in_progress': return 'In Progress';
+            case 'resolved': return 'Resolved';
+            default: return status;
+        }
+    };
+
+    // Get count of open requests
+    const getOpenCount = () => {
+        return supportRequests.filter(request => request.status === "open").length;
+    };
+
+    // Get count of open requests by role
+    const getOpenCountByRole = (role) => {
+        return supportRequests.filter(request => request.status === "open" && request.role === role).length;
     };
 
     return (
@@ -227,18 +277,13 @@ const ViewMessages = () => {
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold">Message Center</h1>
-                    <p className="text-gray-600">View and respond to messages from users</p>
+                    <h1 className="text-2xl font-bold">Support Request Center</h1>
+                    <p className="text-gray-600">View and respond to support requests from users</p>
                 </div>
                 <div className="flex space-x-2">
-                    <div className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
-                        {getUnreadCount()} Unread
+                    <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {getOpenCount()} Open Requests
                     </div>
-                    <Button1
-                        text="Dashboard"
-                        onClick={() => navigate('/admin/dashboard')}
-                        className="px-4"
-                    />
                 </div>
             </div>
 
@@ -248,7 +293,7 @@ const ViewMessages = () => {
                     <div className="w-full md:w-1/3">
                         <Input1
                             type="text"
-                            placeholder="Search messages..."
+                            placeholder="Search requests..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             variant="outlined"
@@ -270,9 +315,9 @@ const ViewMessages = () => {
                                 onClick={() => setActiveFilter("lawyer")}
                             >
                                 Senior Lawyers
-                                {getUnreadCountByRole("lawyer") > 0 && (
-                                    <span className="ml-1 w-4 h-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
-                                        {getUnreadCountByRole("lawyer")}
+                                {getOpenCountByRole("lawyer") > 0 && (
+                                    <span className="ml-1 w-4 h-4 bg-blue-600 text-white rounded-full text-xs flex items-center justify-center">
+                                        {getOpenCountByRole("lawyer")}
                                     </span>
                                 )}
                             </button>
@@ -281,9 +326,9 @@ const ViewMessages = () => {
                                 onClick={() => setActiveFilter("junior_lawyer")}
                             >
                                 Junior Lawyers
-                                {getUnreadCountByRole("junior_lawyer") > 0 && (
-                                    <span className="ml-1 w-4 h-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
-                                        {getUnreadCountByRole("junior_lawyer")}
+                                {getOpenCountByRole("junior_lawyer") > 0 && (
+                                    <span className="ml-1 w-4 h-4 bg-blue-600 text-white rounded-full text-xs flex items-center justify-center">
+                                        {getOpenCountByRole("junior_lawyer")}
                                     </span>
                                 )}
                             </button>
@@ -292,9 +337,9 @@ const ViewMessages = () => {
                                 onClick={() => setActiveFilter("client")}
                             >
                                 Clients
-                                {getUnreadCountByRole("client") > 0 && (
-                                    <span className="ml-1 w-4 h-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
-                                        {getUnreadCountByRole("client")}
+                                {getOpenCountByRole("client") > 0 && (
+                                    <span className="ml-1 w-4 h-4 bg-blue-600 text-white rounded-full text-xs flex items-center justify-center">
+                                        {getOpenCountByRole("client")}
                                     </span>
                                 )}
                             </button>
@@ -303,43 +348,41 @@ const ViewMessages = () => {
                 </div>
             </div>
 
-            {/* Messages */}
+            {/* Support Requests */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Message List */}
+                {/* Request List */}
                 <div className="md:col-span-1">
                     <div className="bg-white rounded-lg shadow-md overflow-hidden h-[calc(100vh-220px)]">
                         <div className="p-3 bg-gray-50 border-b border-gray-200">
                             <h2 className="font-semibold">
-                                {getFilteredMessages().length} Messages
+                                {getFilteredRequests().length} Support Requests
                             </h2>
                         </div>
                         <div className="overflow-y-auto h-[calc(100%-50px)]">
-                            {getFilteredMessages().length > 0 ? (
-                                getFilteredMessages().map(message => (
+                            {getFilteredRequests().length > 0 ? (
+                                getFilteredRequests().map(request => (
                                     <div 
-                                        key={message.id} 
-                                        className={`p-3 border-b border-gray-200 cursor-pointer hover:bg-gray-50 ${selectedMessage?.id === message.id ? 'bg-blue-50' : ''} ${message.status === "unread" ? "font-semibold" : ""}`}
-                                        onClick={() => handleMessageClick(message)}
+                                        key={request.id} 
+                                        className={`p-3 border-b border-gray-200 cursor-pointer hover:bg-gray-50 ${selectedRequest?.id === request.id ? 'bg-blue-50' : ''} ${request.status === "open" ? "font-semibold" : ""}`}
+                                        onClick={() => handleRequestClick(request)}
                                     >
                                         <div className="flex items-start space-x-3">
-                                            <div className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium ${getAvatarColor(message.role)}`}>
-                                                {getInitials(message.from)}
+                                            <div className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium ${getAvatarColor(request.role)}`}>
+                                                {getInitials(request.from)}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between">
-                                                    <p className="truncate">{message.from}</p>
-                                                    <p className="text-xs text-gray-500">{new Date(message.date).toLocaleDateString()}</p>
+                                                    <p className="truncate">{request.from}</p>
+                                                    <p className="text-xs text-gray-500">{new Date(request.date).toLocaleDateString()}</p>
                                                 </div>
-                                                <p className="text-sm truncate">{message.subject}</p>
+                                                <p className="text-sm truncate">{request.subject}</p>
                                                 <div className="flex mt-1 space-x-2">
                                                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                        {getRoleDisplayName(message.role)}
+                                                        {request.category}
                                                     </span>
-                                                    {message.status === "unread" && (
-                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                            New
-                                                        </span>
-                                                    )}
+                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColorClass(request.status)}`}>
+                                                        {getStatusDisplayName(request.status)}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -347,74 +390,92 @@ const ViewMessages = () => {
                                 ))
                             ) : (
                                 <div className="p-6 text-center text-gray-500">
-                                    No messages match your criteria
+                                    No support requests match your criteria
                                 </div>
                             )}
                         </div>
                     </div>
                 </div>
                 
-                {/* Message Detail */}
+                {/* Request Detail */}
                 <div className="md:col-span-2">
                     <div className="bg-white rounded-lg shadow-md overflow-hidden h-[calc(100vh-220px)]">
-                        {selectedMessage ? (
+                        {selectedRequest ? (
                             <>
                                 <div className="p-4 bg-gray-50 border-b border-gray-200">
-                                    <div className="flex justify-between items-start">
-                                        <h2 className="font-bold text-xl">{selectedMessage.subject}</h2>
+                                    <div className="flex justify-between items-center">
+                                        <h2 className="font-bold text-xl">{selectedRequest.subject}</h2>
+                                        <div className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColorClass(selectedRequest.priority)}`}>
+                                            {selectedRequest.priority.charAt(0).toUpperCase() + selectedRequest.priority.slice(1)} Priority
+                                        </div>
+                                    </div>
+                                    <div className="flex mt-2 space-x-3">
+                                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColorClass(selectedRequest.status)}`}>
+                                            {getStatusDisplayName(selectedRequest.status)}
+                                        </span>
+                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            {selectedRequest.category}
+                                        </span>
                                     </div>
                                 </div>
                                 <div className="p-4 overflow-y-auto h-[calc(100%-180px)]">
                                     <div className="flex items-start space-x-4 mb-6">
-                                        <div className={`flex-shrink-0 h-12 w-12 rounded-full flex items-center justify-center text-base font-medium ${getAvatarColor(selectedMessage.role)}`}>
-                                            {getInitials(selectedMessage.from)}
+                                        <div className={`flex-shrink-0 h-12 w-12 rounded-full flex items-center justify-center text-base font-medium ${getAvatarColor(selectedRequest.role)}`}>
+                                            {getInitials(selectedRequest.from)}
                                         </div>
                                         <div>
-                                            <div className="font-semibold">{selectedMessage.from}</div>
-                                            <div className="text-sm text-gray-600">{selectedMessage.email}</div>
-                                            <div className="text-sm text-gray-600">{getRoleDisplayName(selectedMessage.role)}</div>
-                                            <div className="text-sm text-gray-500 mt-1">{formatDate(selectedMessage.date)}</div>
+                                            <div className="font-semibold">{selectedRequest.from}</div>
+                                            <div className="text-sm text-gray-600">{selectedRequest.email}</div>
+                                            <div className="text-sm text-gray-600">{getRoleDisplayName(selectedRequest.role)}</div>
+                                            <div className="text-sm text-gray-500 mt-1">{formatDate(selectedRequest.date)}</div>
                                         </div>
                                     </div>
                                     <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                                        <p className="whitespace-pre-line">{selectedMessage.message}</p>
+                                        <p className="whitespace-pre-line">{selectedRequest.message}</p>
                                     </div>
-                                    {selectedMessage.replied && (
-                                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                                            <div className="text-sm font-semibold text-blue-800 mb-2">
-                                                ✓ You have responded to this message
+                                    {selectedRequest.responded && (
+                                        <div className="bg-green-50 p-4 rounded-lg border border-green-100">
+                                            <div className="text-sm font-semibold text-green-800 mb-2">
+                                                ✓ This request has been resolved
                                             </div>
+                                            <p className="text-sm text-green-700">
+                                                A response has been sent to the user. If they need further assistance, they will need to submit a new request.
+                                            </p>
                                         </div>
                                     )}
                                 </div>
                                 <div className="p-4 border-t border-gray-200 bg-gray-50">
                                     <div className="flex justify-end space-x-3">
-                                        <Button2
-                                            text="Mark as Unread"
-                                            onClick={() => {
-                                                setMessages(prevMessages => 
-                                                    prevMessages.map(message => 
-                                                        message.id === selectedMessage.id ? { ...message, status: "unread" } : message
-                                                    )
-                                                );
-                                            }}
-                                            className="text-sm px-3 py-1"
-                                        />
-                                        <Button1
-                                            text="Reply"
-                                            onClick={() => handleReply(selectedMessage)}
-                                            className="text-sm px-3 py-1"
-                                        />
+                                        {selectedRequest.status !== "resolved" ? (
+                                            <>
+                                                <Button2
+                                                    text="Mark as Resolved"
+                                                    onClick={() => updateRequestStatus(selectedRequest.id, "resolved")}
+                                                    className="text-sm px-3 py-1"
+                                                />
+                                                <Button1
+                                                    text="Respond"
+                                                    onClick={() => handleReply(selectedRequest)}
+                                                    className="text-sm px-3 py-1"
+                                                />
+                                            </>
+                                        ) : (
+                                            <Button2
+                                                text="Reopen Request"
+                                                onClick={() => updateRequestStatus(selectedRequest.id, "open")}
+                                                className="text-sm px-3 py-1"
+                                            />
+                                        )}
                                     </div>
                                 </div>
                             </>
                         ) : (
                             <div className="p-6 text-center text-gray-500 flex flex-col items-center justify-center h-full">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
                                 </svg>
-                                <p className="text-lg">Select a message to view details</p>
-                                <p className="text-sm mt-2">You can filter messages by user type</p>
+                                <p className="text-lg">Select a support request to view details</p>
+                                <p className="text-sm mt-2">You can filter requests by user type or search by keyword</p>
                             </div>
                         )}
                     </div>
@@ -422,34 +483,50 @@ const ViewMessages = () => {
             </div>
 
             {/* Reply Modal */}
-            {showReplyModal && selectedMessage && (
+            {showReplyModal && selectedRequest && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl mx-4">
-                        <h2 className="text-xl font-bold mb-2">Reply to Message</h2>
+                        <h2 className="text-xl font-bold mb-2">Respond to Support Request</h2>
                         
                         <div className="mb-4">
                             <div className="bg-gray-50 p-3 rounded-lg mb-2">
                                 <div className="flex justify-between">
-                                    <span className="font-medium">To: {selectedMessage.from}</span>
-                                    <span className="text-sm text-gray-600">{selectedMessage.email}</span>
+                                    <span className="font-medium">To: {selectedRequest.from}</span>
+                                    <span className="text-sm text-gray-600">{selectedRequest.email}</span>
                                 </div>
-                                <div className="font-medium mt-2">Re: {selectedMessage.subject}</div>
+                                <div className="font-medium mt-2">Re: {selectedRequest.subject}</div>
+                                <div className="text-sm text-gray-600 mt-1">
+                                    Category: {selectedRequest.category} • Priority: {selectedRequest.priority}
+                                </div>
                             </div>
                         </div>
                         
                         <form onSubmit={sendReply}>
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Your Reply
+                                    Your Response
                                 </label>
                                 <textarea
                                     value={replyContent}
                                     onChange={(e) => setReplyContent(e.target.value)}
-                                    placeholder="Type your reply here..."
+                                    placeholder="Type your response here..."
                                     rows={6}
                                     className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                                     required
                                 />
+                            </div>
+                            
+                            <div className="flex items-center mb-4">
+                                <input
+                                    type="checkbox"
+                                    id="markResolved"
+                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    checked
+                                    readOnly
+                                />
+                                <label htmlFor="markResolved" className="ml-2 block text-sm text-gray-700">
+                                    Mark request as resolved after sending response
+                                </label>
                             </div>
                             
                             <div className="flex justify-end space-x-3">
@@ -463,7 +540,7 @@ const ViewMessages = () => {
                                 />
                                 <Button1
                                     type="submit"
-                                    text={isLoading ? "Sending..." : "Send Reply"}
+                                    text={isLoading ? "Sending..." : "Send Response"}
                                     disabled={isLoading}
                                     className="px-4 py-2"
                                 />
