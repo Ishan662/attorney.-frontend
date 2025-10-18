@@ -58,6 +58,7 @@ import ClientMessages from './pages/Client/ClientMessages';
 import Clientpayments from './pages/Client/Clientpayments';
 import LawyerMessages from './pages/Lawyer/LawyerMessages';
 import AssignTasks from './pages/Lawyer/AssignTasks';
+import LawyerSupportRequest from './pages/Lawyer/LawyerSupportRequest';
 
 
 export default function App() {
@@ -98,6 +99,7 @@ export default function App() {
           <Route path="junior/tasks" element={<Tasks/>} />
           <Route path="junior/messages" element={<JuniorMessages/>} />
           <Route path="junior/hearings" element={<JuniorHearings/>} />
+          <Route path="lawyer/support" element={<LawyerSupportRequest/>} />
           <Route path="lawyer/accountusers" element={<AccountUsers />} />
           <Route path="lawyer/messages" element={<LawyerMessages />} />
           <Route path="*" element={<NotFoundPage />} />

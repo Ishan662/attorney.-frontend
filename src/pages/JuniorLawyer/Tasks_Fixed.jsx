@@ -5,8 +5,8 @@ import Button1 from "../../components/UI/Button1";
 import Button2 from "../../components/UI/Button2";
 import { useAuth } from '../../context/AuthContext';
 import { getAllFirmTasks, updateTaskStatus } from '../../services/taskService';
-import { uploadMultipleDocumentsToTask, getTaskDocuments, downloadDocument } from '../../services/documentService';
-import { FaEye } from 'react-icons/fa';
+import { uploadMultipleDocumentsToTask, getTaskDocuments } from '../../services/documentService';
+import { FaSyncAlt, FaEye } from 'react-icons/fa';
 
 const Tasks = () => {
     const { user } = useAuth(); // Use real auth context
@@ -144,19 +144,8 @@ const Tasks = () => {
             return;
         }
 
-        // Check if the user is actually assigned to this task
-        if (!selectedTask) {
-            alert('No task selected');
-            return;
-        }
-
         setIsUploadingFiles(true);
         try {
-            console.log('Starting document upload for task:', selectedTask.id);
-            console.log('Task details:', selectedTask);
-            console.log('Files to upload:', uploadFiles.map(f => f.name));
-            console.log('Current user:', user?.email);
-            
             const result = await uploadMultipleDocumentsToTask(selectedTask.id, uploadFiles);
             
             if (result.successful.length > 0) {
@@ -168,18 +157,11 @@ const Tasks = () => {
             
             if (result.failed.length > 0) {
                 console.error('Failed uploads:', result.failed);
-                const failedFiles = result.failed.map(f => f.file.name).join(', ');
-                alert(`Failed to upload: ${failedFiles}. Please check your permissions and try again.`);
+                alert(`${result.failed.length} file(s) failed to upload. Please try again.`);
             }
         } catch (error) {
             console.error('Error uploading documents:', error);
-            if (error.message.includes('403')) {
-                alert('Access denied. You may not have permission to upload documents to this task, or the task may not be assigned to you. Please contact your supervisor.');
-            } else if (error.message.includes('No authenticated user')) {
-                alert('Authentication error. Please refresh the page and log in again.');
-            } else {
-                alert('Failed to upload documents. Please try again.');
-            }
+            alert('Failed to upload documents. Please try again.');
         } finally {
             setIsUploadingFiles(false);
         }
@@ -208,23 +190,6 @@ const Tasks = () => {
         setTaskDocuments([]);
     };
 
-    const handleDocumentDownload = async (documentId, fileName) => {
-        try {
-            console.log('Starting download for document:', documentId, fileName);
-            await downloadDocument(documentId, fileName);
-            // Success message could be shown here, but download success is usually self-evident
-        } catch (error) {
-            console.error('Download failed:', error);
-            if (error.message.includes('403')) {
-                alert('Access denied. You may not have permission to download this document.');
-            } else if (error.message.includes('404')) {
-                alert('Document not found. It may have been deleted.');
-            } else {
-                alert('Failed to download document. Please try again.');
-            }
-        }
-    };
-
     const handleNotificationClick = () => {
         // Handle notification click
     };
@@ -236,6 +201,15 @@ const Tasks = () => {
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Your Tasks</h1>
                     <p className="text-gray-600 mt-1">Manage your assigned tasks</p>
+                </div>
+                <div className="flex gap-2">
+                    <Button2
+                        text="Refresh"
+                        onClick={loadMyTasks}
+                        className="flex items-center gap-2"
+                    >
+                        <FaSyncAlt size={14} />
+                    </Button2>
                 </div>
             </div>
 
@@ -516,25 +490,16 @@ const Tasks = () => {
                                             ) : (
                                                 <div className="space-y-2">
                                                     {taskDocuments.map((doc, index) => (
-                                                        <div key={doc.id || index} className="flex items-center justify-between text-sm bg-gray-50 p-2 rounded hover:bg-gray-100 transition-colors">
-                                                            <span className="flex items-center flex-1">
-                                                                <span className="mr-2">📄</span>
-                                                                <span className="truncate" title={doc.originalFileName || doc.fileName || `Document ${index + 1}`}>
-                                                                    {doc.originalFileName || doc.fileName || `Document ${index + 1}`}
-                                                                </span>
-                                                                {doc.fileSize && (
-                                                                    <span className="ml-2 text-xs text-gray-500">
-                                                                        ({Math.round(doc.fileSize / 1024)} KB)
-                                                                    </span>
-                                                                )}
+                                                        <div key={index} className="flex items-center justify-between text-sm bg-gray-50 p-2 rounded">
+                                                            <span className="flex items-center">
+                                                                📄 {doc.fileName || `Document ${index + 1}`}
                                                             </span>
                                                             <button 
-                                                                className="text-blue-600 hover:text-blue-800 ml-2 px-2 py-1 rounded hover:bg-blue-50 transition-colors"
-                                                                onClick={() => handleDocumentDownload(
-                                                                    doc.id || doc.documentId, 
-                                                                    doc.originalFileName || doc.fileName || `Document_${index + 1}`
-                                                                )}
-                                                                title="Download document"
+                                                                className="text-blue-600 hover:text-blue-800"
+                                                                onClick={() => {
+                                                                    // TODO: Implement document download
+                                                                    alert('Document download will be implemented');
+                                                                }}
                                                             >
                                                                 ⬇️
                                                             </button>
