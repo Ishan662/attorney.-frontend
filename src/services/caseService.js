@@ -1,4 +1,4 @@
-// >> services/caseService.js
+// services/caseService.js
 
 import { authenticatedFetch } from './authService';
 
@@ -14,8 +14,188 @@ const parseTimeTo24h = (timeStr) => {
   return `${hours}:${minutes}:00`;
 };
 
+// --------------------- TASKS ---------------------
+
 /**
- * Creates a new case in the backend.
+ * Creates a new task in the backend.
+ */
+export const createTask = async (taskFormData) => {
+  const startISO = new Date(`${taskFormData.date}T${parseTimeTo24h(taskFormData.startTime)}`).toISOString();
+  const endISO = new Date(`${taskFormData.date}T${parseTimeTo24h(taskFormData.endTime)}`).toISOString();
+
+  const payload = {
+    title: taskFormData.title,
+    description: taskFormData.note || taskFormData.description,
+    startTime: startISO,
+    endTime: endISO,
+    location: taskFormData.location,
+    status: 'PENDING', // Default status for new tasks
+    priority: taskFormData.priority || 'MEDIUM'
+  };
+
+  return await authenticatedFetch('/api/calendar/tasks', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+};
+
+/**
+ * Fetches all tasks for the current user (for calendar display)
+ */
+export const getAllTasksForCalendar = async () => {
+  return await authenticatedFetch('/api/calendar/tasks/my-tasks');
+};
+
+/**
+ * Updates an existing task.
+ */
+export const updateTask = async (taskId, taskFormData) => {
+  const startISO = new Date(`${taskFormData.date}T${parseTimeTo24h(taskFormData.startTime)}`).toISOString();
+  const endISO = new Date(`${taskFormData.date}T${parseTimeTo24h(taskFormData.endTime)}`).toISOString();
+
+  const payload = {
+    title: taskFormData.title,
+    description: taskFormData.note || taskFormData.description,
+    startTime: startISO,
+    endTime: endISO,
+    location: taskFormData.location,
+    status: taskFormData.status || 'PENDING',
+    priority: taskFormData.priority || 'MEDIUM'
+  };
+
+  return await authenticatedFetch(`/api/calendar/tasks/${taskId}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+};
+
+/**
+ * Deletes a task.
+ */
+export const deleteTask = async (taskId) => {
+  return await authenticatedFetch(`/api/calendar/tasks/${taskId}`, {
+    method: 'DELETE',
+  });
+};
+
+// --------------------- HEARINGS ---------------------
+
+/**
+ * Creates a new hearing for a case.
+ */
+export const createHearing = async (caseId, hearingFormData) => {
+  const startISO = new Date(`${hearingFormData.date}T${parseTimeTo24h(hearingFormData.startTime || hearingFormData.time)}`).toISOString();
+  const endISO = new Date(`${hearingFormData.date}T${parseTimeTo24h(hearingFormData.endTime)}`).toISOString();
+
+  const payload = {
+    title: hearingFormData.label,
+    hearingDate: startISO,
+    startTime: startISO,
+    endTime: endISO,
+    location: hearingFormData.court || hearingFormData.location,
+    participants: hearingFormData.participants || hearingFormData.guests || null,
+    note: hearingFormData.specialNote || hearingFormData.note || null,
+    status: hearingFormData.status || null,
+  };
+
+  return await authenticatedFetch(`/api/hearings/for-case/${caseId}`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+};
+
+/**
+ * Updates an existing hearing.
+ */
+export const updateHearing = async (hearingId, hearingFormData) => {
+  const startISO = new Date(`${hearingFormData.date}T${parseTimeTo24h(hearingFormData.startTime || hearingFormData.time)}`).toISOString();
+  const endISO = new Date(`${hearingFormData.date}T${parseTimeTo24h(hearingFormData.endTime)}`).toISOString();
+
+  const payload = {
+    title: hearingFormData.label,
+    hearingDate: startISO,
+    startTime: startISO,
+    endTime: endISO,
+    location: hearingFormData.court || hearingFormData.location,
+    participants: hearingFormData.participants || hearingFormData.guests || null,
+    note: hearingFormData.specialNote || hearingFormData.note || null,
+    status: hearingFormData.status || null,
+  };
+
+  return await authenticatedFetch(`/api/hearings/${hearingId}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+};
+
+/**
+ * Deletes a hearing.
+ */
+export const deleteHearing = async (hearingId) => {
+  return await authenticatedFetch(`/api/hearings/${hearingId}`, {
+    method: 'DELETE',
+  });
+};
+
+/**
+ * Fetches all hearings for the current lawyer (for calendar display)
+ * This function gets all cases first, then fetches hearings for each case
+ */
+export const getAllHearingsForCalendar = async () => {
+  try {
+    // First get all cases for the current user
+    const cases = await getMyCases();
+    
+    // Then get hearings for each case
+    const allHearingsPromises = cases.map(caseItem => 
+      getHearingsForCase(caseItem.id).catch(error => {
+        console.warn(`Failed to fetch hearings for case ${caseItem.id}:`, error);
+        return []; // Return empty array if hearings fetch fails for a case
+      })
+    );
+    
+    const allHearingsArrays = await Promise.all(allHearingsPromises);
+    
+    // Flatten the array of arrays into a single array
+    const allHearings = allHearingsArrays.flat();
+    
+    return allHearings;
+  } catch (error) {
+    console.error('Error fetching all hearings for calendar:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetches cases formatted for calendar dropdown selection
+ */
+export const getCasesForCalendar = async () => {
+  return await authenticatedFetch('/api/cases');
+};
+
+/**
+ * Fetches all cases for the current user
+ */
+export const getMyCases = async () => {
+  return await authenticatedFetch('/api/cases');
+};
+
+/**
+ * Fetches a specific case by ID
+ */
+export const getCaseById = async (caseId) => {
+  return await authenticatedFetch(`/api/cases/${caseId}`);
+};
+
+/**
+ * Fetches hearings for a specific case
+ */
+export const getHearingsForCase = async (caseId) => {
+  return await authenticatedFetch(`/api/hearings/by-case/${caseId}`);
+};
+
+/**
+ * Creates a new case in the backend
  */
 export const createCase = async (caseFormData) => {
   const mapPaymentStatus = (status) => {
@@ -43,37 +223,15 @@ export const createCase = async (caseFormData) => {
     paymentStatus: mapPaymentStatus(caseFormData.paymentStatus),
   };
 
-  const response = await authenticatedFetch('/api/cases', {
+  return await authenticatedFetch('/api/cases', {
     method: 'POST',
     body: JSON.stringify(createCaseRequest),
   });
-
-  return response.id || response.caseId;
-};
-
-export const getJuniorsForFirm = async () => {
-  return await authenticatedFetch('/api/team/juniors');
-};
-
-export const getMyCases = async () => {
-  return await authenticatedFetch('/api/cases');
-};
-
-export const getCaseById = async (caseId) => {
-  return await authenticatedFetch(`/api/cases/${caseId}`);
-};
-
-export const getHearingsForCase = async (caseId) => {
-  return await authenticatedFetch(`/api/hearings/by-case/${caseId}`);
 };
 
 /**
- * Fetches all hearings for the current lawyer (for calendar display)
+ * Updates an existing case
  */
-export const getAllHearingsForCalendar = async () => {
-  return await authenticatedFetch('/api/hearings/my-hearings');
-};
-
 export const updateCase = async (caseId, caseData) => {
   return await authenticatedFetch(`/api/cases/${caseId}`, {
     method: 'PUT',
@@ -82,91 +240,15 @@ export const updateCase = async (caseId, caseData) => {
 };
 
 /**
- * Creates a new hearing for a specific case.
+ * Fetches junior lawyers for the firm
  */
-export const createHearing = async (caseId, hearingFormData) => {
-  const startISO = new Date(`${hearingFormData.date}T${parseTimeTo24h(hearingFormData.startTime)}`).toISOString();
-  const endISO = new Date(`${hearingFormData.date}T${parseTimeTo24h(hearingFormData.endTime)}`).toISOString();
-
-  const payload = {
-    title: hearingFormData.label,
-    hearingDate: startISO,
-    startTime: startISO,
-    endTime: endISO,
-    location: hearingFormData.court || hearingFormData.location,
-    participants: hearingFormData.participants || hearingFormData.guests || null,
-    note: hearingFormData.specialNote || hearingFormData.note || null,
-  };
-
-  return await authenticatedFetch(`/api/hearings/for-case/${caseId}`, {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
+export const getJuniorsForFirm = async () => {
+  return await authenticatedFetch('/api/juniors/for-firm');
 };
 
-/**
- * Updates an existing hearing.
- */
-export const updateHearing = async (hearingId, hearingFormData) => {
-  const startISO = new Date(`${hearingFormData.date}T${parseTimeTo24h(hearingFormData.startTime)}`).toISOString();
-  const endISO = new Date(`${hearingFormData.date}T${parseTimeTo24h(hearingFormData.endTime)}`).toISOString();
-
-  const payload = {
-    title: hearingFormData.label,
-    hearingDate: startISO,
-    startTime: startISO,
-    endTime: endISO,
-    location: hearingFormData.court || hearingFormData.location,
-    participants: hearingFormData.participants || hearingFormData.guests || null,
-    note: hearingFormData.specialNote || hearingFormData.note || null,
-    status: hearingFormData.status || null,
-  };
-
-  return await authenticatedFetch(`/api/hearings/${hearingId}`, {
-    method: 'PUT',
-    body: JSON.stringify(payload),
-  });
-};
-
-// Add this function to your existing caseService.js file
-
-/**
- * Fetches cases formatted for calendar dropdown selection
- * @returns {Promise<Array<object>>} Array of cases with calendar-specific formatting
- */
-export const getCasesForCalendar = async () => {
-    try {
-        const cases = await getMyCases(); // Use your existing function
-        
-        // Transform the data to match your calendar dropdown format
-        return cases.map(caseData => ({
-            id: caseData.id,
-            caseName: caseData.caseTitle || caseData.caseName,
-            caseNumber: caseData.caseNumber,
-            court: caseData.court,
-            courtType: determineCourtType(caseData.court) // Helper function
-        }));
-    } catch (error) {
-        console.error('Error fetching cases for calendar:', error);
-        throw error;
-    }
-};
-
-// Helper function to determine court type from court name
-const determineCourtType = (courtName) => {
-    if (!courtName) return 'Unknown';
-    
-    const courtLower = courtName.toLowerCase();
-    if (courtLower.includes('high court')) return 'High Court';
-    if (courtLower.includes('district court')) return 'District Court';
-    if (courtLower.includes('magistrate')) return 'Magistrates Court';
-    if (courtLower.includes('supreme court')) return 'Supreme Court';
-    
-    return 'Other';
-};
-
-export const deleteHearing = async (hearingId) => {
-  return await authenticatedFetch(`/api/hearings/${hearingId}`, {
-    method: 'DELETE',
-  });
+export const validateNewHearingTravel = async (newHearingData) => {
+    return await authenticatedFetch('/api/calendar/validate-travel', {
+        method: 'POST',
+        body: JSON.stringify(newHearingData),
+    });
 };

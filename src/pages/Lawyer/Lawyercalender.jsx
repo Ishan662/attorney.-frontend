@@ -9,7 +9,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { FaBriefcase, FaClock, FaCog, FaPlus, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import CourtColorSettings from "./CourtColorSettings";
-import { getCasesForCalendar, createHearing, updateHearing, deleteHearing, getAllHearingsForCalendar } from '../../services/caseService';
+import { getCasesForCalendar, createHearing, updateHearing, deleteHearing, getAllHearingsForCalendar, createTask, getAllTasksForCalendar, updateTask, deleteTask } from '../../services/caseService';
 import EditHearingModal from './EditHearingModal';
 
 // Import Custom Calendar Styles
@@ -35,6 +35,11 @@ const Lawyercalender = () => {
   const [hearings, setHearings] = useState([]);
   const [loadingHearings, setLoadingHearings] = useState(true);
   const [hearingsError, setHearingsError] = useState(null);
+
+  // Tasks state for calendar display
+  const [tasks, setTasks] = useState([]);
+  const [loadingTasks, setLoadingTasks] = useState(true);
+  const [tasksError, setTasksError] = useState(null);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentDate, setCurrentDate] = useState(new Date()); // For tracking the current viewing month
@@ -194,6 +199,26 @@ const Lawyercalender = () => {
     };
 
     fetchHearings();
+  }, []);
+
+  // Fetch tasks when component mounts
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        setLoadingTasks(true);
+        setTasksError(null);
+        const fetchedTasks = await getAllTasksForCalendar();
+        setTasks(fetchedTasks);
+      } catch (error) {
+        console.error('Failed to fetch tasks:', error);
+        setTasksError('Failed to load tasks. Please try again.');
+        setTasks([]);
+      } finally {
+        setLoadingTasks(false);
+      }
+    };
+
+    fetchTasks();
   }, []);
 
   // Format date display like "21st of June, Saturday"
@@ -416,6 +441,20 @@ const Lawyercalender = () => {
     }
   };
 
+  // Function to refresh tasks after creating/updating/deleting
+  const refreshTasks = async () => {
+    try {
+      setLoadingTasks(true);
+      const fetchedTasks = await getAllTasksForCalendar();
+      setTasks(fetchedTasks);
+    } catch (error) {
+      console.error('Failed to refresh tasks:', error);
+      setTasksError('Failed to refresh tasks.');
+    } finally {
+      setLoadingTasks(false);
+    }
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     
@@ -502,32 +541,45 @@ const Lawyercalender = () => {
   };
 
   // Handle task form save
-  const handleTaskSave = (e) => {
+  const handleTaskSave = async (e) => {
     e.preventDefault();
     
-    // Create a new task event
-    const newTask = {
-      id: `task-${Date.now()}`,
-      title: taskTitle,
-      start: `${taskDate}T${taskStartTime}:00`,
-      end: `${taskDate}T${taskEndTime}:00`,
-      backgroundColor: "#34a853", // Green for tasks
-      borderColor: "#34a853",
-      textColor: "#ffffff",
-      extendedProps: {
-        type: "task",
+    // Validation
+    if (!taskTitle || !taskDate || !taskStartTime || !taskEndTime) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
+    try {
+      // Prepare task data for backend
+      const taskFormData = {
+        title: taskTitle,
+        date: taskDate,
+        startTime: taskStartTime,
+        endTime: taskEndTime,
         location: taskLocation,
-        notes: taskNote
-      }
-    };
-    
-    // In real app, save to API/backend here
-    
-    alert(
-      `Task saved!\nTitle: ${taskTitle}\nDate: ${taskDate}\n` +
-      `Time: ${taskStartTime} - ${taskEndTime}\n` +
-      `Location: ${taskLocation}\nNote: ${taskNote}`
-    );
+        note: taskNote,
+        priority: 'MEDIUM' // Default priority
+      };
+      
+      // Call backend API to create task
+      const response = await createTask(taskFormData);
+      
+      alert(
+        `Task created successfully!\n` +
+        `Title: ${taskTitle}\nDate: ${taskDate}\n` +
+        `Time: ${taskStartTime} - ${taskEndTime}\n` +
+        `Location: ${taskLocation}\nNote: ${taskNote}`
+      );
+      
+      // Refresh tasks to show the new task in calendar
+      await refreshTasks();
+      
+    } catch (error) {
+      console.error('Error creating task:', error);
+      alert('Failed to create task. Please try again.');
+      return;
+    }
     
     // Reset form and close modal
     setTaskTitle("");
@@ -771,8 +823,39 @@ const Lawyercalender = () => {
     return transformedEvents;
   };
 
-  // Get events from real hearings data (fallback to empty array if loading)
-  const events = loadingHearings ? [] : transformHearingsToEvents(hearings);
+  // Transform tasks data into FullCalendar events format
+  const transformTasksToEvents = (tasksData) => {
+    if (!tasksData || !Array.isArray(tasksData)) {
+      return [];
+    }
+
+    return tasksData.map((task) => {
+      // Use green color for tasks by default
+      const backgroundColor = '#34a853'; // Green for tasks
+      
+      return {
+        id: `task-${task.id?.toString()}` || Math.random().toString(),
+        title: task.title || 'Task',
+        start: task.startTime,
+        end: task.endTime,
+        backgroundColor: backgroundColor,
+        borderColor: backgroundColor,
+        textColor: '#ffffff',
+        extendedProps: {
+          type: 'task',
+          location: task.location,
+          notes: task.description || task.note,
+          status: task.status,
+          priority: task.priority || 'medium'
+        }
+      };
+    });
+  };
+
+  // Get events from real hearings and tasks data (fallback to empty array if loading)
+  const hearingEvents = loadingHearings ? [] : transformHearingsToEvents(hearings);
+  const taskEvents = loadingTasks ? [] : transformTasksToEvents(tasks);
+  const events = [...hearingEvents, ...taskEvents];
 
   // Handle date click
   const handleDateClick = (info) => {
@@ -1002,14 +1085,14 @@ const Lawyercalender = () => {
 
           {/* Main Calendar */}
           <div className="main-calendar">
-            {loadingHearings && (
+            {(loadingHearings || loadingTasks) && (
               <div className="text-center py-4">
-                <div className="text-gray-600">Loading hearings...</div>
+                <div className="text-gray-600">Loading calendar events...</div>
               </div>
             )}
-            {hearingsError && (
+            {(hearingsError || tasksError) && (
               <div className="text-center py-4">
-                <div className="text-red-600">{hearingsError}</div>
+                <div className="text-red-600">{hearingsError || tasksError}</div>
                 <button 
                   onClick={() => window.location.reload()} 
                   className="text-blue-600 hover:text-blue-800 underline ml-2"
