@@ -1,100 +1,130 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 import PageLayout from "../../components/layout/PageLayout";
 import Button1 from "../../components/UI/Button1";
 import Button2 from "../../components/UI/Button2";
 import Input1 from "../../components/UI/Input1";
 
-// Import service functions directly
-import adminUserService from "../../services/adminUserService";
-
 const UserManagement = () => {
     const navigate = useNavigate();
-    const { currentUser } = useAuth();
     const [activeTab, setActiveTab] = useState("lawyers");
     const [searchTerm, setSearchTerm] = useState("");
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
+    
+    // Admin user data
+    // const user = {
+    //     name: 'Admin User',
+    //     email: 'admin@example.com',
+    //     role: 'admin'
+    // };
 
-    // Users state - will be populated from backend only
+    // Sample user data
     const [users, setUsers] = useState({
-        lawyers: [],
-        juniors: [],
-        clients: [],
-        researchers: [],
-        admins: []
-    });
-
-    // Load users from backend on component mount
-    useEffect(() => {
-        let mounted = true;
-        
-        const loadUsers = async () => {
-            setIsLoading(true);
-            setError(null);
-            
-            try {
-                const data = await adminUserService.fetchUsers();
-                
-                if (!mounted) return;
-                
-                // Transform backend data to UI format
-                const grouped = { lawyers: [], juniors: [], clients: [], researchers: [], admins: [] };
-                
-                data.forEach(user => {
-                    const transformedUser = {
-                        id: user.id,
-                        name: user.fullName,
-                        email: user.email,
-                        phone: user.phoneNumber,
-                        location: user.firmName || 'N/A',
-                        role: user.role.toLowerCase(),
-                        status: user.status.toLowerCase(),
-                        dateJoined: user.dateJoined,
-                        // Additional fields based on role
-                        clients: user.clientCount || 0,
-                        juniorLawyers: user.juniorLawyerCount || 0,
-                        seniorLawyer: user.seniorLawyerName || '',
-                        associatedLawyer: user.associatedLawyerName || '',
-                        cases: user.caseCount || 0
-                    };
-
-                    // Group by role - map API roles to UI categories
-                    if (transformedUser.role === 'lawyer') {
-                        grouped.lawyers.push(transformedUser);
-                    } else if (transformedUser.role === 'junior') {
-                        grouped.juniors.push(transformedUser);
-                    } else if (transformedUser.role === 'client') {
-                        grouped.clients.push(transformedUser);
-                    } else if (transformedUser.role === 'researcher') {
-                        grouped.researchers.push(transformedUser);
-                    } else if (transformedUser.role === 'admin') {
-                        grouped.admins.push(transformedUser);
-                    }
-                });
-
-                setUsers(grouped);
-            } catch (err) {
-                console.error('Failed to load users:', err);
-                setError(err.message);
-            } finally {
-                setIsLoading(false);
+        lawyers: [
+            { 
+                id: 1, 
+                name: "Nishagi Jewantha", 
+                email: "nishagi@example.com", 
+                phone: "+94 77 123 4567",
+                location: "Colombo",
+                role: "lawyer",
+                status: "active",
+                dateJoined: "2025-01-15",
+                clients: 12,
+                juniorLawyers: 3
+            },
+            { 
+                id: 2, 
+                name: "Ramesh Kumar", 
+                email: "ramesh@example.com", 
+                phone: "+94 77 456 7890",
+                location: "Kandy",
+                role: "lawyer",
+                status: "active",
+                dateJoined: "2025-02-10",
+                clients: 8,
+                juniorLawyers: 2
             }
-        };
-
-        // Only load if we have a current user (authenticated)
-        if (currentUser) {
-            loadUsers();
-        } else {
-            setError('Please log in to access user management');
-            setIsLoading(false);
-        }
-            
-        return () => { mounted = false; };
-    }, [currentUser]);
+        ],
+        junior_lawyers: [
+            { 
+                id: 3, 
+                name: "Jane Smith", 
+                email: "jane@example.com", 
+                phone: "+94 77 234 5678",
+                location: "Colombo",
+                role: "junior_lawyer",
+                status: "active",
+                dateJoined: "2025-03-05",
+                seniorLawyer: "Nishagi Jewantha",
+                cases: 5
+            },
+            { 
+                id: 4, 
+                name: "Michael Johnson", 
+                email: "michael@example.com", 
+                phone: "+94 77 345 6789",
+                location: "Galle",
+                role: "junior_lawyer",
+                status: "active",
+                dateJoined: "2025-03-15",
+                seniorLawyer: "Ramesh Kumar",
+                cases: 3
+            },
+            { 
+                id: 5, 
+                name: "Sarah Williams", 
+                email: "sarah@example.com", 
+                phone: "+94 77 456 7890",
+                location: "Kandy",
+                role: "junior_lawyer",
+                status: "inactive",
+                dateJoined: "2025-02-20",
+                seniorLawyer: "Nishagi Jewantha",
+                cases: 0
+            }
+        ],
+        clients: [
+            { 
+                id: 6, 
+                name: "Robert Chen", 
+                email: "robert@example.com", 
+                phone: "+94 77 567 8901",
+                location: "Matara",
+                role: "client",
+                status: "active",
+                dateJoined: "2025-04-01",
+                lawyer: "Nishagi Jewantha",
+                cases: 2
+            },
+            { 
+                id: 7, 
+                name: "Priya Patel", 
+                email: "priya@example.com", 
+                phone: "+94 77 678 9012",
+                location: "Negombo",
+                role: "client",
+                status: "active",
+                dateJoined: "2025-04-10",
+                lawyer: "Ramesh Kumar",
+                cases: 1
+            },
+            { 
+                id: 8, 
+                name: "David Lee", 
+                email: "david@example.com", 
+                phone: "+94 77 789 0123",
+                location: "Jaffna",
+                role: "client",
+                status: "inactive",
+                dateJoined: "2025-03-25",
+                lawyer: "Nishagi Jewantha",
+                cases: 0
+            }
+        ]
+    });
 
     // Get filtered users based on active tab and search term
     const getFilteredUsers = () => {
@@ -111,35 +141,15 @@ const UserManagement = () => {
     };
 
     // Toggle user status (active/inactive)
-    const toggleUserStatus = async (userId) => {
-        const user = users[activeTab].find(u => u.id === userId);
-        if (!user) return;
-
-        // Optimistic update: flip status locally first
+    const toggleUserStatus = (userId) => {
         setUsers(prevUsers => ({
             ...prevUsers,
-            [activeTab]: prevUsers[activeTab].map(u => 
-                u.id === userId 
-                    ? { ...u, status: u.status === "active" ? "inactive" : "active" } 
-                    : u
+            [activeTab]: prevUsers[activeTab].map(user => 
+                user.id === userId 
+                    ? { ...user, status: user.status === "active" ? "inactive" : "active" } 
+                    : user
             )
         }));
-
-        try {
-            // Call backend API
-            const newStatus = user.status === 'active' ? 'INACTIVE' : 'ACTIVE';
-            await adminUserService.updateUserStatus(userId, newStatus);
-        } catch (err) {
-            console.error('Failed to update user status:', err);
-            // Revert optimistic update on error
-            setUsers(prevUsers => ({
-                ...prevUsers,
-                [activeTab]: prevUsers[activeTab].map(u => 
-                    u.id === userId ? user : u
-                )
-            }));
-            alert(`Failed to update user status: ${err.message}`);
-        }
     };
 
     // Delete user confirmation
@@ -149,37 +159,25 @@ const UserManagement = () => {
     };
 
     // Confirm delete user
-    const confirmDelete = async () => {
+    const confirmDelete = () => {
         if (!selectedUser) return;
         
         setIsLoading(true);
         
-        // Optimistic update: remove user from UI first
-        const removedUser = selectedUser;
-        setUsers(prevUsers => ({
-            ...prevUsers,
-            [activeTab]: prevUsers[activeTab].filter(user => user.id !== selectedUser.id)
-        }));
-        
-        try {
-            // Call backend API
-            await adminUserService.deleteUser(selectedUser.id);
-            setIsLoading(false);
-            setShowDeleteModal(false);
-            setSelectedUser(null);
-            alert(`User ${removedUser.name} has been deleted successfully.`);
-        } catch (err) {
-            console.error('Failed to delete user:', err);
-            // Revert optimistic update on error
+        // Simulate API call with timeout
+        setTimeout(() => {
             setUsers(prevUsers => ({
                 ...prevUsers,
-                [activeTab]: [removedUser, ...prevUsers[activeTab]]
+                [activeTab]: prevUsers[activeTab].filter(user => user.id !== selectedUser.id)
             }));
+            
             setIsLoading(false);
             setShowDeleteModal(false);
             setSelectedUser(null);
-            alert(`Failed to delete user: ${err.message}`);
-        }
+            
+            // Show success message
+            alert(`User ${selectedUser.name} has been deleted.`);
+        }, 800);
     };
 
     // Format date for display
@@ -197,10 +195,8 @@ const UserManagement = () => {
     const getRoleDisplayName = (role) => {
         switch (role) {
             case 'lawyer': return 'Senior Lawyer';
-            case 'junior': return 'Junior Lawyer';
+            case 'junior_lawyer': return 'Junior Lawyer';
             case 'client': return 'Client';
-            case 'researcher': return 'Researcher';
-            case 'admin': return 'Administrator';
             default: return role;
         }
     };
@@ -232,31 +228,19 @@ const UserManagement = () => {
                     className={`py-2 px-4 font-medium ${activeTab === 'lawyers' ? 'border-b-2 border-orange-500 text-orange-600' : 'text-gray-500 hover:text-gray-700'}`}
                     onClick={() => setActiveTab('lawyers')}
                 >
-                    Senior Lawyers ({users.lawyers.length})
+                    Senior Lawyers
                 </button>
                 <button
-                    className={`py-2 px-4 font-medium ${activeTab === 'juniors' ? 'border-b-2 border-orange-500 text-orange-600' : 'text-gray-500 hover:text-gray-700'}`}
-                    onClick={() => setActiveTab('juniors')}
+                    className={`py-2 px-4 font-medium ${activeTab === 'junior_lawyers' ? 'border-b-2 border-orange-500 text-orange-600' : 'text-gray-500 hover:text-gray-700'}`}
+                    onClick={() => setActiveTab('junior_lawyers')}
                 >
-                    Junior Lawyers ({users.juniors.length})
+                    Junior Lawyers
                 </button>
                 <button
                     className={`py-2 px-4 font-medium ${activeTab === 'clients' ? 'border-b-2 border-orange-500 text-orange-600' : 'text-gray-500 hover:text-gray-700'}`}
                     onClick={() => setActiveTab('clients')}
                 >
-                    Clients ({users.clients.length})
-                </button>
-                <button
-                    className={`py-2 px-4 font-medium ${activeTab === 'researchers' ? 'border-b-2 border-orange-500 text-orange-600' : 'text-gray-500 hover:text-gray-700'}`}
-                    onClick={() => setActiveTab('researchers')}
-                >
-                    Researchers ({users.researchers.length})
-                </button>
-                <button
-                    className={`py-2 px-4 font-medium ${activeTab === 'admins' ? 'border-b-2 border-orange-500 text-orange-600' : 'text-gray-500 hover:text-gray-700'}`}
-                    onClick={() => setActiveTab('admins')}
-                >
-                    Admins ({users.admins.length})
+                    Clients
                 </button>
             </div>
 
@@ -274,47 +258,13 @@ const UserManagement = () => {
                         />
                     </div>
                     <div className="text-gray-600">
-                        {getFilteredUsers().length} {activeTab === 'juniors' ? 'junior lawyers' : activeTab.replace('_', ' ')} found
+                        {getFilteredUsers().length} {activeTab.replace('_', ' ')} found
                     </div>
                 </div>
             </div>
 
-            {/* Error Display */}
-            {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                    <div className="flex items-center">
-                        <svg className="h-5 w-5 text-red-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                        <div>
-                            <h3 className="text-sm font-medium text-red-800">Unable to load users</h3>
-                            <p className="text-sm text-red-700 mt-1">{error}</p>
-                        </div>
-                    </div>
-                    <div className="mt-3">
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="text-sm bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1 rounded-md"
-                        >
-                            Retry
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Loading indicator */}
-            {isLoading && (
-                <div className="bg-white rounded-lg shadow-md p-8 mb-6">
-                    <div className="text-center">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mb-4"></div>
-                        <div className="text-gray-500">Loading users...</div>
-                    </div>
-                </div>
-            )}
-
             {/* Users List */}
-            {!isLoading && !error && (
-                <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
                 {getFilteredUsers().length > 0 ? (
                     <div className="overflow-x-auto">
                         <table className="w-full">
@@ -329,7 +279,7 @@ const UserManagement = () => {
                                             <th className="px-6 py-4 text-sm font-medium text-gray-600">Junior Lawyers</th>
                                         </>
                                     )}
-                                    {activeTab === 'juniors' && (
+                                    {activeTab === 'junior_lawyers' && (
                                         <>
                                             <th className="px-6 py-4 text-sm font-medium text-gray-600">Senior Lawyer</th>
                                             <th className="px-6 py-4 text-sm font-medium text-gray-600">Cases</th>
@@ -339,18 +289,6 @@ const UserManagement = () => {
                                         <>
                                             <th className="px-6 py-4 text-sm font-medium text-gray-600">Lawyer</th>
                                             <th className="px-6 py-4 text-sm font-medium text-gray-600">Cases</th>
-                                        </>
-                                    )}
-                                    {activeTab === 'researchers' && (
-                                        <>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Specialization</th>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Projects</th>
-                                        </>
-                                    )}
-                                    {activeTab === 'admins' && (
-                                        <>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Role</th>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Access Level</th>
                                         </>
                                     )}
                                     <th className="px-6 py-4 text-sm font-medium text-gray-600">Status</th>
@@ -400,9 +338,9 @@ const UserManagement = () => {
                                             </>
                                         )}
                                         
-                                        {activeTab === 'juniors' && (
+                                        {activeTab === 'junior_lawyers' && (
                                             <>
-                                                <td className="px-6 py-4 text-sm">{user.seniorLawyer || 'N/A'}</td>
+                                                <td className="px-6 py-4 text-sm">{user.seniorLawyer}</td>
                                                 <td className="px-6 py-4 text-center">
                                                     <span className="inline-flex items-center justify-center bg-blue-100 text-blue-800 rounded-full h-6 w-6 text-xs font-medium">
                                                         {user.cases}
@@ -413,40 +351,10 @@ const UserManagement = () => {
                                         
                                         {activeTab === 'clients' && (
                                             <>
-                                                <td className="px-6 py-4 text-sm">{user.associatedLawyer || 'N/A'}</td>
+                                                <td className="px-6 py-4 text-sm">{user.lawyer}</td>
                                                 <td className="px-6 py-4 text-center">
                                                     <span className="inline-flex items-center justify-center bg-blue-100 text-blue-800 rounded-full h-6 w-6 text-xs font-medium">
                                                         {user.cases}
-                                                    </span>
-                                                </td>
-                                            </>
-                                        )}
-
-                                        {activeTab === 'researchers' && (
-                                            <>
-                                                <td className="px-6 py-4 text-sm">
-                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                                        Legal Research
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className="inline-flex items-center justify-center bg-green-100 text-green-800 rounded-full h-6 w-6 text-xs font-medium">
-                                                        {user.cases}
-                                                    </span>
-                                                </td>
-                                            </>
-                                        )}
-                                        
-                                        {activeTab === 'admins' && (
-                                            <>
-                                                <td className="px-6 py-4 text-sm">
-                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                        Administrator
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-sm">
-                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                                        Full Access
                                                     </span>
                                                 </td>
                                             </>
@@ -489,16 +397,14 @@ const UserManagement = () => {
                 ) : (
                     <div className="text-center py-8 text-gray-500">
                         {searchTerm ? 
-                            `No ${activeTab === 'juniors' ? 'junior lawyers' : activeTab} match your search criteria.` : 
-                            `No ${activeTab === 'juniors' ? 'junior lawyers' : activeTab} in the system yet.`}
+                            `No ${activeTab.replace('_', ' ')} match your search criteria.` : 
+                            `No ${activeTab.replace('_', ' ')} in the system yet.`}
                     </div>
                 )}
             </div>
-            )}
 
             {/* Summary Statistics */}
-            {!error && (
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="bg-white p-4 rounded-lg shadow-md">
                     <div className="text-sm text-gray-500 mb-1">Senior Lawyers</div>
                     <div className="text-xl font-bold">{users.lawyers.length}</div>
@@ -508,9 +414,9 @@ const UserManagement = () => {
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-md">
                     <div className="text-sm text-gray-500 mb-1">Junior Lawyers</div>
-                    <div className="text-xl font-bold">{users.juniors.length}</div>
+                    <div className="text-xl font-bold">{users.junior_lawyers.length}</div>
                     <div className="text-sm text-green-600 mt-1">
-                        {users.juniors.filter(user => user.status === 'active').length} Active
+                        {users.junior_lawyers.filter(user => user.status === 'active').length} Active
                     </div>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-md">
@@ -520,22 +426,7 @@ const UserManagement = () => {
                         {users.clients.filter(user => user.status === 'active').length} Active
                     </div>
                 </div>
-                <div className="bg-white p-4 rounded-lg shadow-md">
-                    <div className="text-sm text-gray-500 mb-1">Researchers</div>
-                    <div className="text-xl font-bold">{users.researchers.length}</div>
-                    <div className="text-sm text-green-600 mt-1">
-                        {users.researchers.filter(user => user.status === 'active').length} Active
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-lg shadow-md">
-                    <div className="text-sm text-gray-500 mb-1">Administrators</div>
-                    <div className="text-xl font-bold">{users.admins.length}</div>
-                    <div className="text-sm text-green-600 mt-1">
-                        {users.admins.filter(user => user.status === 'active').length} Active
-                    </div>
-                </div>
             </div>
-            )}
 
             {/* Delete Confirmation Modal */}
             {showDeleteModal && selectedUser && (

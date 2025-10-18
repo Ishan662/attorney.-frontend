@@ -5,6 +5,7 @@ import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import Input1 from '../../components/UI/Input1';
 import { useNavigate } from 'react-router-dom';
+import packageService from '../../services/packageService';
 
 const PackageManagement = () => {
     const navigate = useNavigate();
@@ -14,6 +15,10 @@ const PackageManagement = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [currentPackage, setCurrentPackage] = useState(null);
     
+    // Loading and error states
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
+    
     // Admin user data
     const user = {
         name: 'Admin',
@@ -21,84 +26,8 @@ const PackageManagement = () => {
         role: 'admin'
     };
 
-    // Initial packages - updated to match Pricings.jsx packages
-    const [packages, setPackages] = useState([
-        {
-            id: 1,
-            name: "7 days Free Trail",
-            price: 0,
-            billingCycle: "monthly",
-            description: "Everything in FREE plan",
-            userLimit: 1,
-            active: true,
-            features: {
-                unlimitedAI: true,
-                premiumSupport: true,
-                customerCare: true,
-                collaborationTools: true,
-                thirdPartyIntegrations: false,
-                advancedAnalytics: false,
-                teamPerformance: false,
-                topGradeSecurity: false,
-                customizableSolutions: false,
-                customReports: false,
-                performanceUsage: false,
-                enterpriseSecurity: false,
-                seamlessIntegration: false,
-                dedicatedManager: false
-            }
-        },
-        {
-            id: 2,
-            name: "Pro",
-            price: 5,
-            billingCycle: "monthly",
-            description: "Everything in Pro plan",
-            userLimit: 5,
-            active: true,
-            features: {
-                unlimitedAI: true,
-                premiumSupport: true,
-                customerCare: true,
-                collaborationTools: true,
-                thirdPartyIntegrations: true,
-                advancedAnalytics: true,
-                teamPerformance: true,
-                topGradeSecurity: true,
-                customizableSolutions: true,
-                customReports: false,
-                performanceUsage: false,
-                enterpriseSecurity: false,
-                seamlessIntegration: false,
-                dedicatedManager: false
-            }
-        },
-        {
-            id: 3,
-            name: "Educator",
-            price: 2,
-            billingCycle: "monthly",
-            description: "Dedicated for Law students/researchers",
-            userLimit: 1,
-            active: true,
-            features: {
-                unlimitedAI: true,
-                premiumSupport: true,
-                customerCare: true,
-                collaborationTools: true,
-                thirdPartyIntegrations: true,
-                advancedAnalytics: true,
-                teamPerformance: true,
-                topGradeSecurity: true,
-                customizableSolutions: true,
-                customReports: true,
-                performanceUsage: true,
-                enterpriseSecurity: true,
-                seamlessIntegration: true,
-                dedicatedManager: true
-            }
-        }
-    ]);
+    // Packages state - will be populated from backend
+    const [packages, setPackages] = useState([]);
 
     const [newPackage, setNewPackage] = useState({
         name: "",
@@ -124,6 +53,26 @@ const PackageManagement = () => {
             dedicatedManager: false
         }
     });
+
+    // Load packages from backend on component mount
+    useEffect(() => {
+        const loadPackages = async () => {
+            try {
+                setIsLoading(true);
+                setError('');
+                const transformedPlans = await packageService.fetchAllPlans();
+                console.log('Transformed plans:', transformedPlans);
+                setPackages(transformedPlans);
+            } catch (err) {
+                setError(`Failed to load packages: ${err.message}`);
+                console.error('Error loading packages:', err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadPackages();
+    }, []);
 
     const handleNotificationClick = () => {
         console.log('Admin notifications clicked');
@@ -217,44 +166,98 @@ const PackageManagement = () => {
         }
     };
 
-    const handleAddPackage = () => {
-        // Check if we already have 3 packages
-        if (packages.length >= 3) {
-            alert("Maximum of 3 packages allowed. Please delete one before adding a new package.");
-            return;
+    const handleAddPackage = async () => {
+        try {
+            setIsLoading(true);
+            setError('');
+            
+            // Transform frontend data to backend format
+            const backendPlan = packageService.transformPlanToBackendFormat(newPackage);
+            
+            // Create plan via API
+            const createdPlan = await packageService.createPlan(backendPlan);
+            
+            // Transform back to frontend format and add to state
+            const frontendPlan = packageService.transformPlanToFrontendFormat(createdPlan);
+            setPackages([...packages, frontendPlan]);
+            
+            closeAllModals();
+            resetNewPackageForm();
+        } catch (err) {
+            setError(`Failed to create package: ${err.message}`);
+            console.error('Error creating package:', err);
+        } finally {
+            setIsLoading(false);
         }
-        
-        const newId = Math.max(...packages.map(p => p.id), 0) + 1;
-        
-        setPackages([...packages, { 
-            ...newPackage, 
-            id: newId
-        }]);
-        
-        closeAllModals();
     };
 
-    const handleUpdatePackage = () => {
-        const updatedPackages = packages.map(pkg => 
-            pkg.id === currentPackage.id ? currentPackage : pkg
-        );
-        
-        setPackages(updatedPackages);
-        closeAllModals();
+    const handleUpdatePackage = async () => {
+        try {
+            setIsLoading(true);
+            setError('');
+            
+            // Transform frontend data to backend format
+            const backendPlan = packageService.transformPlanToBackendFormat(currentPackage);
+            
+            // Update plan via API
+            const updatedPlan = await packageService.updatePlan(currentPackage.id, backendPlan);
+            
+            // Transform back to frontend format and update state
+            const frontendPlan = packageService.transformPlanToFrontendFormat(updatedPlan);
+            const updatedPackages = packages.map(pkg => 
+                pkg.id === currentPackage.id ? frontendPlan : pkg
+            );
+            
+            setPackages(updatedPackages);
+            closeAllModals();
+        } catch (err) {
+            setError(`Failed to update package: ${err.message}`);
+            console.error('Error updating package:', err);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleDeletePackage = () => {
-        const updatedPackages = packages.filter(pkg => pkg.id !== currentPackage.id);
-        setPackages(updatedPackages);
-        closeAllModals();
+    const handleDeletePackage = async () => {
+        try {
+            setIsLoading(true);
+            setError('');
+            
+            // Delete plan via API
+            await packageService.deletePlan(currentPackage.id);
+            
+            // Remove from state
+            const updatedPackages = packages.filter(pkg => pkg.id !== currentPackage.id);
+            setPackages(updatedPackages);
+            closeAllModals();
+        } catch (err) {
+            setError(`Failed to delete package: ${err.message}`);
+            console.error('Error deleting package:', err);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const togglePackageStatus = (id) => {
-        const updatedPackages = packages.map(pkg => 
-            pkg.id === id ? { ...pkg, active: !pkg.active } : pkg
-        );
-        
-        setPackages(updatedPackages);
+    const togglePackageStatus = async (id) => {
+        try {
+            const packageToToggle = packages.find(pkg => pkg.id === id);
+            if (!packageToToggle) return;
+            
+            const newActiveStatus = !packageToToggle.active;
+            
+            // Update status via API
+            await packageService.togglePlanStatus(id, newActiveStatus);
+            
+            // Update state
+            const updatedPackages = packages.map(pkg => 
+                pkg.id === id ? { ...pkg, active: newActiveStatus } : pkg
+            );
+            
+            setPackages(updatedPackages);
+        } catch (err) {
+            setError(`Failed to toggle package status: ${err.message}`);
+            console.error('Error toggling package status:', err);
+        }
     };
 
     const renderFeatureRow = (featureName, label, description, state, isEditing) => {
@@ -311,6 +314,23 @@ const PackageManagement = () => {
 
     return (
         <PageLayout user={user}>
+
+            {/* Error Message */}
+            {error && (
+                <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <div className="flex items-center">
+                        <span className="mr-2">⚠️</span>
+                        {error}
+                    </div>
+                </div>
+            )}
+
+            {/* Loading State */}
+            {isLoading && (
+                <div className="flex items-center justify-center min-h-[200px]">
+                    <div className="text-lg text-gray-600">Loading packages...</div>
+                </div>
+            )}
 
             {/* Page Title and Back button */}
             <div className="flex justify-between items-center mb-8">

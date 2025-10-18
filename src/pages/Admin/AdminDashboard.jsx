@@ -4,10 +4,22 @@ import PageHeader from '../../components/layout/PageHeader';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import { Link, useNavigate } from 'react-router-dom';
+import adminDashboardService from '../../services/adminDashboardService';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const [notificationCount, setNotificationCount] = useState(3);
+    
+    // API Data State
+    const [dashboardStats, setDashboardStats] = useState(null);
+    const [userTypeDistribution, setUserTypeDistribution] = useState({
+        senior_lawyers: 0,
+        junior_lawyers: 0,
+        clients: 0,
+        researchers: 0
+    });
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
     
     // Admin user data
     const user = {
@@ -16,60 +28,156 @@ const AdminDashboard = () => {
         role: 'admin' 
     };
 
-    // Mock data for the dashboard
-    const systemStats = [
+    // Pending message requests (dummy data - no API endpoint available)
+    const messageRequests = [
         {
-            title: "Total Users",
-            value: "256",
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-            ),
-            iconBg: "bg-blue-100 text-blue-600",
-            textColor: "text-blue-600"
+            id: 'MSG-001',
+            from: 'Nimal Perera',
+            role: 'lawyer',
+            subject: 'System access issue',
+            message: 'I am unable to access the case files section. Could you please check my permissions?',
+            date: '2025-06-29',
+            priority: 'high',
+            avatar: 'NP'
         },
         {
-            title: "New Signups Today",
-            value: "7",
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                </svg>
-            ),
-            iconBg: "bg-green-100 text-green-600",
-            textColor: "text-green-600"
+            id: 'MSG-002',
+            from: 'Amali Silva',
+            role: 'junior_lawyer',
+            subject: 'Account verification',
+            message: 'My account is still showing as pending verification after 2 days. Can you expedite?',
+            date: '2025-06-28',
+            priority: 'medium',
+            avatar: 'AS'
         },
         {
-            title: "Message Requests",
-            value: "12",
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                </svg>
-            ),
-            iconBg: "bg-yellow-100 text-yellow-600",
-            textColor: "text-yellow-600"
+            id: 'MSG-003',
+            from: 'Rohan Gunawardena',
+            role: 'lawyer',
+            subject: 'Client assignment',
+            message: 'I need to assign a new client to my profile but the option is not available.',
+            date: '2025-06-28',
+            priority: 'medium',
+            avatar: 'RG'
         },
         {
-            title: "Active Cases",
-            value: "93",
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-            ),
-            iconBg: "bg-purple-100 text-purple-600",
-            textColor: "text-purple-600"
+            id: 'MSG-004',
+            from: 'Dilshan Fonseka',
+            role: 'lawyer',
+            subject: 'Payment gateway error',
+            message: 'The payment gateway is showing errors when clients try to make payments.',
+            date: '2025-06-27',
+            priority: 'high',
+            avatar: 'DF'
         }
     ];
 
-    // User type distribution data
-    const userTypeDistribution = {
-        senior_lawyers: 35,
-        junior_lawyers: 48,
-        clients: 173
-    };
+    // Generate system stats from API data
+    const generateSystemStats = () => {
+        if (!dashboardStats) {
+            // Return placeholder data while loading
+            return [
+                {
+                    title: "Total Users",
+                    value: "Loading...",
+                    icon: (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    ),
+                    iconBg: "bg-blue-100 text-blue-600",
+                    textColor: "text-blue-600"
+                },
+                {
+                    title: "New Signups This Month",
+                    value: "Loading...",
+                    icon: (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                        </svg>
+                    ),
+                    iconBg: "bg-green-100 text-green-600",
+                    textColor: "text-green-600"
+                },
+                {
+                    title: "Message Requests",
+                    value: messageRequests.length.toString(),
+                    icon: (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                        </svg>
+                    ),
+                    iconBg: "bg-yellow-100 text-yellow-600",
+                    textColor: "text-yellow-600"
+                },
+                {
+                    title: "Active Lawyers",
+                    value: "Loading...",
+                    icon: (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    ),
+                    iconBg: "bg-purple-100 text-purple-600",
+                    textColor: "text-purple-600"
+                }
+            ];
+        }
+        
+        const totalUsers = dashboardStats.totalLawyers + dashboardStats.totalJuniors + 
+                          dashboardStats.totalClients + (dashboardStats.totalResearchers || 0);
+        
+        return [
+            {
+                title: "Total Users",
+                value: totalUsers.toString(),
+                icon: (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                ),
+                iconBg: "bg-blue-100 text-blue-600",
+                textColor: "text-blue-600"
+            },
+            {
+                title: "New Signups This Month",
+                value: dashboardStats.newSignupsThisMonth?.toString() || "0",
+                icon: (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                ),
+                iconBg: "bg-green-100 text-green-600",
+                textColor: "text-green-600"
+            },
+            {
+                title: "Message Requests",
+                value: messageRequests.length.toString(),
+                icon: (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    </svg>
+                ),
+                iconBg: "bg-yellow-100 text-yellow-600",
+                textColor: "text-yellow-600"
+            },
+            {
+                title: "Active Lawyers",
+                value: (dashboardStats.activeLawyers + dashboardStats.activeJuniors).toString(),
+                icon: (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    ),
+                    iconBg: "bg-purple-100 text-purple-600",
+                    textColor: "text-purple-600"
+                }
+            ];
+        };
+
+    const systemStats = generateSystemStats();
+
+    // User type distribution data - now loaded from API
 
     // Recent user signups
     const recentSignups = [
@@ -120,50 +228,6 @@ const AdminDashboard = () => {
         }
     ];
 
-    // Pending message requests
-    const messageRequests = [
-        {
-            id: 'MSG-001',
-            from: 'Nimal Perera',
-            role: 'lawyer',
-            subject: 'System access issue',
-            message: 'I am unable to access the case files section. Could you please check my permissions?',
-            date: '2025-06-29',
-            priority: 'high',
-            avatar: 'NP'
-        },
-        {
-            id: 'MSG-002',
-            from: 'Amali Silva',
-            role: 'junior_lawyer',
-            subject: 'Account verification',
-            message: 'My account is still showing as pending verification after 2 days. Can you expedite?',
-            date: '2025-06-28',
-            priority: 'medium',
-            avatar: 'AS'
-        },
-        {
-            id: 'MSG-003',
-            from: 'Rohan Gunawardena',
-            role: 'lawyer',
-            subject: 'Client assignment',
-            message: 'I need to assign a new client to my profile but the option is not available.',
-            date: '2025-06-28',
-            priority: 'medium',
-            avatar: 'RG'
-        },
-        {
-            id: 'MSG-004',
-            from: 'Dilshan Fonseka',
-            role: 'lawyer',
-            subject: 'Payment gateway error',
-            message: 'The payment gateway is showing errors when clients try to make payments.',
-            date: '2025-06-27',
-            priority: 'high',
-            avatar: 'DF'
-        }
-    ];
-
     // Recent system activities
     const systemActivities = [
         {
@@ -203,6 +267,33 @@ const AdminDashboard = () => {
         }
     ];
 
+    // Load dashboard data from API
+    useEffect(() => {
+        const loadDashboardData = async () => {
+            try {
+                setIsLoading(true);
+                setError('');
+                
+                // Load dashboard statistics and user distribution in parallel
+                const [stats, distribution] = await Promise.all([
+                    adminDashboardService.getDashboardStats(),
+                    adminDashboardService.getUserTypeDistribution()
+                ]);
+                
+                setDashboardStats(stats);
+                setUserTypeDistribution(distribution);
+                
+            } catch (err) {
+                setError(`Failed to load dashboard data: ${err.message}`);
+                console.error('Error loading dashboard data:', err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadDashboardData();
+    }, []);
+
     const handleNotificationClick = () => {
         console.log('Admin notifications clicked');
     };
@@ -236,6 +327,27 @@ const AdminDashboard = () => {
                     onNotificationClick={handleNotificationClick}
                 />
             </div>
+
+            {/* Error Message */}
+            {error && (
+                <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <div className="flex items-center">
+                        <span className="mr-2">⚠️</span>
+                        {error}
+                    </div>
+                    <p className="text-sm mt-2">Some data may be unavailable. Dummy data is shown where API data failed to load.</p>
+                </div>
+            )}
+
+            {/* Loading State */}
+            {isLoading && (
+                <div className="mb-6 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded">
+                    <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700 mr-2"></div>
+                        Loading dashboard data...
+                    </div>
+                </div>
+            )}
 
             {/* Page Title */}
             <div className="flex justify-between items-center mb-8">

@@ -58,6 +58,13 @@ const DropdownFilter = ({ label, options, value, onChange }) => {
     );
 };
 
+// const user = {
+//     name: 'Nishagi Jewantha',
+//     email: 'jewanthadheerath@gmail.com',
+//     role: 'lawyer',
+// };
+
+
 const Cases = () => {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
@@ -200,7 +207,7 @@ const Cases = () => {
 
                 // Handle status filtering based on closedCases filter
                 if (filters.closedCases === 'Open Only') {
-                    filterParams.status = 'OPEN';
+                    filterParams.status = 'ACTIVE'; // or whatever your open status is
                 } else if (filters.closedCases === 'Closed Only') {
                     filterParams.status = 'CLOSED';
                 }
@@ -265,12 +272,8 @@ const Cases = () => {
             return `${baseClasses} bg-green-100 text-green-700`;
         } else if (status === 'PENDING' || status === 'Pending') {
             return `${baseClasses} bg-yellow-100 text-yellow-700`;
-        } else if (status === 'PARTIAL' || status === 'Partial') {
-            return `${baseClasses} bg-blue-100 text-blue-700`;
-        } else if (status === 'OVERDUE' || status === 'Overdue') {
-            return `${baseClasses} bg-red-100 text-red-700`;
         }
-        return `${baseClasses} bg-gray-100 text-gray-700`;
+        return `${baseClasses} bg-red-100 text-red-700`;
     };
 
     // Event handlers for user input
@@ -488,101 +491,24 @@ const Cases = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {cases.length === 0 ? (
                                     <div className="col-span-full text-center text-gray-500 py-12">
                                         No cases found
                                     </div>
                                 ) : (
                                     cases.map((caseItem) => (
-                                    <div key={caseItem.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border">
-                                        {/* Header with Case Title and Status */}
-                                        <div className="flex justify-between items-start mb-3">
-                                            <h2 className="text-lg font-semibold text-gray-900 flex-1 mr-3">{caseItem.caseNumber}</h2>
+                                    <div key={caseItem.id} className="bg-white rounded-lg shadow p-6">
+                                        <h2 className="text-lg font-semibold mb-2">{caseItem.caseTitle}</h2>
+                                        <div className="text-sm text-gray-600 mb-1">Type: {caseItem.caseType}</div>
+                                        <div className="text-sm text-gray-600 mb-1">Case #: {caseItem.caseNumber}</div>
+                                        <div className="text-sm text-gray-600 mb-1">Court: {caseItem.courtName}</div>
+                                        <div className="text-sm text-gray-600 mb-1">Next Hearing: {caseItem.nextHearing || 'Not scheduled'}</div>
+                                        <div className="mb-1">
                                             <span className={getStatusBadge(caseItem.status)}>{caseItem.status}</span>
                                         </div>
-
-                                        {/* Case Basic Info */}
-                                        <div className="space-y-2 mb-4">
-                                            <div className="flex justify-between">
-                                                <span className="text-sm text-gray-500">Case:</span>
-                                                <span className="text-sm font-medium text-gray-700">{caseItem.caseTitle}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-sm text-gray-500">Type:</span>
-                                                <span className="text-sm font-medium text-gray-700">{caseItem.caseType}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-sm text-gray-500">Court:</span>
-                                                <span className="text-sm font-medium text-gray-700">{caseItem.courtName}</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Case Description */}
-                                        {caseItem.description && (
-                                            <div className="mb-4">
-                                                <p className="text-sm text-gray-500 mb-1">Description:</p>
-                                                <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded border-l-2 border-blue-200">
-                                                    {caseItem.description.length > 100 
-                                                        ? `${caseItem.description.substring(0, 100)}...` 
-                                                        : caseItem.description}
-                                                </p>
-                                            </div>
-                                        )}
-
-                                        {/* Client Information */}
-                                        <div className="mb-4 bg-blue-50 p-3 rounded">
-                                            <p className="text-sm font-medium text-blue-800 mb-2">Client Information</p>
-                                            <div className="space-y-1">
-                                                <div className="flex justify-between">
-                                                    <span className="text-sm text-blue-600">Name:</span>
-                                                    <span className="text-sm font-medium text-blue-800">{caseItem.clientName}</span>
-                                                </div>
-                                                {caseItem.clientPhone && (
-                                                    <div className="flex justify-between">
-                                                        <span className="text-sm text-blue-600">Phone:</span>
-                                                        <span className="text-sm text-blue-700">{caseItem.clientPhone}</span>
-                                                    </div>
-                                                )}
-                                                {caseItem.clientEmail && (
-                                                    <div className="flex justify-between">
-                                                        <span className="text-sm text-blue-600">Email:</span>
-                                                        <span className="text-sm text-blue-700">{caseItem.clientEmail}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Financial Info */}
-                                        <div className="mb-4 bg-green-50 p-3 rounded">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-sm font-medium text-green-800">Agreed Fee:</span>
-                                                <span className="text-lg font-bold text-green-700">
-                                                    ${caseItem.agreedFee ? caseItem.agreedFee.toLocaleString() : 'N/A'}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between items-center mt-1">
-                                                <span className="text-sm text-green-600">Payment Status:</span>
-                                                <span className={getPaymentStatusBadge(caseItem.paymentStatus)}>
-                                                    {caseItem.paymentStatus}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        {/* Additional Info */}
-                                        <div className="space-y-2 text-sm border-t pt-3">
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-500">Next Hearing:</span>
-                                                <span className="font-medium text-gray-700">
-                                                    {caseItem.nextHearing || 'Not scheduled'}
-                                                </span>
-                                            </div>
-                                            {caseItem.opposingPartyName && (
-                                                <div className="flex justify-between">
-                                                    <span className="text-gray-500">Opposing Party:</span>
-                                                    <span className="font-medium text-gray-700">{caseItem.opposingPartyName}</span>
-                                                </div>
-                                            )}
+                                        <div>
+                                            <span className={getPaymentStatusBadge(caseItem.paymentStatus)}>{caseItem.paymentStatus}</span>
                                         </div>
                                     </div>
                                     ))

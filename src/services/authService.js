@@ -16,7 +16,7 @@ export const authenticatedFetch = async (endpoint, options = {}) => {
   if (!user) {
     throw new Error("No authenticated user found. Please log in again.");
   }
-
+[]
   const idToken = await user.getIdToken();
 
   const response = await fetch(`http://localhost:8080${endpoint}`, {

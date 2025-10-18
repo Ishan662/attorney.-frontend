@@ -5,12 +5,8 @@ import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import Input1 from '../../components/UI/Input1';
 import { FaPlus, FaTasks, FaFilePdf, FaUserTie, FaTimes, FaCalendarAlt, FaSearch, FaFilter, FaSortAmountDown } from 'react-icons/fa';
-import { useAuth } from '../../context/AuthContext';
-import { createTask, getAllFirmTasks } from '../../services/taskService';
-import { getJuniorsForFirm } from '../../services/teamService';
 
 const AssignTasks = () => {
-    const { user } = useAuth(); // Use real auth context
     const [juniorLawyers, setJuniorLawyers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showTaskModal, setShowTaskModal] = useState(false);
@@ -19,71 +15,67 @@ const AssignTasks = () => {
     const [taskFormData, setTaskFormData] = useState({
         title: '',
         description: '',
-        assignedToUserId: '', // Changed to match backend API
+        assignedTo: '',
         dueDate: '',
-        type: 'DOCUMENT_REVIEW', // Changed to match backend API
         priority: 'medium',
         taskType: 'research',
         files: []
     });
 
-    useEffect(() => {
-        // Load real data from backend
-        loadData();
-    }, []);
+    // User data (normally would come from auth context)
+    const user = {
+        name: "nishagi jewantha",
+        email: "jewanthadheerath@gmail.com",
+        role: "lawyer"
+    };
 
-    const loadData = async () => {
-        setIsLoading(true);
-        try {
-            // Load junior lawyers and tasks from backend
-            const [juniorsResponse, tasksResponse] = await Promise.all([
-                getJuniorsForFirm(),
-                getAllFirmTasks()
+    useEffect(() => {
+        // Simulate API fetch
+        setTimeout(() => {
+            setJuniorLawyers([
+                { id: 1, name: 'Sarah Johnson', avatar: 'SJ', specialization: 'Contract Law', email: 'sarah@lawfirm.com', tasksAssigned: 3, tasksCompleted: 2 },
+                { id: 2, name: 'Michael Chang', avatar: 'MC', specialization: 'Criminal Law', email: 'michael@lawfirm.com', tasksAssigned: 5, tasksCompleted: 4 },
+                { id: 3, name: 'Priya Patel', avatar: 'PP', specialization: 'Family Law', email: 'priya@lawfirm.com', tasksAssigned: 2, tasksCompleted: 1 },
+                { id: 4, name: 'David Wilson', avatar: 'DW', specialization: 'Property Law', email: 'david@lawfirm.com', tasksAssigned: 4, tasksCompleted: 3 }
+            ]);
+            
+            setTaskHistory([
+                {
+                    id: 1,
+                    title: 'Research case precedents for Jones v. Smith',
+                    assignedTo: { id: 2, name: 'Michael Chang', avatar: 'MC' },
+                    createdAt: '2025-07-15T10:30:00',
+                    dueDate: '2025-07-25T17:00:00',
+                    status: 'in-progress'
+                },
+                {
+                    id: 2,
+                    title: 'Prepare witness statements for Johnson case',
+                    assignedTo: { id: 3, name: 'Priya Patel', avatar: 'PP' },
+                    createdAt: '2025-07-14T14:15:00',
+                    dueDate: '2025-07-22T17:00:00',
+                    status: 'pending'
+                },
+                {
+                    id: 3,
+                    title: 'File motion for extension in Davidson lawsuit',
+                    assignedTo: { id: 1, name: 'Sarah Johnson', avatar: 'SJ' },
+                    createdAt: '2025-07-10T09:20:00',
+                    dueDate: '2025-07-18T16:00:00',
+                    status: 'completed'
+                }
             ]);
 
-            // Transform backend data to match UI expectations
-            const transformedJuniors = juniorsResponse.map(junior => ({
-                id: junior.id,
-                name: `${junior.firstName} ${junior.lastName}`,
-                avatar: `${junior.firstName.charAt(0)}${junior.lastName.charAt(0)}`,
-                specialization: junior.specialization || 'General Practice',
-                email: junior.email
-            }));
-
-            // Transform backend tasks to match UI expectations
-            const transformedTasks = tasksResponse.map(task => ({
-                id: task.id,
-                title: task.title,
-                assignedTo: {
-                    id: task.assignedToUser.id,
-                    name: `${task.assignedToUser.firstName} ${task.assignedToUser.lastName}`,
-                    avatar: `${task.assignedToUser.firstName.charAt(0)}${task.assignedToUser.lastName.charAt(0)}`
-                },
-                createdAt: task.createdAt,
-                dueDate: task.dueDate,
-                status: task.status.toLowerCase().replace('_', '-') // Convert PENDING to pending, IN_PROGRESS to in-progress
-            }));
-
-            setJuniorLawyers(transformedJuniors);
-            setTaskHistory(transformedTasks);
-        } catch (error) {
-            console.error('Error loading data:', error);
-            // Fallback to showing some sample data or empty state with error message
-            alert('Unable to connect to server. Please check your connection and try again.');
-            setJuniorLawyers([]);
-            setTaskHistory([]);
-        } finally {
             setIsLoading(false);
-        }
-    };
+        }, 800);
+    }, []);
 
     const handleNewTask = () => {
         setTaskFormData({
             title: '',
             description: '',
-            assignedToUserId: '', // Updated to match backend
+            assignedTo: '',
             dueDate: '',
-            type: 'DOCUMENT_REVIEW', // Updated to match backend
             priority: 'medium',
             taskType: 'research',
             files: []
@@ -117,65 +109,35 @@ const AssignTasks = () => {
         });
     };
 
-    const handleSubmitTask = async (e) => {
+    const handleSubmitTask = (e) => {
         e.preventDefault();
         setIsLoading(true);
         
-        try {
-            // Prepare task data for backend API
-            const taskData = {
-                title: taskFormData.title,
-                description: taskFormData.description,
-                type: mapTaskTypeToBackend(taskFormData.taskType), // Convert UI task type to backend enum
-                assignedToUserId: taskFormData.assignedToUserId,
-                dueDate: taskFormData.dueDate + 'T23:59:59' // Add time to date
-            };
-
-            // Create task via backend API
-            const newTask = await createTask(taskData);
+        // Simulate API call
+        setTimeout(() => {
+            // Add new task to history
+            const assignedLawyer = juniorLawyers.find(lawyer => lawyer.id.toString() === taskFormData.assignedTo);
             
-            // Transform the created task to match UI expectations
-            const assignedLawyer = juniorLawyers.find(lawyer => lawyer.id === taskFormData.assignedToUserId);
-            const transformedTask = {
-                id: newTask.id,
-                title: newTask.title,
-                assignedTo: {
-                    id: newTask.assignedToUser ? newTask.assignedToUser.id : assignedLawyer?.id,
-                    name: newTask.assignedToUser 
-                        ? `${newTask.assignedToUser.firstName} ${newTask.assignedToUser.lastName}` 
-                        : assignedLawyer?.name,
-                    avatar: newTask.assignedToUser 
-                        ? `${newTask.assignedToUser.firstName.charAt(0)}${newTask.assignedToUser.lastName.charAt(0)}` 
-                        : assignedLawyer?.avatar
-                },
-                createdAt: newTask.createdAt,
-                dueDate: newTask.dueDate,
-                status: 'pending' // New tasks start as pending
-            };
+            if (assignedLawyer) {
+                const newTask = {
+                    id: Math.floor(Math.random() * 1000),
+                    title: taskFormData.title,
+                    assignedTo: {
+                        id: assignedLawyer.id,
+                        name: assignedLawyer.name,
+                        avatar: assignedLawyer.avatar
+                    },
+                    createdAt: new Date().toISOString(),
+                    dueDate: new Date(taskFormData.dueDate).toISOString(),
+                    status: 'pending'
+                };
+                
+                setTaskHistory([newTask, ...taskHistory]);
+            }
             
-            // Update local state
-            setTaskHistory([transformedTask, ...taskHistory]);
-            
-            setShowTaskModal(false);
-            alert('Task assigned successfully!');
-        } catch (error) {
-            console.error('Error creating task:', error);
-            const errorMessage = error.message || 'Failed to assign task. Please try again.';
-            alert(`Error: ${errorMessage}`);
-        } finally {
             setIsLoading(false);
-        }
-    };
-
-    // Helper function to map UI task types to backend enums
-    const mapTaskTypeToBackend = (uiTaskType) => {
-        const mapping = {
-            'research': 'RESEARCH',
-            'document': 'DOCUMENT_REVIEW',
-            'court': 'FILING',
-            'other': 'CASE_PREPARATION'
-        };
-        return mapping[uiTaskType] || 'DOCUMENT_REVIEW';
+            setShowTaskModal(false);
+        }, 800);
     };
 
     const formatDate = (dateString) => {
@@ -233,7 +195,7 @@ const AssignTasks = () => {
                                 key={lawyer.id} 
                                 className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer"
                                 onClick={() => {
-                                    setTaskFormData({...taskFormData, assignedToUserId: lawyer.id.toString()});
+                                    setTaskFormData({...taskFormData, assignedTo: lawyer.id.toString()});
                                     setShowTaskModal(true);
                                 }}
                             >
@@ -246,6 +208,16 @@ const AssignTasks = () => {
                                         <p className="text-sm text-gray-600">{lawyer.specialization}</p>
                                     </div>
                                 </div>
+                                <div className="flex justify-between text-sm">
+                                    <div>
+                                        <div className="text-gray-600">Tasks assigned</div>
+                                        <div className="font-semibold">{lawyer.tasksAssigned}</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-gray-600">Tasks completed</div>
+                                        <div className="font-semibold">{lawyer.tasksCompleted}</div>
+                                    </div>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -254,18 +226,11 @@ const AssignTasks = () => {
                     <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
                         <div className="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                             <h2 className="text-lg font-semibold">Recent Task Assignments</h2>
-                            <div className="flex gap-2">
-                                <Button2
-                                    text="Refresh"
-                                    onClick={loadData}
-                                    className="text-sm px-3 py-1"
-                                />
-                                <Button2
-                                    text="View All Tasks"
-                                    onClick={() => window.location.href = "/lawyer/taskmanagement"}
-                                    className="text-sm px-3 py-1"
-                                />
-                            </div>
+                            <Button2
+                                text="View All Tasks"
+                                onClick={() => window.location.href = "/lawyer/taskmanagement"}
+                                className="text-sm px-3 py-1"
+                            />
                         </div>
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
@@ -493,16 +458,16 @@ const AssignTasks = () => {
                                             <label
                                                 key={lawyer.id}
                                                 className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all ${
-                                                    taskFormData.assignedToUserId === lawyer.id.toString() 
+                                                    taskFormData.assignedTo === lawyer.id.toString() 
                                                     ? 'bg-blue-50 border-blue-300' 
                                                     : 'hover:bg-gray-50'
                                                 }`}
                                             >
                                                 <input
                                                     type="radio"
-                                                    name="assignedToUserId"
+                                                    name="assignedTo"
                                                     value={lawyer.id}
-                                                    checked={taskFormData.assignedToUserId === lawyer.id.toString()}
+                                                    checked={taskFormData.assignedTo === lawyer.id.toString()}
                                                     onChange={handleTaskFormChange}
                                                     className="sr-only"
                                                 />
@@ -658,7 +623,7 @@ const AssignTasks = () => {
                                 <Button1
                                     type="submit"
                                     text={isLoading ? "Assigning..." : "Assign Task"}
-                                    disabled={isLoading || !taskFormData.assignedToUserId || !taskFormData.title || !taskFormData.description || !taskFormData.dueDate}
+                                    disabled={isLoading || !taskFormData.assignedTo || !taskFormData.title || !taskFormData.description || !taskFormData.dueDate}
                                     className="px-4 py-2"
                                 />
                             </div>
