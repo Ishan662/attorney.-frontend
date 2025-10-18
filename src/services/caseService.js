@@ -296,3 +296,43 @@ export const validateTask = async (taskFormData) => {
     body: JSON.stringify(payload),
   });
 };
+
+// --------------------- COURT COLORS ---------------------
+
+/**
+ * Fetches court colors for the current lawyer
+ */
+export const getCourtColors = async () => {
+  try {
+    const courtColors = await authenticatedFetch('/api/lawyers/court-colors');
+    // Return the court colors directly from the API
+    return courtColors || {};
+  } catch (error) {
+    console.error('Failed to fetch court colors:', error);
+    // Return empty object so user can set their own colors
+    return {};
+  }
+};
+
+/**
+ * Updates court colors for the current lawyer
+ */
+export const updateCourtColors = async (courtColors) => {
+  const payload = {
+    courtColors: courtColors
+  };
+
+  console.log('Updating court colors with payload:', payload);
+
+  try {
+    const response = await authenticatedFetch('/api/lawyers/court-colors', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+    console.log('Court colors updated successfully:', response);
+    return response;
+  } catch (error) {
+    console.error('Failed to update court colors:', error);
+    throw error;
+  }
+};
