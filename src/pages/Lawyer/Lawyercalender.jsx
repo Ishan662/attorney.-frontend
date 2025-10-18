@@ -9,7 +9,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { FaBriefcase, FaClock, FaCog, FaPlus, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import CourtColorSettings from "./CourtColorSettings";
-import { getCasesForCalendar, createHearing, updateHearing, deleteHearing, getAllHearingsForCalendar, createTask, getAllTasksForCalendar, updateTask, deleteTask } from '../../services/caseService';
+import { getCasesForCalendar, createHearing, updateHearing, deleteHearing, getAllHearingsForCalendar, createTask, getAllTasksForCalendar, updateTask, deleteTask, validateHearing, validateTask } from '../../services/caseService';
 import EditHearingModal from './EditHearingModal';
 
 // Import Custom Calendar Styles
@@ -40,6 +40,11 @@ const Lawyercalender = () => {
   const [tasks, setTasks] = useState([]);
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [tasksError, setTasksError] = useState(null);
+
+  // Validation state
+  const [validationResult, setValidationResult] = useState(null);
+  const [isValidating, setIsValidating] = useState(false);
+  const [showValidationResult, setShowValidationResult] = useState(false);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentDate, setCurrentDate] = useState(new Date()); // For tracking the current viewing month
@@ -455,6 +460,38 @@ const Lawyercalender = () => {
     }
   };
 
+  // Function to validate hearing before saving
+  const validateAndShowResult = async (hearingFormData, isTask = false) => {
+    try {
+      setIsValidating(true);
+      setShowValidationResult(false);
+      
+      let result;
+      if (isTask) {
+        result = await validateTask(hearingFormData);
+      } else {
+        result = await validateHearing(hearingFormData);
+      }
+      
+      setValidationResult(result);
+      setShowValidationResult(true);
+      
+      return result;
+    } catch (error) {
+      console.error('Validation error:', error);
+      setValidationResult({
+        valid: false,
+        message: 'Failed to validate. Please try again.',
+        travelSeconds: 0,
+        travelText: ''
+      });
+      setShowValidationResult(true);
+      return { valid: false };
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     
@@ -484,6 +521,14 @@ const Lawyercalender = () => {
         court: location,
         participants: guests
       };
+      
+      // Validate hearing before creating
+      const validationResult = await validateAndShowResult(hearingFormData, false);
+      
+      if (!validationResult.valid) {
+        // Don't proceed if validation fails
+        return;
+      }
       
       // Call backend API with case ID
       const response = await createHearing(selectedCase, hearingFormData);
@@ -561,6 +606,14 @@ const Lawyercalender = () => {
         note: taskNote,
         priority: 'MEDIUM' // Default priority
       };
+      
+      // Validate task before creating
+      const validationResult = await validateAndShowResult(taskFormData, true);
+      
+      if (!validationResult.valid) {
+        // Don't proceed if validation fails
+        return;
+      }
       
       // Call backend API to create task
       const response = await createTask(taskFormData);
@@ -1564,6 +1617,119 @@ const Lawyercalender = () => {
       {showPopup && <Popup />}
 
       {/* Court Color Settings Modal */}
+      {/* Validation Result Modal */}
+      {showValidationResult && validationResult && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full relative">
+            <button
+              className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+              onClick={() => setShowValidationResult(false)}
+              aria-label="Close validation result"
+            >
+              &#x2715;
+            </button>
+            
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-3">
+                {validationResult.valid ? "✅ Validation Successful" : "⚠️ Validation Warning"}
+              </h3>
+              
+              <div className={`p-3 rounded-md ${validationResult.valid ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
+                <p className={`text-sm ${validationResult.valid ? 'text-green-800' : 'text-yellow-800'}`}>
+                  {validationResult.message}
+                </p>
+                
+                {validationResult.travelText && (
+                  <div className="mt-2">
+                    <p className={`text-xs font-medium ${validationResult.valid ? 'text-green-700' : 'text-yellow-700'}`}>
+                      Travel Information:
+                    </p>
+                    <p className={`text-xs ${validationResult.valid ? 'text-green-600' : 'text-yellow-600'}`}>
+                      {validationResult.travelText}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex justify-end space-x-3 mt-4">
+                <button
+                  onClick={() => setShowValidationResult(false)}
+                  className="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  Close
+                </button>
+                {!validationResult.valid && (
+                  <button
+                    onClick={async () => {
+                      setShowValidationResult(false);
+                      // Proceed with creation despite warning
+                      if (createModalMode === "hearing") {
+                        // Continue with hearing creation
+                        const hearingFormData = {
+                          label: title,
+                          date: hearingDate,
+                          startTime: startTime,
+                          endTime: endTime,
+                          location: location,
+                          guests: guests,
+                          specialNote: specialNote,
+                          court: location,
+                          participants: guests
+                        };
+                        try {
+                          const response = await createHearing(selectedCase, hearingFormData);
+                          await refreshHearings();
+                          alert(`Hearing created successfully with warnings!\nTitle: ${title}\nDate: ${hearingDate}\nTime: ${startTime} - ${endTime}`);
+                          // Reset form and close modal
+                          setTitle(""); setSelectedCase(""); setLocation(""); setHearingDate(""); setStartTime(""); setEndTime(""); setGuests(""); setSpecialNote(""); setGoogleMeetEnabled(false); setGoogleMeetLink(""); setShowPopup(false); setShowCreateModal(false);
+                        } catch (error) {
+                          console.error('Error creating hearing:', error);
+                          alert('Failed to create hearing. Please try again.');
+                        }
+                      } else {
+                        // Continue with task creation
+                        const taskFormData = {
+                          title: taskTitle,
+                          date: taskDate,
+                          startTime: taskStartTime,
+                          endTime: taskEndTime,
+                          location: taskLocation,
+                          note: taskNote,
+                          priority: 'MEDIUM'
+                        };
+                        try {
+                          const response = await createTask(taskFormData);
+                          await refreshTasks();
+                          alert(`Task created successfully with warnings!\nTitle: ${taskTitle}\nDate: ${taskDate}\nTime: ${taskStartTime} - ${taskEndTime}`);
+                          // Reset form and close modal
+                          setTaskTitle(""); setTaskDate(""); setTaskStartTime(""); setTaskEndTime(""); setTaskLocation(""); setTaskNote(""); setShowTaskPopup(false); setShowCreateModal(false);
+                        } catch (error) {
+                          console.error('Error creating task:', error);
+                          alert('Failed to create task. Please try again.');
+                        }
+                      }
+                    }}
+                    className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors"
+                  >
+                    Proceed Anyway
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loading overlay for validation */}
+      {isValidating && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-700">Validating...</p>
+          </div>
+        </div>
+      )}
+
       <CourtColorSettings
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}

@@ -252,3 +252,47 @@ export const validateNewHearingTravel = async (newHearingData) => {
         body: JSON.stringify(newHearingData),
     });
 };
+
+// --------------------- CALENDAR VALIDATION ---------------------
+
+/**
+ * Validates a new hearing before creating it
+ */
+export const validateHearing = async (hearingFormData) => {
+  const startISO = new Date(`${hearingFormData.date}T${parseTimeTo24h(hearingFormData.startTime || hearingFormData.time)}`).toISOString();
+  const endISO = new Date(`${hearingFormData.date}T${parseTimeTo24h(hearingFormData.endTime)}`).toISOString();
+
+  const payload = {
+    startTime: startISO,
+    endTime: endISO,
+    location: hearingFormData.location || hearingFormData.court,
+    title: hearingFormData.label || hearingFormData.title
+  };
+
+  return await authenticatedFetch('/api/calendar/validate/hearing', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+};
+
+/**
+ * Validates a new task before creating it
+ */
+export const validateTask = async (taskFormData) => {
+  const startISO = new Date(`${taskFormData.date}T${parseTimeTo24h(taskFormData.startTime)}`).toISOString();
+  const endISO = new Date(`${taskFormData.date}T${parseTimeTo24h(taskFormData.endTime)}`).toISOString();
+
+  const payload = {
+    title: taskFormData.title,
+    description: taskFormData.note || taskFormData.description,
+    startTime: startISO,
+    endTime: endISO,
+    location: taskFormData.location,
+    priority: taskFormData.priority || 'MEDIUM'
+  };
+
+  return await authenticatedFetch('/api/calendar/validate/task', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+};
