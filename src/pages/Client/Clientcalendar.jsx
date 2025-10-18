@@ -4,6 +4,7 @@ import PageLayout from "../../components/layout/PageLayout";
 import Button1 from "../../components/UI/Button1";
 import Input1 from "../../components/UI/Input1";
 import { FaBriefcase, FaClock, FaCog } from "react-icons/fa";
+import { createMeeting } from "../../services/meetingService";
 
 const Clientcalender = () => {
   const user = {
@@ -227,19 +228,25 @@ const Clientcalender = () => {
   };
 
   // Handle popup form save
-  const handleSave = (e) => {
-    e.preventDefault();
-    // Implement save logic here
-    const displayDate = selectedMeetingDate ? 
-      formatDateDisplay(new Date(selectedMeetingDate)) : 
-      formatDateDisplay(selectedDate);
+  const handleSave = async (e) => {
+  e.preventDefault();
+
+  const meetingData = {
+    title,
+    location,
+    meetingDate: selectedMeetingDate || selectedDate.toISOString().split('T')[0],
+    startTime,
+    endTime,
+    guests,
+    specialNote,
+    googleMeetLink: googleMeetEnabled ? googleMeetLink : null,
+  };
+
+  try {
+    const savedMeeting = await createMeeting(meetingData);
+    alert(`Meeting successfully created!\nTitle: ${savedMeeting.title}`);
     
-    alert(
-      `Meeting saved!\nDate: ${displayDate}\nTime: ${startTime} - ${endTime}\nTitle: ${title}\nLocation: ${location}\nGuests: ${guests}\nNote: ${specialNote}\nGoogle Meet: ${
-        googleMeetEnabled ? googleMeetLink : "Not added"
-      }`
-    );
-    // Reset form and close popup
+    // Reset form
     setTitle("");
     setLocation("");
     setGuests("");
@@ -250,6 +257,9 @@ const Clientcalender = () => {
     setEndTime("10:00");
     setSelectedMeetingDate("");
     setShowPopup(false);
+  } catch (error) {
+    alert(`Error saving meeting: ${error.message}`);
+  }
   };
 
   // Popup component
