@@ -9,41 +9,12 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { FaBriefcase, FaClock, FaCog, FaPlus, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import CourtColorSettings from "./CourtColorSettings";
+import { getCasesForCalendar, createHearing, updateHearing, deleteHearing, getAllHearingsForCalendar, createTask, getAllTasksForCalendar, updateTask, deleteTask, validateHearing, validateTask, getCourtColors, updateCourtColors } from '../../services/caseService';
+import EditHearingModal from './EditHearingModal';
 
 // Import Custom Calendar Styles
 import "../../styles/calendar.css";
-
-// Mock cases data - in real app, this would come from the case service
-const mockCases = [
-  {
-    id: 1,
-    caseName: "John Doe vs ABC Company",
-    caseNumber: "DC/2024/001",
-    courtType: "District Court",
-    court: "District Court of Colombo"
-  },
-  {
-    id: 2,
-    caseName: "Jane Smith Land Dispute",
-    caseNumber: "HC/2024/045",
-    courtType: "High Court",
-    court: "High Court of Kandy"
-  },
-  {
-    id: 3,
-    caseName: "Mike Johnson Money Recovery",
-    caseNumber: "MC/2024/123",
-    courtType: "Magistrates Court",
-    court: "Magistrate's Court of Galle"
-  },
-  {
-    id: 4,
-    caseName: "Sarah Wilson Divorce Case",
-    caseNumber: "DC/2024/067",
-    courtType: "District Court",
-    court: "District Court of Gampaha"
-  },
-];
+import "../../styles/calendar-additions.css";
 
 const Lawyercalender = () => {
   const navigate = useNavigate();
@@ -55,26 +26,41 @@ const Lawyercalender = () => {
     role: "lawyer",
   };
 
+  // State for cases from backend
+  const [cases, setCases] = useState([]);
+  const [loadingCases, setLoadingCases] = useState(true);
+  const [casesError, setCasesError] = useState(null);
+
+  // Hearings state for calendar display
+  const [hearings, setHearings] = useState([]);
+  const [loadingHearings, setLoadingHearings] = useState(true);
+  const [hearingsError, setHearingsError] = useState(null);
+
+  // Tasks state for calendar display
+  const [tasks, setTasks] = useState([]);
+  const [loadingTasks, setLoadingTasks] = useState(true);
+  const [tasksError, setTasksError] = useState(null);
+
+  // Validation state
+  const [validationResult, setValidationResult] = useState(null);
+  const [isValidating, setIsValidating] = useState(false);
+  const [showValidationResult, setShowValidationResult] = useState(false);
+
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentDate, setCurrentDate] = useState(new Date()); // For tracking the current viewing month
   const [viewMode, setViewMode] = useState("month");
   const [showPopup, setShowPopup] = useState(false);
   const [showTaskPopup, setShowTaskPopup] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
+  const [createModalMode, setCreateModalMode] = useState("hearing"); // "hearing" or "task"
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Settings popup state
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
-  // Court colors state - can be loaded from localStorage or API
-  const [courtColors, setCourtColors] = useState(() => {
-    const savedColors = localStorage.getItem('courtColors');
-    return savedColors ? JSON.parse(savedColors) : {
-      "Galle High Court": "#EF4444", // Red
-      "Badulla District Court": "#3B82F6", // Blue
-      "Colombo Magistrate Court": "#10B981", // Green
-      "Kandy High Court": "#8B5CF6" // Purple
-    };
-  });
+  // Court colors state - loaded from backend API
+  const [courtColors, setCourtColors] = useState({});
+  const [loadingCourtColors, setLoadingCourtColors] = useState(true);
 
   // Enhanced form state for popup
   const [title, setTitle] = useState("");
@@ -97,10 +83,7 @@ const Lawyercalender = () => {
   const [taskEndTime, setTaskEndTime] = useState("");
   const [taskNote, setTaskNote] = useState("");
 
-  // Save court colors to localStorage when they change
-  useEffect(() => {
-    localStorage.setItem('courtColors', JSON.stringify(courtColors));
-  }, [courtColors]);
+  // Court colors are now managed through backend API
 
   // Handle view mode changes
   useEffect(() => {
@@ -110,6 +93,146 @@ const Lawyercalender = () => {
       calendarApi.changeView(newView);
     }
   }, [viewMode]);
+
+  // Clear form values when modal mode changes
+  useEffect(() => {
+    if (createModalMode === "hearing") {
+      // Reset task form fields
+      setTaskTitle("");
+      setTaskLocation("");
+      setTaskDate("");
+      setTaskStartTime("");
+      setTaskEndTime("");
+      setTaskNote("");
+      
+      // Set hearing date/time if available
+      if (selectedTimeSlot) {
+        const slotDate = new Date(selectedTimeSlot);
+        setHearingDate(slotDate.toISOString().split('T')[0]);
+        
+        // Format time for input (HH:MM)
+        const hours = slotDate.getHours().toString().padStart(2, '0');
+        const minutes = slotDate.getMinutes().toString().padStart(2, '0');
+        setStartTime(`${hours}:${minutes}`);
+        
+        // Set end time 1 hour later by default
+        const endSlot = new Date(slotDate);
+        endSlot.setHours(endSlot.getHours() + 1);
+        const endHours = endSlot.getHours().toString().padStart(2, '0');
+        const endMinutes = endSlot.getMinutes().toString().padStart(2, '0');
+        setEndTime(`${endHours}:${endMinutes}`);
+      }
+    } else if (createModalMode === "task") {
+      // Reset hearing form fields
+      setTitle("");
+      setSelectedCase("");
+      setLocation("");
+      setHearingDate("");
+      setStartTime("");
+      setEndTime("");
+      setGuests("");
+      setSpecialNote("");
+      setGoogleMeetEnabled(false);
+      setGoogleMeetLink("");
+      
+      // Set task date/time if available
+      if (selectedTimeSlot) {
+        const slotDate = new Date(selectedTimeSlot);
+        setTaskDate(slotDate.toISOString().split('T')[0]);
+        
+        // Format time for input (HH:MM)
+        const hours = slotDate.getHours().toString().padStart(2, '0');
+        const minutes = slotDate.getMinutes().toString().padStart(2, '0');
+        setTaskStartTime(`${hours}:${minutes}`);
+        
+        // Set end time 1 hour later by default
+        const endSlot = new Date(slotDate);
+        endSlot.setHours(endSlot.getHours() + 1);
+        const endHours = endSlot.getHours().toString().padStart(2, '0');
+        const endMinutes = endSlot.getMinutes().toString().padStart(2, '0');
+        setTaskEndTime(`${endHours}:${endMinutes}`);
+      }
+    }
+  }, [createModalMode, selectedTimeSlot]);
+
+  // Fetch cases when component mounts
+  useEffect(() => {
+    const fetchCases = async () => {
+      try {
+        setLoadingCases(true);
+        setCasesError(null);
+        const fetchedCases = await getCasesForCalendar();
+        setCases(fetchedCases);
+      } catch (error) {
+        console.error('Failed to fetch cases:', error);
+        setCasesError('Failed to load cases. Please try again.');
+        // Fallback to empty array or show error message
+        setCases([]);
+      } finally {
+        setLoadingCases(false);
+      }
+    };
+
+    fetchCases();
+  }, []);
+
+  // Fetch hearings when component mounts
+  useEffect(() => {
+    const fetchHearings = async () => {
+      try {
+        setLoadingHearings(true);
+        setHearingsError(null);
+        const fetchedHearings = await getAllHearingsForCalendar();
+        setHearings(fetchedHearings);
+      } catch (error) {
+        console.error('Failed to fetch hearings:', error);
+        setHearingsError('Failed to load hearings. Please try again.');
+        setHearings([]);
+      } finally {
+        setLoadingHearings(false);
+      }
+    };
+
+    fetchHearings();
+  }, []);
+
+  // Fetch tasks when component mounts
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        setLoadingTasks(true);
+        setTasksError(null);
+        const fetchedTasks = await getAllTasksForCalendar();
+        setTasks(fetchedTasks);
+      } catch (error) {
+        console.error('Failed to fetch tasks:', error);
+        setTasksError('Failed to load tasks. Please try again.');
+        setTasks([]);
+      } finally {
+        setLoadingTasks(false);
+      }
+    };
+
+    fetchTasks();
+  }, []);
+
+  // Fetch court colors when component mounts
+  useEffect(() => {
+    const fetchCourtColors = async () => {
+      try {
+        setLoadingCourtColors(true);
+        const fetchedCourtColors = await getCourtColors();
+        setCourtColors(fetchedCourtColors); // Use exactly what backend returns
+      } catch (error) {
+        console.error('Failed to fetch court colors:', error);
+        setCourtColors({}); // Start with empty court colors on error
+      } finally {
+        setLoadingCourtColors(false);
+      }
+    };
+
+    fetchCourtColors();
+  }, []);
 
   // Format date display like "21st of June, Saturday"
   const formatDateDisplay = (date) => {
@@ -247,12 +370,11 @@ const Lawyercalender = () => {
 
   const weekDays = ["S", "M", "T", "W", "T", "F", "S"];
 
-  // Handle case selection and auto-fill location
+  // Handle case selection
   const handleCaseSelect = (caseId) => {
-    const selectedCaseData = mockCases.find(c => c.id === parseInt(caseId));
+    const selectedCaseData = cases.find(c => c.id === caseId);
     if (selectedCaseData) {
       setSelectedCase(caseId);
-      setLocation(selectedCaseData.court);
       setTitle(`${selectedCaseData.caseName} - Hearing`);
     }
     setShowCaseDropdown(false);
@@ -260,7 +382,7 @@ const Lawyercalender = () => {
 
   // Get selected case label
   const getSelectedCaseLabel = () => {
-    const caseData = mockCases.find(c => c.id === parseInt(selectedCase));
+    const caseData = cases.find(c => c.id === selectedCase);
     return caseData ? `${caseData.caseName} (${caseData.caseNumber})` : "Select Case";
   };
 
@@ -270,8 +392,32 @@ const Lawyercalender = () => {
   };
 
   // Handle save court colors from settings modal
-  const handleSaveCourtColors = (newCourtColors) => {
-    setCourtColors(newCourtColors);
+  const handleSaveCourtColors = async (newCourtColors) => {
+    try {
+      console.log('Attempting to save court colors:', newCourtColors);
+      
+      // Update court colors in the backend
+      await updateCourtColors(newCourtColors);
+      
+      // Update local state - this will automatically trigger re-rendering of events with new colors
+      setCourtColors(newCourtColors);
+      
+      // Show success message
+      alert('Court colors saved successfully! Calendar events will now reflect the new colors.');
+    } catch (error) {
+      console.error('Failed to save court colors:', error);
+      
+      let errorMessage = 'Failed to save court colors. ';
+      if (error.message.includes('403')) {
+        errorMessage += 'Access denied. Please make sure you are logged in as a lawyer.';
+      } else if (error.message.includes('401')) {
+        errorMessage += 'Authentication failed. Please log in again.';
+      } else {
+        errorMessage += 'Please try again.';
+      }
+      
+      alert(errorMessage);
+    }
   };
 
   // Get background color based on court location
@@ -297,7 +443,8 @@ const Lawyercalender = () => {
   // Open popup on time slot click
   const handleTimeSlotClick = (timeSlot) => {
     setSelectedTimeSlot(timeSlot);
-    setShowPopup(true);
+    setCreateModalMode("hearing");
+    setShowCreateModal(true);
   };
 
   // Navigation to different forms
@@ -308,21 +455,155 @@ const Lawyercalender = () => {
   const navigateToTaskForm = () => {
     navigate("/lawyer/add-task");
   };
+  
+  // Open task creation modal
+  const handleOpenTaskModal = () => {
+    setSelectedTimeSlot("");
+    setCreateModalMode("task");
+    setShowCreateModal(true);
+  };
 
   // Enhanced handle popup form save
-  const handleSave = (e) => {
+  // Function to refresh hearings after creating/updating/deleting
+  const refreshHearings = async () => {
+    try {
+      setLoadingHearings(true);
+      const fetchedHearings = await getAllHearingsForCalendar();
+      setHearings(fetchedHearings);
+    } catch (error) {
+      console.error('Failed to refresh hearings:', error);
+      setHearingsError('Failed to refresh hearings.');
+    } finally {
+      setLoadingHearings(false);
+    }
+  };
+
+  // Function to refresh tasks after creating/updating/deleting
+  const refreshTasks = async () => {
+    try {
+      setLoadingTasks(true);
+      const fetchedTasks = await getAllTasksForCalendar();
+      setTasks(fetchedTasks);
+    } catch (error) {
+      console.error('Failed to refresh tasks:', error);
+      setTasksError('Failed to refresh tasks.');
+    } finally {
+      setLoadingTasks(false);
+    }
+  };
+
+  // Function to validate hearing before saving
+  const validateAndShowResult = async (hearingFormData, isTask = false) => {
+    try {
+      setIsValidating(true);
+      setShowValidationResult(false);
+      
+      let result;
+      if (isTask) {
+        result = await validateTask(hearingFormData);
+      } else {
+        result = await validateHearing(hearingFormData);
+      }
+      
+      setValidationResult(result);
+      setShowValidationResult(true);
+      
+      return result;
+    } catch (error) {
+      console.error('Validation error:', error);
+      setValidationResult({
+        valid: false,
+        message: 'Failed to validate. Please try again.',
+        travelSeconds: 0,
+        travelText: ''
+      });
+      setShowValidationResult(true);
+      return { valid: false };
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const handleSave = async (e) => {
     e.preventDefault();
-    const selectedCaseData = mockCases.find(c => c.id === parseInt(selectedCase));
-    // Implement save logic here
-    const meetText = googleMeetEnabled ? googleMeetLink : "Not added";
-    alert(
-      `Hearing saved!\nCase: ${selectedCaseData?.caseName || 'N/A'}\n` +
-      `Case Number: ${selectedCaseData?.caseNumber || 'N/A'}\n` +
-      `Date: ${hearingDate}\nTime: ${startTime} - ${endTime}\n` +
-      `Title: ${title}\nLocation: ${location}\nGuests: ${guests}\n` +
-      `Note: ${specialNote}\nGoogle Meet: ${meetText}`
-    );
-    // Reset form and close popup
+    
+    // Validation
+    if (!selectedCase) {
+      alert('Please select a case');
+      return;
+    }
+    
+    if (!title || !hearingDate || !startTime || !endTime) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
+    const selectedCaseData = cases.find(c => c.id === selectedCase);
+    
+    try {
+      // Prepare hearing data for backend
+      const hearingFormData = {
+        label: title,
+        date: hearingDate,
+        startTime: startTime,
+        endTime: endTime,
+        location: location,
+        guests: guests,
+        specialNote: specialNote,
+        court: location,
+        participants: guests
+      };
+      
+      // Validate hearing before creating
+      const validationResult = await validateAndShowResult(hearingFormData, false);
+      
+      if (!validationResult.valid) {
+        // Don't proceed if validation fails
+        return;
+      }
+      
+      // Call backend API with case ID
+      const response = await createHearing(selectedCase, hearingFormData);
+      
+      // Create a new event for the calendar display
+      const backgroundColor = courtColors[location] || "#1a73e8"; // Use location from form, not case court
+      const newEvent = {
+        id: response.id || `hearing-${Date.now()}`,
+        title: title || `${selectedCaseData?.caseNumber || ''} Hearing`,
+        start: `${hearingDate}T${startTime}:00`,
+        end: `${hearingDate}T${endTime}:00`,
+        backgroundColor: backgroundColor,
+        borderColor: backgroundColor,
+        textColor: "#ffffff",
+        extendedProps: {
+          type: "hearing",
+          location: location,
+          caseId: selectedCase, // Include case ID
+          caseNumber: selectedCaseData?.caseNumber || "",
+          guests: guests,
+          notes: specialNote,
+          googleMeet: googleMeetEnabled ? googleMeetLink : ""
+        }
+      };
+      
+      alert(
+        `Hearing created successfully!\nCase: ${selectedCaseData?.caseName || 'N/A'}\n` +
+        `Case ID: ${selectedCase}\n` +
+        `Case Number: ${selectedCaseData?.caseNumber || 'N/A'}\n` +
+        `Date: ${hearingDate}\nTime: ${startTime} - ${endTime}\n` +
+        `Title: ${title}\nLocation: ${location}`
+      );
+      
+      // Refresh hearings to show the new hearing on calendar
+      await refreshHearings();
+      
+    } catch (error) {
+      console.error('Error creating hearing:', error);
+      alert('Failed to create hearing. Please try again.');
+      return;
+    }
+    
+    // Reset form and close modal
     setTitle("");
     setSelectedCase("");
     setLocation("");
@@ -334,18 +615,59 @@ const Lawyercalender = () => {
     setGoogleMeetEnabled(false);
     setGoogleMeetLink("");
     setShowPopup(false);
+    setShowCreateModal(false);
   };
 
-  // Handle task popup form save
-  const handleTaskSave = (e) => {
+  // Handle task form save
+  const handleTaskSave = async (e) => {
     e.preventDefault();
-    // Implement save logic here
-    alert(
-      `Task saved!\nTitle: ${taskTitle}\nDate: ${taskDate}\n` +
-      `Time: ${taskStartTime} - ${taskEndTime}\n` +
-      `Location: ${taskLocation}\nNote: ${taskNote}`
-    );
-    // Reset form and close popup
+    
+    // Validation
+    if (!taskTitle || !taskDate || !taskStartTime || !taskEndTime) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
+    try {
+      // Prepare task data for backend
+      const taskFormData = {
+        title: taskTitle,
+        date: taskDate,
+        startTime: taskStartTime,
+        endTime: taskEndTime,
+        location: taskLocation,
+        note: taskNote,
+        priority: 'MEDIUM' // Default priority
+      };
+      
+      // Validate task before creating
+      const validationResult = await validateAndShowResult(taskFormData, true);
+      
+      if (!validationResult.valid) {
+        // Don't proceed if validation fails
+        return;
+      }
+      
+      // Call backend API to create task
+      const response = await createTask(taskFormData);
+      
+      alert(
+        `Task created successfully!\n` +
+        `Title: ${taskTitle}\nDate: ${taskDate}\n` +
+        `Time: ${taskStartTime} - ${taskEndTime}\n` +
+        `Location: ${taskLocation}\nNote: ${taskNote}`
+      );
+      
+      // Refresh tasks to show the new task in calendar
+      await refreshTasks();
+      
+    } catch (error) {
+      console.error('Error creating task:', error);
+      alert('Failed to create task. Please try again.');
+      return;
+    }
+    
+    // Reset form and close modal
     setTaskTitle("");
     setTaskLocation("");
     setTaskDate("");
@@ -353,6 +675,7 @@ const Lawyercalender = () => {
     setTaskEndTime("");
     setTaskNote("");
     setShowTaskPopup(false);
+    setShowCreateModal(false);
   };
 
   // Enhanced Popup component with case selection
@@ -388,17 +711,31 @@ const Lawyercalender = () => {
               {showCaseDropdown && (
                 <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md border border-gray-200 overflow-auto">
                   <div className="py-1">
-                    {mockCases.map((caseItem) => (
-                      <div
-                        key={caseItem.id}
-                        className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                        onClick={() => handleCaseSelect(caseItem.id)}
-                      >
-                        <div className="font-medium text-gray-900">{caseItem.caseName}</div>
-                        <div className="text-sm text-gray-500">{caseItem.caseNumber}</div>
-                        <div className="text-xs text-gray-500">{caseItem.court}</div>
+                    {loadingCases ? (
+                      <div className="px-4 py-3 text-gray-500 text-center">
+                        Loading cases...
                       </div>
-                    ))}
+                    ) : casesError ? (
+                      <div className="px-4 py-3 text-red-500 text-center">
+                        {casesError}
+                      </div>
+                    ) : cases.length === 0 ? (
+                      <div className="px-4 py-3 text-gray-500 text-center">
+                        No cases available
+                      </div>
+                    ) : (
+                      cases.map((caseItem) => (
+                        <div
+                          key={caseItem.id}
+                          className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                          onClick={() => handleCaseSelect(caseItem.id)}
+                        >
+                          <div className="font-medium text-gray-900">{caseItem.caseName}</div>
+                          <div className="text-sm text-gray-500">{caseItem.caseNumber}</div>
+                          <div className="text-xs text-gray-500">{caseItem.court}</div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}
@@ -462,25 +799,19 @@ const Lawyercalender = () => {
             </div>
           </div>
 
-          {/* Auto-filled Location */}
+          {/* Location Field */}
           <div className="mb-4">
             <label className="block mb-1 font-medium" htmlFor="location">
-              Court/Location
+              Court/Location <span className="text-red-500">*</span>
             </label>
             <Input1
               id="location"
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Court location will be auto-filled"
-              readOnly={selectedCase !== ""}
-              className={selectedCase !== "" ? "bg-gray-100" : ""}
+              placeholder="Enter court or location address"
+              required
             />
-            {selectedCase && (
-              <p className="text-xs text-gray-500 mt-1">
-                Location auto-filled from selected case
-              </p>
-            )}
           </div>
 
           <div className="mb-4">
@@ -515,29 +846,7 @@ const Lawyercalender = () => {
               }}
               className="cursor-pointer"
             />
-            <label
-              htmlFor="googleMeet"
-              className="text-blue-600 underline text-sm cursor-pointer"
-            >
-              Add Google Meet video conferencing
-            </label>
           </div>
-          {googleMeetEnabled && (
-            <div className="mb-4">
-              <label className="block mb-1 font-medium" htmlFor="googleMeetLink">
-                Google Meet Link
-              </label>
-              <a
-                href={googleMeetLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline break-all"
-                id="googleMeetLink"
-              >
-                {googleMeetLink}
-              </a>
-            </div>
-          )}
 
           {/* Special Note */}
           <div className="mb-4">
@@ -560,93 +869,80 @@ const Lawyercalender = () => {
     </div>
   );
 
-  // Sample events with colorful theme like Google Calendar
-  const events = [
-    {
-      id: "1",
-      title: "Court Hearing: John Doe vs ABC Company",
-      start: "2025-08-10T09:00:00",
-      end: "2025-08-10T10:00:00",
-      backgroundColor: "#1a73e8",
-      borderColor: "#1a73e8",
-      textColor: "#ffffff",
-      extendedProps: {
-        type: "hearing",
-        location: "Courtroom 3A",
-        priority: "high"
-      }
-    },
-    {
-      id: "2",
-      title: "Client Meeting: Case Review",
-      start: "2025-08-11T14:00:00",
-      end: "2025-08-11T15:00:00",
-      backgroundColor: "#34a853",
-      borderColor: "#34a853",
-      textColor: "#ffffff",
-      extendedProps: {
-        type: "meeting",
-        client: "Sarah Johnson",
-        priority: "medium"
-      }
-    },
-    {
-      id: "3",
-      title: "Nikini Full Moon Poya Day",
-      start: "2025-08-08",
-      end: "2025-08-09",
-      backgroundColor: "#137333",
-      borderColor: "#137333",
-      textColor: "#ffffff",
-      allDay: true,
-      extendedProps: {
-        type: "holiday",
-        priority: "low"
-      }
-    },
-    {
-      id: "4",
-      title: "Remind safaran",
-      start: "2025-08-10",
-      end: "2025-08-11",
-      backgroundColor: "#4285f4",
-      borderColor: "#4285f4",
-      textColor: "#ffffff",
-      allDay: true,
-      extendedProps: {
-        type: "reminder",
-        priority: "medium"
-      }
-    },
-    {
-      id: "5",
-      title: "Sahan bday",
-      start: "2025-08-25",
-      end: "2025-08-26",
-      backgroundColor: "#4285f4",
-      borderColor: "#4285f4",
-      textColor: "#ffffff",
-      allDay: true,
-      extendedProps: {
-        type: "birthday",
-        priority: "low"
-      }
-    },
-    {
-      id: "6",
-      title: "Bordime nanda bday",
-      start: "2025-08-23",
-      end: "2025-08-24",
-      backgroundColor: "#4285f4",
-      borderColor: "#4285f4",
-      textColor: "#ffffff",
-      allDay: true,
-      extendedProps: {
-        type: "birthday",
-        priority: "low"
-      }
+  // Transform hearings data into FullCalendar events format
+  const transformHearingsToEvents = (hearingsData) => {
+    console.log('Transforming hearings data:', hearingsData);
+    
+    if (!hearingsData || !Array.isArray(hearingsData)) {
+      console.log('No hearings data or not an array');
+      return [];
     }
-  ];
+
+    const transformedEvents = hearingsData.map((hearing) => {
+      console.log('Processing hearing:', hearing);
+      
+      // Determine court color from settings or use default
+      const courtName = hearing.location || hearing.court || 'Unknown Court';
+      const backgroundColor = courtColors[courtName] || '#1a73e8'; // Default blue
+
+      return {
+        id: hearing.id?.toString() || Math.random().toString(),
+        title: hearing.title || hearing.hearingTitle || 'Hearing',
+        start: hearing.hearingDate || hearing.startTime,
+        end: hearing.endTime,
+        backgroundColor: backgroundColor,
+        borderColor: backgroundColor,
+        textColor: '#ffffff',
+        extendedProps: {
+          type: 'hearing',
+          location: hearing.location || hearing.court,
+          caseNumber: hearing.caseNumber,
+          notes: hearing.note || hearing.notes,
+          participants: hearing.participants || hearing.guests,
+          googleMeet: hearing.googleMeetLink,
+          priority: 'high'
+        }
+      };
+    });
+
+    console.log('Transformed events:', transformedEvents);
+    return transformedEvents;
+  };
+
+  // Transform tasks data into FullCalendar events format
+  const transformTasksToEvents = (tasksData) => {
+    if (!tasksData || !Array.isArray(tasksData)) {
+      return [];
+    }
+
+    return tasksData.map((task) => {
+      // Use court color based on task location, or green as default for tasks
+      const locationName = task.location || 'General';
+      const backgroundColor = courtColors[locationName] || '#34a853'; // Green for tasks without court color
+      
+      return {
+        id: `task-${task.id?.toString()}` || Math.random().toString(),
+        title: task.title || 'Task',
+        start: task.startTime,
+        end: task.endTime,
+        backgroundColor: backgroundColor,
+        borderColor: backgroundColor,
+        textColor: '#ffffff',
+        extendedProps: {
+          type: 'task',
+          location: task.location,
+          notes: task.description || task.note,
+          status: task.status,
+          priority: task.priority || 'medium'
+        }
+      };
+    });
+  };
+
+  // Get events from real hearings and tasks data (fallback to empty array if loading)
+  const hearingEvents = (loadingHearings || loadingCourtColors) ? [] : transformHearingsToEvents(hearings);
+  const taskEvents = (loadingTasks || loadingCourtColors) ? [] : transformTasksToEvents(tasks);
+  const events = [...hearingEvents, ...taskEvents];
 
   // Handle date click
   const handleDateClick = (info) => {
@@ -725,10 +1021,12 @@ const Lawyercalender = () => {
         <div className="calendar-container-wrapper">
           {/* Left Sidebar */}
           <div className="calendar-sidebar">
-            <button className="create-btn" onClick={() => { setSelectedTimeSlot(""); setShowPopup(true); }}>
-              <FaPlus className="create-icon" />
-              Create
-            </button>
+            <div className="flex flex-col gap-2">
+              <button className="create-btn" onClick={() => { setSelectedTimeSlot(""); setCreateModalMode("hearing"); setShowCreateModal(true); }}>
+                <FaPlus className="create-icon" />
+                Create
+              </button>
+            </div>
 
             {/* Mini Calendar */}
             <div className="mini-calendar">
@@ -874,6 +1172,22 @@ const Lawyercalender = () => {
 
           {/* Main Calendar */}
           <div className="main-calendar">
+            {(loadingHearings || loadingTasks || loadingCourtColors) && (
+              <div className="text-center py-4">
+                <div className="text-gray-600">Loading calendar data...</div>
+              </div>
+            )}
+            {(hearingsError || tasksError) && (
+              <div className="text-center py-4">
+                <div className="text-red-600">{hearingsError || tasksError}</div>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="text-blue-600 hover:text-blue-800 underline ml-2"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
             {viewMode === "month" || viewMode === "week" ? (
               <div className="calendar-view">
                 <FullCalendar
@@ -902,7 +1216,79 @@ const Lawyercalender = () => {
                     meridiem: false
                   }}
                   nowIndicator={true}
-                  eventClassNames="google-event"
+                  eventClassNames={(info) => {
+                    // Add different classes based on event type
+                    const classes = ['google-event'];
+                    
+                    if (info.event.extendedProps.type === 'task') {
+                      classes.push('event-task');
+                    } else if (info.event.extendedProps.type === 'hearing') {
+                      classes.push('event-hearing');
+                    } else if (info.event.extendedProps.type === 'meeting') {
+                      classes.push('event-meeting');
+                    }
+                    
+                    // Add priority classes
+                    if (info.event.extendedProps.priority) {
+                      classes.push(`priority-${info.event.extendedProps.priority}`);
+                    }
+                    
+                    return classes;
+                  }}
+                  eventContent={(eventInfo) => {
+                    return (
+                      <div className="event-content">
+                        <div className="event-title">{eventInfo.event.title}</div>
+                        {eventInfo.timeText && (
+                          <div className="event-time">{eventInfo.timeText}</div>
+                        )}
+                        {eventInfo.event.extendedProps.location && (
+                          <div className="event-location">
+                            <span className="text-xs">📍 {eventInfo.event.extendedProps.location}</span>
+                          </div>
+                        )}
+                        {!eventInfo.event.allDay && eventInfo.event.extendedProps.type && (
+                          <div className="event-type">
+                            {eventInfo.event.extendedProps.type === 'hearing' && '⚖️ Court Hearing'}
+                            {eventInfo.event.extendedProps.type === 'task' && '✓ Task'}
+                            {eventInfo.event.extendedProps.type === 'meeting' && '👥 Meeting'}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }}
+                  eventClick={(clickInfo) => {
+                    // Show event details when clicked
+                    const event = clickInfo.event;
+                    const start = event.start ? new Date(event.start) : null;
+                    const end = event.end ? new Date(event.end) : null;
+                    
+                    let detailsMessage = `${event.title}\n`;
+                    detailsMessage += `Date: ${start ? start.toLocaleDateString() : 'N/A'}\n`;
+                    detailsMessage += `Time: ${start ? start.toLocaleTimeString() : 'N/A'} - ${end ? end.toLocaleTimeString() : 'N/A'}\n`;
+                    
+                    if (event.extendedProps.type) {
+                      detailsMessage += `Type: ${event.extendedProps.type.charAt(0).toUpperCase() + event.extendedProps.type.slice(1)}\n`;
+                    }
+                    
+                    if (event.extendedProps.location) {
+                      detailsMessage += `Location: ${event.extendedProps.location}\n`;
+                    }
+                    
+                    if (event.extendedProps.caseNumber) {
+                      detailsMessage += `Case Number: ${event.extendedProps.caseNumber}\n`;
+                    }
+                    
+                    if (event.extendedProps.notes) {
+                      detailsMessage += `Notes: ${event.extendedProps.notes}\n`;
+                    }
+                    
+                    if (event.extendedProps.googleMeet) {
+                      detailsMessage += `Google Meet: ${event.extendedProps.googleMeet}\n`;
+                    }
+                    
+                    alert(detailsMessage);
+                  }}
                   dayHeaderClassNames="google-day-header"
                   dayCellClassNames="google-day-cell"
                   initialDate={currentDate}
@@ -934,113 +1320,440 @@ const Lawyercalender = () => {
         </div>
       </div>
 
-      {/* Popups */}
-      {showPopup && <Popup />}
-      {showTaskPopup && (
+      {/* Combined Create Modal with Tabs */}
+      {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full relative max-h-[90vh] overflow-y-auto">
             <button
               className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
-              onClick={() => setShowTaskPopup(false)}
-              aria-label="Close popup"
+              onClick={() => setShowCreateModal(false)}
+              aria-label="Close modal"
             >
               &#x2715;
             </button>
-            <h2 className="text-2xl font-semibold mb-6">Schedule a Task</h2>
-            <form onSubmit={handleTaskSave}>
-              {/* Task Title */}
-              <div className="mb-4">
-                <label className="block mb-1 font-medium" htmlFor="taskTitle">
-                  Task Title <span className="text-red-500">*</span>
-                </label>
-                <Input1
-                  id="taskTitle"
-                  type="text"
-                  placeholder="Enter task title"
-                  value={taskTitle}
-                  onChange={(e) => setTaskTitle(e.target.value)}
-                  required
-                />
-              </div>
+            
+            {/* Tabbed Interface */}
+            <div className="flex border-b border-gray-200 mb-6">
+              <button 
+                className={`py-3 px-6 font-medium text-sm ${createModalMode === 'hearing' 
+                  ? 'border-b-2 border-blue-500 text-blue-600' 
+                  : 'text-gray-600'}`}
+                onClick={() => setCreateModalMode("hearing")}
+              >
+                <FaBriefcase className="inline-block mr-2" /> Court Hearing
+              </button>
+              <button 
+                className={`py-3 px-6 font-medium text-sm ${createModalMode === 'task' 
+                  ? 'border-b-2 border-green-500 text-green-600' 
+                  : 'text-gray-600'}`}
+                onClick={() => setCreateModalMode("task")}
+              >
+                <FaClock className="inline-block mr-2" /> Task
+              </button>
+            </div>
+            
+            <h2 className="text-2xl font-semibold mb-4">
+              {createModalMode === 'hearing' ? 'Schedule a Court Hearing' : 'Schedule a Task'}
+            </h2>
+            
+            {/* Hearing Form */}
+            {createModalMode === 'hearing' && (
+              <form onSubmit={handleSave}>
+                {/* Case Selection */}
+                <div className="mb-4 relative">
+                  <label className="block mb-1 font-medium">
+                    Select Case <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      className="w-full text-left border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white flex justify-between items-center"
+                      onClick={() => setShowCaseDropdown(!showCaseDropdown)}
+                      disabled={loadingCases}
+                    >
+                      {loadingCases ? (
+                        "Loading cases..."
+                      ) : selectedCase ? (
+                        cases.find((c) => c.id === selectedCase)?.caseName || "Select a case"
+                      ) : (
+                        "Select a case"
+                      )}
+                      <span className="ml-2">▼</span>
+                    </button>
+                  </div>
+                  {showCaseDropdown && (
+                    <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-y-auto">
+                      <div className="py-1">
+                        {loadingCases ? (
+                          <div className="px-4 py-3 text-gray-500 text-center">
+                            Loading cases...
+                          </div>
+                        ) : casesError ? (
+                          <div className="px-4 py-3 text-red-500 text-center">
+                            {casesError}
+                          </div>
+                        ) : cases.length === 0 ? (
+                          <div className="px-4 py-3 text-gray-500 text-center">
+                            No cases available
+                          </div>
+                        ) : (
+                          cases.map((caseItem) => (
+                            <div
+                              key={caseItem.id}
+                              className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                              onClick={() => handleCaseSelect(caseItem.id)}
+                            >
+                              <div className="font-medium text-gray-900">{caseItem.caseName}</div>
+                              <div className="text-sm text-gray-500">{caseItem.caseNumber}</div>
+                              <div className="text-xs text-gray-500">{caseItem.court}</div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-              {/* Task Date */}
-              <div className="mb-4">
-                <label className="block mb-1 font-medium" htmlFor="taskDate">
-                  Task Date <span className="text-red-500">*</span>
-                </label>
-                <Input1
-                  id="taskDate"
-                  type="date"
-                  value={taskDate}
-                  onChange={(e) => setTaskDate(e.target.value)}
-                  required
-                />
-              </div>
-
-              {/* Time Slots */}
-              <div className="mb-4 grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block mb-1 font-medium" htmlFor="taskStartTime">
-                    Start Time <span className="text-red-500">*</span>
+                {/* Title Field */}
+                <div className="mb-4">
+                  <label className="block mb-1 font-medium" htmlFor="title">
+                    Hearing Title <span className="text-red-500">*</span>
                   </label>
                   <Input1
-                    id="taskStartTime"
-                    type="time"
-                    value={taskStartTime}
-                    onChange={(e) => setTaskStartTime(e.target.value)}
+                    id="title"
+                    type="text"
+                    placeholder="Enter hearing title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
                     required
                   />
                 </div>
-                <div>
-                  <label className="block mb-1 font-medium" htmlFor="taskEndTime">
-                    End Time <span className="text-red-500">*</span>
+
+                {/* Date Field */}
+                <div className="mb-4">
+                  <label className="block mb-1 font-medium" htmlFor="hearingDate">
+                    Hearing Date <span className="text-red-500">*</span>
                   </label>
                   <Input1
-                    id="taskEndTime"
-                    type="time"
-                    value={taskEndTime}
-                    onChange={(e) => setTaskEndTime(e.target.value)}
+                    id="hearingDate"
+                    type="date"
+                    value={hearingDate}
+                    onChange={(e) => setHearingDate(e.target.value)}
                     required
                   />
                 </div>
-              </div>
 
-              {/* Location */}
-              <div className="mb-4">
-                <label className="block mb-1 font-medium" htmlFor="taskLocation">
-                  Location
-                </label>
-                <Input1
-                  id="taskLocation"
-                  type="text"
-                  value={taskLocation}
-                  onChange={(e) => setTaskLocation(e.target.value)}
-                  placeholder="Enter task location (office, client location, etc.)"
-                />
-              </div>
+                {/* Time Slots */}
+                <div className="mb-4 grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block mb-1 font-medium" htmlFor="startTime">
+                      Start Time <span className="text-red-500">*</span>
+                    </label>
+                    <Input1
+                      id="startTime"
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-medium" htmlFor="endTime">
+                      End Time <span className="text-red-500">*</span>
+                    </label>
+                    <Input1
+                      id="endTime"
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
 
-              {/* Special Note */}
-              <div className="mb-4">
-                <label className="block mb-1 font-medium" htmlFor="taskNote">
-                  Special Note
-                </label>
-                <textarea
-                  id="taskNote"
-                  rows={4}
-                  className="w-full border border-gray-300 rounded px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Add any special notes or details about this task"
-                  value={taskNote}
-                  onChange={(e) => setTaskNote(e.target.value)}
-                />
-              </div>
+                {/* Location Field */}
+                <div className="mb-4">
+                  <label className="block mb-1 font-medium" htmlFor="location">
+                    Court/Location <span className="text-red-500">*</span>
+                  </label>
+                  <Input1
+                    id="location"
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="Enter court or location address"
+                    required
+                  />
+                </div>
 
-              <Button1 type="submit" text="Schedule Task" className="w-full" />
-            </form>
+                {/* Guests/Participants */}
+                <div className="mb-4">
+                  <label className="block mb-1 font-medium" htmlFor="guests">
+                    Guests/Participants
+                  </label>
+                  <Input1
+                    id="guests"
+                    type="text"
+                    value={guests}
+                    onChange={(e) => setGuests(e.target.value)}
+                    placeholder="Enter email addresses separated by commas"
+                  />
+                </div>
+
+                {/* Google Meet Integration */}
+                <div className="mb-4">
+                  <div className="flex items-center">
+                  </div>
+                </div>
+
+                {/* Google Meet Link (conditionally shown) */}
+                {googleMeetEnabled && (
+                  <div className="mb-4 p-3 bg-gray-50 rounded-md">
+                    <label className="block mb-1 font-medium text-sm" htmlFor="googleMeetLink">
+                      Google Meet Link
+                    </label>
+                    <Input1
+                      id="googleMeetLink"
+                      type="url"
+                      value={googleMeetLink}
+                      onChange={(e) => setGoogleMeetLink(e.target.value)}
+                      placeholder="Enter or paste Google Meet link"
+                    />
+                  </div>
+                )}
+
+                {/* Special Note */}
+                <div className="mb-4">
+                  <label className="block mb-1 font-medium" htmlFor="specialNote">
+                    Special Note
+                  </label>
+                  <textarea
+                    id="specialNote"
+                    rows={4}
+                    className="w-full border border-gray-300 rounded px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Add any special notes here"
+                    value={specialNote}
+                    onChange={(e) => setSpecialNote(e.target.value)}
+                  />
+                </div>
+
+                <Button1 type="submit" text="Schedule Hearing" className="w-full" />
+              </form>
+            )}
+            
+            {/* Task Form */}
+            {createModalMode === 'task' && (
+              <form onSubmit={handleTaskSave}>
+                {/* Task Title */}
+                <div className="mb-4">
+                  <label className="block mb-1 font-medium" htmlFor="taskTitle">
+                    Task Title <span className="text-red-500">*</span>
+                  </label>
+                  <Input1
+                    id="taskTitle"
+                    type="text"
+                    placeholder="Enter task title"
+                    value={taskTitle}
+                    onChange={(e) => setTaskTitle(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Task Date */}
+                <div className="mb-4">
+                  <label className="block mb-1 font-medium" htmlFor="taskDate">
+                    Task Date <span className="text-red-500">*</span>
+                  </label>
+                  <Input1
+                    id="taskDate"
+                    type="date"
+                    value={taskDate}
+                    onChange={(e) => setTaskDate(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Time Slots */}
+                <div className="mb-4 grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block mb-1 font-medium" htmlFor="taskStartTime">
+                      Start Time <span className="text-red-500">*</span>
+                    </label>
+                    <Input1
+                      id="taskStartTime"
+                      type="time"
+                      value={taskStartTime}
+                      onChange={(e) => setTaskStartTime(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-medium" htmlFor="taskEndTime">
+                      End Time <span className="text-red-500">*</span>
+                    </label>
+                    <Input1
+                      id="taskEndTime"
+                      type="time"
+                      value={taskEndTime}
+                      onChange={(e) => setTaskEndTime(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Location */}
+                <div className="mb-4">
+                  <label className="block mb-1 font-medium" htmlFor="taskLocation">
+                    Location
+                  </label>
+                  <Input1
+                    id="taskLocation"
+                    type="text"
+                    value={taskLocation}
+                    onChange={(e) => setTaskLocation(e.target.value)}
+                    placeholder="Enter task location (office, client location, etc.)"
+                  />
+                </div>
+
+                {/* Special Note */}
+                <div className="mb-4">
+                  <label className="block mb-1 font-medium" htmlFor="taskNote">
+                    Special Note
+                  </label>
+                  <textarea
+                    id="taskNote"
+                    rows={4}
+                    className="w-full border border-gray-300 rounded px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Add any special notes or details about this task"
+                    value={taskNote}
+                    onChange={(e) => setTaskNote(e.target.value)}
+                  />
+                </div>
+
+                <Button1 type="submit" text="Schedule Task" className="w-full bg-green-600 hover:bg-green-700" />
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+      
+      {/* Popups - Legacy */}
+      {showPopup && <Popup />}
+
+      {/* Court Color Settings Modal */}
+      {/* Validation Result Modal */}
+      {showValidationResult && validationResult && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full relative">
+            <button
+              className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+              onClick={() => setShowValidationResult(false)}
+              aria-label="Close validation result"
+            >
+              &#x2715;
+            </button>
+            
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-3">
+                {validationResult.valid ? "✅ Validation Successful" : "⚠️ Validation Warning"}
+              </h3>
+              
+              <div className={`p-3 rounded-md ${validationResult.valid ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
+                <p className={`text-sm ${validationResult.valid ? 'text-green-800' : 'text-yellow-800'}`}>
+                  {validationResult.message}
+                </p>
+                
+                {validationResult.travelText && (
+                  <div className="mt-2">
+                    <p className={`text-xs font-medium ${validationResult.valid ? 'text-green-700' : 'text-yellow-700'}`}>
+                      Travel Information:
+                    </p>
+                    <p className={`text-xs ${validationResult.valid ? 'text-green-600' : 'text-yellow-600'}`}>
+                      {validationResult.travelText}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex justify-end space-x-3 mt-4">
+                <button
+                  onClick={() => setShowValidationResult(false)}
+                  className="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  Close
+                </button>
+                {!validationResult.valid && (
+                  <button
+                    onClick={async () => {
+                      setShowValidationResult(false);
+                      // Proceed with creation despite warning
+                      if (createModalMode === "hearing") {
+                        // Continue with hearing creation
+                        const hearingFormData = {
+                          label: title,
+                          date: hearingDate,
+                          startTime: startTime,
+                          endTime: endTime,
+                          location: location,
+                          guests: guests,
+                          specialNote: specialNote,
+                          court: location,
+                          participants: guests
+                        };
+                        try {
+                          const response = await createHearing(selectedCase, hearingFormData);
+                          await refreshHearings();
+                          alert(`Hearing created successfully with warnings!\nTitle: ${title}\nDate: ${hearingDate}\nTime: ${startTime} - ${endTime}`);
+                          // Reset form and close modal
+                          setTitle(""); setSelectedCase(""); setLocation(""); setHearingDate(""); setStartTime(""); setEndTime(""); setGuests(""); setSpecialNote(""); setGoogleMeetEnabled(false); setGoogleMeetLink(""); setShowPopup(false); setShowCreateModal(false);
+                        } catch (error) {
+                          console.error('Error creating hearing:', error);
+                          alert('Failed to create hearing. Please try again.');
+                        }
+                      } else {
+                        // Continue with task creation
+                        const taskFormData = {
+                          title: taskTitle,
+                          date: taskDate,
+                          startTime: taskStartTime,
+                          endTime: taskEndTime,
+                          location: taskLocation,
+                          note: taskNote,
+                          priority: 'MEDIUM'
+                        };
+                        try {
+                          const response = await createTask(taskFormData);
+                          await refreshTasks();
+                          alert(`Task created successfully with warnings!\nTitle: ${taskTitle}\nDate: ${taskDate}\nTime: ${taskStartTime} - ${taskEndTime}`);
+                          // Reset form and close modal
+                          setTaskTitle(""); setTaskDate(""); setTaskStartTime(""); setTaskEndTime(""); setTaskLocation(""); setTaskNote(""); setShowTaskPopup(false); setShowCreateModal(false);
+                        } catch (error) {
+                          console.error('Error creating task:', error);
+                          alert('Failed to create task. Please try again.');
+                        }
+                      }
+                    }}
+                    className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors"
+                  >
+                    Proceed Anyway
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Court Color Settings Modal */}
+      {/* Loading overlay for validation */}
+      {isValidating && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-700">Validating...</p>
+          </div>
+        </div>
+      )}
+
       <CourtColorSettings
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
