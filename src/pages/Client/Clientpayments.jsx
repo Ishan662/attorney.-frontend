@@ -5,7 +5,7 @@ import Button1 from '../../components/UI/Button1';
 import PageLayout from '../../components/layout/PageLayout';
 import { getMyCases } from '../../services/caseService';
 import PaymentModal from '../../components/payments/PaymentModal';
-import { initiateStripePayment , getTotalPaidForCase } from '../../services/paymentService';
+import { initiateStripePayment, getTotalPaidForCase } from '../../services/paymentService';
 
 const user = {
   name: 'Nishagi Jewantha',
@@ -20,7 +20,6 @@ const Clientpayments = () => {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
 
-  // --- ▼▼▼ ADD STATE FOR MODAL MANAGEMENT ▼▼▼ ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCase, setSelectedCase] = useState(null);
 
@@ -32,7 +31,7 @@ const Clientpayments = () => {
         const initialCases = await getMyCases();
 
         // 2. For each case, create a promise to fetch its total paid amount
-        const paymentDetailPromises = initialCases.map(c => 
+        const paymentDetailPromises = initialCases.map(c =>
           getTotalPaidForCase(c.id)
         );
 
@@ -42,7 +41,7 @@ const Clientpayments = () => {
         // 4. Merge the payment details back into the case objects
         const casesWithPaymentDetails = initialCases.map((caseData, index) => ({
           ...caseData,
-          // The API returns the amount in cents in the totalPaidAmount field
+          // The API returns the amount in cents in the `totalPaidAmount` field
           totalPaidAmountInCents: paymentDetails[index].totalPaidAmount,
         }));
         
@@ -55,7 +54,7 @@ const Clientpayments = () => {
       }
     };
     fetchCasesAndPaymentDetails();
-  }, []);
+  }, []); // The empty array ensures this runs only once on component mount
 
   const filteredCases = cases.filter(c =>
     (c.caseTitle?.toLowerCase() || '').includes(search.toLowerCase()) ||
@@ -63,7 +62,6 @@ const Clientpayments = () => {
   );
 
   const getPaymentStatusStyle = (status) => {
-    // ... your existing getPaymentStatusStyle function ...
     switch (status) {
       case 'PAID IN FULL': return 'text-green-600 font-bold';
       case 'PARTIALLY PAID': return 'text-yellow-600 font-bold';
@@ -74,46 +72,37 @@ const Clientpayments = () => {
 
   const needsPayment = (paymentStatus) => paymentStatus !== 'PAID IN FULL';
 
-  // --- ▼▼▼ UPDATE handlePayment TO OPEN THE MODAL ▼▼▼ ---
   const handlePaymentClick = (caseData, remainingAmount) => {
     setSelectedCase({ ...caseData, remainingAmount });
     setIsModalOpen(true);
   };
 
-  // --- ▼▼▼ ADD FUNCTION TO HANDLE MODAL SUBMISSION ▼▼▼ ---
   const handleModalSubmit = async (amountToPay) => {
     if (!selectedCase) return;
 
-    // 1. Construct the request body
     const paymentData = {
-      // Convert amount to cents for Stripe
       amount: Math.round(amountToPay * 100),
       currency: 'usd',
-      description: Payment for case: ${selectedCase.caseTitle},
+      description: `Payment for case: ${selectedCase.caseTitle}`,
       customerEmail: selectedCase.clientEmail,
       caseId: selectedCase.id,
     };
 
     try {
-      // 2. Call the backend API
       const { checkoutUrl } = await initiateStripePayment(paymentData);
-      
-      // 3. On success, redirect to Stripe
       if (checkoutUrl) {
         window.location.href = checkoutUrl;
       } else {
         throw new Error('Checkout URL not received from server.');
       }
     } catch (apiError) {
-      // 4. Handle errors gracefully
       alert(apiError.message || 'An unexpected error occurred.');
-      setIsModalOpen(false); // Close modal on error
+      setIsModalOpen(false);
     }
   };
   
   return (
     <PageLayout user={user}>
-      {/* --- ▼▼▼ RENDER THE MODAL CONDITIONALLY ▼▼▼ --- */}
       {selectedCase && (
         <PaymentModal
           isOpen={isModalOpen}
@@ -140,7 +129,7 @@ const Clientpayments = () => {
               </div>
               <div className="space-y-4">
                 {isLoading ? (
-                  <p>Loading...</p>
+                  <p>Loading payment details...</p>
                 ) : error ? (
                   <p className="text-red-500">{error}</p>
                 ) : (
@@ -154,12 +143,10 @@ const Clientpayments = () => {
                         key={c.id}
                         className="bg-white rounded-lg p-5 shadow-md border border-gray-200"
                       >
-                        {/* Title Section */}
                         <div className="bg-gray-100 font-semibold text-base mb-4 px-4 py-2 rounded-md">
                           {c.caseTitle}
                         </div>
 
-                        {/* Case Details */}
                         <div className="text-sm text-gray-700 space-y-2 mb-4">
                           <div>
                             <span className="font-bold">Case Number:</span> {c.caseNumber}
@@ -175,50 +162,42 @@ const Clientpayments = () => {
                           </div>
                         </div>
 
-                        {/* Payment Information Section - Emphasized */}
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                           <h3 className="font-bold text-blue-800 mb-3 text-base">Payment Information</h3>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {/* Total Agreed Fee */}
                             <div className="text-center">
                               <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">Total Fee</div>
                               <div className="text-2xl font-bold text-gray-800">
                                 ${agreedFee.toFixed(2)}
                               </div>
                             </div>
-                            
-                            {/* Paid Amount */}
                             <div className="text-center">
                               <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">Paid</div>
                               <div className="text-2xl font-bold text-green-600">
                                 ${paidAmount.toFixed(2)}
                               </div>
                             </div>
-                            
-                            {/* Remaining Amount */}
                             <div className="text-center">
                               <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">Remaining</div>
-                              <div className={text-2xl font-bold ${remainingAmount > 0 ? 'text-red-600' : 'text-green-600'}}>
+                              <div className={`text-2xl font-bold ${remainingAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
                                 ${remainingAmount.toFixed(2)}
                               </div>
                             </div>
                           </div>
                           
-                          {/* Payment Status */}
                           <div className="text-center mt-4 pt-3 border-t border-blue-200">
                             <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">Status</div>
-                            <div className={text-lg ${getPaymentStatusStyle(c.paymentStatus)}}>
+                            <div className={`text-lg ${getPaymentStatusStyle(c.paymentStatus)}`}>
                               {c.paymentStatus?.replace('_', ' ') || 'PENDING'}
                             </div>
                           </div>
                         </div>
 
-                        {/* Action Buttons */}
                         <div className="flex gap-3">
                           <Button1
                             text={<span>View Details →</span>}
                             className="flex items-center"
-                            onClick={() => navigate(/client/case/${c.id})}
+                            onClick={() => navigate(`/client/case/${c.id}`)}
                           />
                           {needsPayment(c.paymentStatus) ? (
                             <Button1
