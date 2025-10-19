@@ -13,7 +13,7 @@ const PaymentModal = ({ isOpen, onClose, caseDetails, onSubmit }) => {
 
   const handleAmountChange = (e) => {
     const value = e.target.value;
-    // Allow only numbers and a single decimal point
+    // Allow only numbers and a single decimal point up to 2 places
     if (/^\d*\.?\d{0,2}$/.test(value)) {
       setAmount(value);
       validateAmount(value);
@@ -27,7 +27,7 @@ const PaymentModal = ({ isOpen, onClose, caseDetails, onSubmit }) => {
       return false;
     }
     if (numericValue > remainingAmount) {
-      setError(Amount cannot exceed the remaining balance of $${remainingAmount.toFixed(2)}.);
+      setError(`Amount cannot exceed the remaining balance of $${remainingAmount.toFixed(2)}.`);
       return false;
     }
     setError('');
@@ -37,6 +37,7 @@ const PaymentModal = ({ isOpen, onClose, caseDetails, onSubmit }) => {
   const handleSubmit = async () => {
     if (!validateAmount(amount)) return;
     setIsLoading(true);
+    // The onSubmit function is passed from the parent and will handle the API call
     await onSubmit(parseFloat(amount));
     setIsLoading(false);
   };

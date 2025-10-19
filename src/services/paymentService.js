@@ -24,18 +24,23 @@ export const initiateStripePayment = async paymentData => {
   }
 };
 
-export const getTotalPaidForCase = async (caseId) => {
-    try {
-        // Ensure caseId is provided to prevent calling a malformed URL
-        if (!caseId) {
-            throw new Error('Case ID is required to fetch total paid amount.');
-        }
-        // Make an authenticated GET request to the new endpoint
-        const response = await authenticatedFetch(/api/payments/total-paid/${caseId});
-        return response;
-    } catch (error) {
-        console.error(Error fetching total paid amount for case ${caseId}:, error.message);
-        // Throw a more generic error for the UI to handle
-        throw new Error('Failed to fetch payment summary for the case.');
+/**
+ * Fetches the total successfully paid amount for a specific case.
+ * @param {string} caseId - The UUID of the case.
+ * @returns {Promise<object>} An object containing the total paid amount in cents, e.g., { totalPaidAmount: 50000 }.
+ */
+export const getTotalPaidForCase = async caseId => {
+  try {
+    // Ensure caseId is provided to prevent calling a malformed URL
+    if (!caseId) {
+      throw new Error('A case ID is required to fetch the total paid amount.');
     }
+    // Make an authenticated GET request to the new endpoint
+    const response = await authenticatedFetch(`/api/payments/total-paid/${caseId}`);
+    return response;
+  } catch (error) {
+    console.error(`Error fetching total paid amount for case ${caseId}:`, error.message);
+    // Throw a more generic error for the UI to handle
+    throw new Error('Failed to fetch payment summary for the case.');
+  }
 };
