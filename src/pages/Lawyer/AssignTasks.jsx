@@ -4,9 +4,10 @@ import PageLayout from '../../components/layout/PageLayout';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import Input1 from '../../components/UI/Input1';
-import { FaPlus, FaTasks, FaFilePdf, FaUserTie, FaTimes, FaCalendarAlt, FaSearch, FaFilter, FaSortAmountDown } from 'react-icons/fa';
+import TaskDetailsModal from '../../components/modals/TaskDetailsModal';
+import { FaPlus, FaTasks, FaFilePdf, FaUserTie, FaTimes, FaCalendarAlt, FaSearch, FaFilter, FaSortAmountDown, FaEye } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-import { createTask, getAllFirmTasks } from '../../services/taskService';
+import { createTask, getAllFirmTasks, getTaskById } from '../../services/taskService';
 import { getJuniorsForFirm } from '../../services/teamService';
 
 const AssignTasks = () => {
@@ -14,7 +15,9 @@ const AssignTasks = () => {
     const [juniorLawyers, setJuniorLawyers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showTaskModal, setShowTaskModal] = useState(false);
+    const [showTaskDetailsModal, setShowTaskDetailsModal] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
+    const [selectedTaskForDetails, setSelectedTaskForDetails] = useState(null);
     const [taskHistory, setTaskHistory] = useState([]);
     const [taskFormData, setTaskFormData] = useState({
         title: '',
@@ -54,14 +57,22 @@ const AssignTasks = () => {
             const transformedTasks = tasksResponse.map(task => ({
                 id: task.id,
                 title: task.title,
+                description: task.description,
+                type: task.type,
                 assignedTo: {
                     id: task.assignedToUser.id,
                     name: `${task.assignedToUser.firstName} ${task.assignedToUser.lastName}`,
                     avatar: `${task.assignedToUser.firstName.charAt(0)}${task.assignedToUser.lastName.charAt(0)}`
                 },
+                assignedBy: {
+                    id: task.assignedByUser.id,
+                    name: `${task.assignedByUser.firstName} ${task.assignedByUser.lastName}`
+                },
                 createdAt: task.createdAt,
                 dueDate: task.dueDate,
-                status: task.status.toLowerCase().replace('_', '-') // Convert PENDING to pending, IN_PROGRESS to in-progress
+                caseId: task.caseId,
+                status: task.status.toLowerCase().replace('_', '-'), // Convert PENDING to pending, IN_PROGRESS to in-progress
+                originalStatus: task.status // Keep original for API calls
             }));
 
             setJuniorLawyers(transformedJuniors);
@@ -139,6 +150,8 @@ const AssignTasks = () => {
             const transformedTask = {
                 id: newTask.id,
                 title: newTask.title,
+                description: newTask.description,
+                type: newTask.type,
                 assignedTo: {
                     id: newTask.assignedToUser ? newTask.assignedToUser.id : assignedLawyer?.id,
                     name: newTask.assignedToUser 
@@ -148,9 +161,15 @@ const AssignTasks = () => {
                         ? `${newTask.assignedToUser.firstName.charAt(0)}${newTask.assignedToUser.lastName.charAt(0)}` 
                         : assignedLawyer?.avatar
                 },
+                assignedBy: newTask.assignedByUser ? {
+                    id: newTask.assignedByUser.id,
+                    name: `${newTask.assignedByUser.firstName} ${newTask.assignedByUser.lastName}`
+                } : null,
                 createdAt: newTask.createdAt,
                 dueDate: newTask.dueDate,
-                status: 'pending' // New tasks start as pending
+                caseId: newTask.caseId,
+                status: newTask.status?.toLowerCase().replace('_', '-') || 'pending',
+                originalStatus: newTask.status || 'PENDING'
             };
             
             // Update local state
@@ -200,6 +219,44 @@ const AssignTasks = () => {
             default:
                 return 'bg-gray-100 text-gray-800';
         }
+    };
+
+    // Handle viewing task details
+    const handleViewTaskDetails = async (task) => {
+        try {
+            setIsLoading(true);
+            // Fetch full task details from backend
+            const fullTaskDetails = await getTaskById(task.id);
+            setSelectedTaskForDetails(fullTaskDetails);
+            setShowTaskDetailsModal(true);
+        } catch (error) {
+            console.error('Error loading task details:', error);
+            // Fallback to using the task data we have
+            setSelectedTaskForDetails(task);
+            setShowTaskDetailsModal(true);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Handle task update from modal
+    const handleTaskUpdate = (updatedTask) => {
+        setTaskHistory(prevTasks => 
+            prevTasks.map(task => 
+                task.id === updatedTask.id 
+                    ? { 
+                        ...task, 
+                        status: updatedTask.status?.toLowerCase().replace('_', '-'),
+                        originalStatus: updatedTask.status 
+                      }
+                    : task
+            )
+        );
+        setSelectedTaskForDetails({
+            ...updatedTask,
+            status: updatedTask.status?.toLowerCase().replace('_', '-'),
+            originalStatus: updatedTask.status
+        });
     };
 
     return (
@@ -253,7 +310,10 @@ const AssignTasks = () => {
                     {/* Recent Task Assignments */}
                     <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
                         <div className="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-                            <h2 className="text-lg font-semibold">Recent Task Assignments</h2>
+                            <div>
+                                <h2 className="text-lg font-semibold">Recent Task Assignments</h2>
+                                <p className="text-sm text-gray-600">Click on any task row to view details and documents</p>
+                            </div>
                             <div className="flex gap-2">
                                 <Button2
                                     text="Refresh"
@@ -280,7 +340,7 @@ const AssignTasks = () => {
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {taskHistory.map(task => (
-                                        <tr key={task.id} className="hover:bg-gray-50">
+                                        <tr key={task.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleViewTaskDetails(task)}>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                 {task.title}
                                             </td>
@@ -666,6 +726,18 @@ const AssignTasks = () => {
                     </div>
                 </div>
             )}
+
+            {/* Task Details Modal */}
+            <TaskDetailsModal
+                isOpen={showTaskDetailsModal}
+                onClose={() => {
+                    setShowTaskDetailsModal(false);
+                    setSelectedTaskForDetails(null);
+                }}
+                task={selectedTaskForDetails}
+                onTaskUpdate={handleTaskUpdate}
+                userRole={user?.role || 'LAWYER'}
+            />
         </PageLayout>
     );
 };
