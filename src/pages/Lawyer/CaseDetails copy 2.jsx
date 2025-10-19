@@ -5,11 +5,10 @@ import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import AddNextHearingModal from './AddNextHearingDate'; // Your modal component import
 import { useAuth } from '../../context/AuthContext';
-import { getCaseById, getHearingsForCase, createHearing, getJuniorsForSelection, addCaseMember } from '../../services/caseService';
+import { getCaseById, getHearingsForCase, createHearing } from '../../services/caseService';
 import AddClientModal from './AddNewClientModel';
 import EditHearingModal from './EditHearingModal'; // Import the new modal
 import { updateHearing, deleteHearing } from '../../services/caseService'; // Import the new functions
-import Swal from 'sweetalert2';
 // Placeholder user object. This should come from an Auth Context in a real app.
 
 
@@ -90,9 +89,37 @@ const CaseDetails = () => {
     // This state will now manage the list of hearings, populated from the API
     const [hearings, setHearings] = useState([]);
 
-    // Dynamic junior lawyers data loaded from backend
-    const [availableJuniors, setAvailableJuniors] = useState([]);
-    const [isLoadingJuniors, setIsLoadingJuniors] = useState(false);
+    // Sample junior lawyers data - in a real app, this would come from an API
+    const [availableJuniors] = useState([
+        {
+            id: 1,
+            name: "Jane Smith",
+            email: "jane.smith@example.com",
+            specialization: "Corporate Law",
+            experience: "2 years"
+        },
+        {
+            id: 2,
+            name: "Michael Johnson", 
+            email: "michael.johnson@example.com",
+            specialization: "Criminal Law",
+            experience: "3 years"
+        },
+        {
+            id: 3,
+            name: "Sarah Williams",
+            email: "sarah.williams@example.com", 
+            specialization: "Family Law",
+            experience: "1.5 years"
+        },
+        {
+            id: 4,
+            name: "Robert Chen",
+            email: "robert.chen@example.com",
+            specialization: "Estate Planning",
+            experience: "4 years"
+        }
+    ]);
 
     // --- DATA FETCHING ---
     useEffect(() => {
@@ -105,26 +132,15 @@ const CaseDetails = () => {
         const fetchAllDetails = async () => {
             setIsLoading(true);
             try {
-                // Use Promise.all to fetch case data, hearings, and junior lawyers in parallel for efficiency.
-                const [caseDetailsData, hearingsData, juniorsData] = await Promise.all([
+                // Use Promise.all to fetch both case data and hearings in parallel for efficiency.
+                const [caseDetailsData, hearingsData] = await Promise.all([
                     getCaseById(caseId),
-                    getHearingsForCase(caseId),
-                    getJuniorsForSelection()
+                    getHearingsForCase(caseId)
                 ]);
                 
                 setCaseData(caseDetailsData);
                 console.log("Case Details:", caseDetailsData);
                 setHearings(hearingsData || caseDetailsData.hearings || []); // Use hearings from API or fallback to case data hearings
-                
-                // Transform junior lawyers data to match expected format
-                const formattedJuniors = juniorsData.map(junior => ({
-                    id: junior.id,
-                    name: `${junior.firstName} ${junior.lastName}`,
-                    email: junior.email,
-                    specialization: junior.specialization || "General Practice",
-                    experience: junior.experience || "N/A"
-                }));
-                setAvailableJuniors(formattedJuniors);
             } catch (err) {
                 setError("Failed to fetch case details. You may not have permission to view this case.");
                 console.error(err);
@@ -187,72 +203,23 @@ const CaseDetails = () => {
 
     // Handle junior lawyer assignment
     const handleAssignJunior = async (juniorId) => {
-        if (!juniorId) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'No Selection',
-                text: 'Please select a junior lawyer to assign',
-                confirmButtonColor: '#000000',
-                background: '#ffffff',
-                width: '500px',
-                customClass: {
-                    popup: 'rounded-lg'
-                }
-            });
-            return;
-        }
-
-        setIsLoadingJuniors(true);
         try {
-            // Find the selected junior's details for display
+            // In a real app, you would call an API to assign the junior to the case
+            // await assignJuniorToCase(caseId, juniorId);
+            
+            // For now, we'll just update the local state
             const selectedJunior = availableJuniors.find(junior => junior.id === juniorId);
-            if (!selectedJunior) {
-                throw new Error('Selected junior lawyer not found');
+            if (selectedJunior) {
+                setCaseData(prev => ({
+                    ...prev,
+                    junior: selectedJunior.name
+                }));
+                setShowJuniorModal(false);
+                alert(`Successfully assigned ${selectedJunior.name} to this case.`);
             }
-
-            // Call the API to add the junior as a case member
-            await addCaseMember(caseId, {
-                userId: juniorId,
-                role: 'JUNIOR_LAWYER'
-            });
-
-            // Update the local case data
-            setCaseData(prev => ({
-                ...prev,
-                junior: selectedJunior.name
-            }));
-            
-            setShowJuniorModal(false);
-            
-            // Show success message with SweetAlert2
-            Swal.fire({
-                icon: 'success',
-                title: 'Junior Assigned!',
-                text: `${selectedJunior.name} has been successfully assigned to this case`,
-                confirmButtonColor: '#000000',
-                background: '#ffffff',
-                width: '500px',
-                customClass: {
-                    popup: 'rounded-lg'
-                }
-            });
         } catch (err) {
             console.error("Failed to assign junior lawyer:", err);
-            
-            // Show error message with SweetAlert2
-            Swal.fire({
-                icon: 'error',
-                title: 'Assignment Failed',
-                text: 'Failed to assign junior lawyer. Please try again.',
-                confirmButtonColor: '#000000',
-                background: '#ffffff',
-                width: '500px',
-                customClass: {
-                    popup: 'rounded-lg'
-                }
-            });
-        } finally {
-            setIsLoadingJuniors(false);
+            alert("Error: Could not assign junior lawyer to case.");
         }
     };
 
@@ -519,50 +486,39 @@ const CaseDetails = () => {
                         </p>
                         
                         <div className="space-y-3 max-h-96 overflow-y-auto mb-6">
-                            {isLoadingJuniors ? (
-                                <div className="flex items-center justify-center py-8">
-                                    <div className="text-gray-500">Assigning junior lawyer...</div>
-                                </div>
-                            ) : availableJuniors.length > 0 ? (
-                                availableJuniors.map((junior) => (
-                                    <div 
-                                        key={junior.id}
-                                        className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-                                        onClick={() => !isLoadingJuniors && handleAssignJunior(junior.id)}
-                                    >
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex-1">
-                                                <h4 className="font-medium text-gray-900">{junior.name}</h4>
-                                                <p className="text-sm text-gray-600">{junior.email}</p>
-                                                <div className="mt-2 flex items-center space-x-4">
-                                                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                                        {junior.specialization}
-                                                    </span>
-                                                    <span className="text-xs text-gray-500">
-                                                        {junior.experience}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="ml-4">
-                                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                                </svg>
+                            {availableJuniors.map((junior) => (
+                                <div 
+                                    key={junior.id}
+                                    className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                                    onClick={() => handleAssignJunior(junior.id)}
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex-1">
+                                            <h4 className="font-medium text-gray-900">{junior.name}</h4>
+                                            <p className="text-sm text-gray-600">{junior.email}</p>
+                                            <div className="mt-2 flex items-center space-x-4">
+                                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                                    {junior.specialization}
+                                                </span>
+                                                <span className="text-xs text-gray-500">
+                                                    {junior.experience} experience
+                                                </span>
                                             </div>
                                         </div>
+                                        <div className="ml-4">
+                                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </div>
                                     </div>
-                                ))
-                            ) : (
-                                <div className="text-center py-8 text-gray-500">
-                                    No junior lawyers available
                                 </div>
-                            )}
+                            ))}
                         </div>
                         
                         <div className="flex justify-end space-x-3">
                             <Button2
                                 text="Cancel"
-                                onClick={() => !isLoadingJuniors && setShowJuniorModal(false)}
-                                disabled={isLoadingJuniors}
+                                onClick={() => setShowJuniorModal(false)}
                             />
                         </div>
                     </div>

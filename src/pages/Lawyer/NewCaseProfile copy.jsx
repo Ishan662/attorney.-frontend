@@ -203,6 +203,18 @@ const NewCaseProfile = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  // Predefined client list (no backend needed)
+  const predefinedClients = [
+    { id: 1, name: 'John Doe', phone: '+94712345678', email: 'john.doe@email.com' },
+    { id: 2, name: 'Jane Smith', phone: '+94723456789', email: 'jane.smith@email.com' },
+    { id: 3, name: 'Michael Johnson', phone: '+94734567890', email: 'michael.johnson@email.com' },
+    { id: 4, name: 'Sarah Williams', phone: '+94745678901', email: 'sarah.williams@email.com' },
+    { id: 5, name: 'David Brown', phone: '+94756789012', email: 'david.brown@email.com' },
+    { id: 6, name: 'Emily Davis', phone: '+94767890123', email: 'emily.davis@email.com' },
+    { id: 7, name: 'Robert Wilson', phone: '+94778901234', email: 'robert.wilson@email.com' },
+    { id: 8, name: 'Lisa Anderson', phone: '+94789012345', email: 'lisa.anderson@email.com' },
+  ];
+
   // Load junior lawyers and clients when component mounts
   useEffect(() => {
     const loadData = async () => {
@@ -259,22 +271,22 @@ const NewCaseProfile = () => {
 
   // Handle dropdown selection for junior lawyer
   const handleJuniorSelect = (option) => {
-    setForm({ ...form, associatedJuniorId: option.value });
+    setForm({ ...form, junior: option.value });
     setShowJuniorDropdown(false);
   };
 
-  // Handle client selection from existing clients
-  const handleExistingClientSelect = (client) => {
+  // Handle client selection from predefined list
+  const handleClientSelect = (client) => {
     setForm({ 
       ...form, 
-      existingClientId: client.id,
       clientName: client.name,
-      clientEmail: client.email,
-      clientPhone: '' // Will be populated from backend if available
+      clientPhone: client.phone,
+      clientEmail: client.email
     });
     setShowClientDropdown(false);
   };
 
+  // For simplicity, hearings/timeline/documents are not dynamic in this starter
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -289,19 +301,6 @@ const NewCaseProfile = () => {
 
     if (!form.courtType) {
       setError('Please select a Court Type');
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Validate client information based on mode
-    if (useExistingClient && !form.existingClientId) {
-      setError('Please select an existing client');
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!useExistingClient && (!form.clientName || !form.clientEmail)) {
-      setError('Please fill in all required client information');
       setIsSubmitting(false);
       return;
     }
@@ -366,7 +365,7 @@ const NewCaseProfile = () => {
 
   // Get the selected junior lawyer label
   const getSelectedJuniorLabel = () => {
-    const selected = juniorLawyerOptions.find(option => option.value === form.associatedJuniorId);
+    const selected = juniorLawyerOptions.find(option => option.value === form.junior);
     return selected ? selected.label : "Select Junior Lawyer";
   };
 
@@ -635,125 +634,85 @@ const NewCaseProfile = () => {
                 {/* Client Information - Required */}
                 <div className="mb-8">
                   <h3 className="text-lg font-medium mb-4 text-gray-800">Client Information <span className="text-red-500">*</span></h3>
-                  
-                  {/* Client Selection Mode Toggle */}
-                  <div className="mb-6">
-                    <div className="flex items-center space-x-4">
-                      <button
-                        type="button"
-                        onClick={() => setUseExistingClient(true)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                          useExistingClient
-                            ? 'bg-black text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        Select Existing Client
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUseExistingClient(false);
-                          setForm({ ...form, existingClientId: '', clientName: '', clientPhone: '', clientEmail: '' });
-                        }}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                          !useExistingClient
-                            ? 'bg-black text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        Add New Client
-                      </button>
-                    </div>
-                  </div>
-
                   <div className="grid md:grid-cols-2 gap-6">
-                    {useExistingClient ? (
-                      <>
-                        {/* Existing Client Dropdown */}
-                        <div className="relative md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Select Existing Client <span className="text-red-500">*</span>
-                          </label>
-                          <div 
-                            className="w-full mt-2 text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 flex justify-between items-center cursor-pointer"
-                            onClick={() => setShowClientDropdown(!showClientDropdown)}
-                          >
-                            <span className={form.existingClientId ? "" : "text-gray-500"}>
-                              {form.existingClientId ? form.clientName : "Select from existing clients"}
-                            </span>
-                            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${showClientDropdown ? 'transform rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                          
-                          {/* Client Dropdown Menu */}
-                          {showClientDropdown && (
-                            <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-64 rounded-md border border-gray-200 overflow-auto">
-                              <div className="py-1">
-                                <div className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border-b">
-                                  Select Client
-                                </div>
-                                {clientOptions.map((client) => (
-                                  <div
-                                    key={client.id}
-                                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                                    onClick={() => handleExistingClientSelect(client)}
-                                  >
-                                    <div className="font-medium text-gray-900">{client.name}</div>
-                                    <div className="text-sm text-gray-500">{client.email}</div>
-                                  </div>
-                                ))}
-                                {clientOptions.length === 0 && (
-                                  <div className="px-4 py-3 text-gray-500 text-sm">
-                                    No clients found. Add a new client instead.
-                                  </div>
-                                )}
-                              </div>
+                    {/* Choose from Existing Clients Dropdown */}
+                    <div className="relative">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Choose from Existing Clients
+                      </label>
+                      <div 
+                        className="w-full mt-2 text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 flex justify-between items-center cursor-pointer"
+                        onClick={() => setShowClientDropdown(!showClientDropdown)}
+                      >
+                        <span className="text-gray-500">
+                          Select from existing clients
+                        </span>
+                        <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${showClientDropdown ? 'transform rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      
+                      {/* Client Dropdown Menu */}
+                      {showClientDropdown && (
+                        <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-64 rounded-md border border-gray-200 overflow-auto">
+                          <div className="py-1">
+                            <div className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border-b">
+                              Select Client
                             </div>
-                          )}
+                            {predefinedClients.map((client) => (
+                              <div
+                                key={client.id}
+                                className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                onClick={() => handleClientSelect(client)}
+                              >
+                                <div className="font-medium text-gray-900">{client.name}</div>
+                                <div className="text-sm text-gray-500">{client.phone}</div>
+                                <div className="text-sm text-gray-500">{client.email}</div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </>
-                    ) : (
-                      <>
-                        {/* New Client Fields */}
-                        <Input1
-                          label="Client Name"
-                          name="clientName"
-                          value={form.clientName}
-                          onChange={handleChange}
-                          placeholder="Client Name"
-                          className="mt-2"
-                          variant="outlined"
-                          required
-                        />
-                        
-                        <Input1
-                          label="Client Phone"
-                          name="clientPhone"
-                          value={form.clientPhone}
-                          onChange={handleChange}
-                          placeholder="Client Phone Number"
-                          className="mt-2"
-                          variant="outlined"
-                          required
-                        />
-                        
-                        <Input1
-                          label="Client Email"
-                          name="clientEmail"
-                          value={form.clientEmail}
-                          onChange={handleChange}
-                          placeholder="Client Email"
-                          className="mt-2"
-                          variant="outlined"
-                          required
-                        />
-                        
-                        {/* Empty space for alignment */}
-                        <div></div>
-                      </>
-                    )}
+                      )}
+                    </div>
+
+                    {/* Empty space for alignment */}
+                    <div></div>
+                    
+                    <Input1
+                      label="Client Name"
+                      name="clientName"
+                      value={form.clientName}
+                      onChange={handleChange}
+                      placeholder="Client Name"
+                      className="mt-2"
+                      variant="outlined"
+                      required
+                    />
+                    
+                    <Input1
+                      label="Client Phone"
+                      name="clientPhone"
+                      value={form.clientPhone}
+                      onChange={handleChange}
+                      placeholder="Client Phone Number"
+                      className="mt-2"
+                      variant="outlined"
+                      required
+                    />
+                    
+                    <Input1
+                      label="Client Email"
+                      name="clientEmail"
+                      value={form.clientEmail}
+                      onChange={handleChange}
+                      placeholder="Client Email"
+                      className="mt-2"
+                      variant="outlined"
+                      required
+                    />
+                    
+                    {/* Empty space for alignment */}
+                    <div></div>
                   </div>
                 </div>
 

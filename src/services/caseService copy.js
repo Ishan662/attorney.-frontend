@@ -195,7 +195,7 @@ export const getHearingsForCase = async (caseId) => {
 };
 
 /**
- * Creates a new case in the backend with existing client and junior selection
+ * Creates a new case in the backend
  */
 export const createCase = async (caseFormData) => {
   const mapPaymentStatus = (status) => {
@@ -208,14 +208,11 @@ export const createCase = async (caseFormData) => {
   };
 
   const createCaseRequest = {
-    // Use existing client ID if provided, otherwise create new client
-    existingClientId: caseFormData.existingClientId || null,
-    clientName: caseFormData.existingClientId ? null : caseFormData.clientName,
-    clientPhone: caseFormData.existingClientId ? null : caseFormData.clientPhone,
-    clientEmail: caseFormData.existingClientId ? null : caseFormData.clientEmail,
-    
+    clientName: caseFormData.clientName,
+    clientPhone: caseFormData.clientPhone,
+    clientEmail: caseFormData.clientEmail,
     opposingPartyName: caseFormData.opposingParty,
-    associatedJuniorId: caseFormData.associatedJuniorId || null,
+    associatedJuniorId: caseFormData.junior || null,
     caseNumber: caseFormData.caseNumber,
     court: caseFormData.court,
     courtType: caseFormData.courtType,
@@ -229,30 +226,6 @@ export const createCase = async (caseFormData) => {
   return await authenticatedFetch('/api/cases', {
     method: 'POST',
     body: JSON.stringify(createCaseRequest),
-  });
-};
-
-/**
- * Fetches clients list for selection dropdown (lightweight)
- */
-export const getClientsForSelection = async () => {
-  return await authenticatedFetch('/api/team/clients/select-list');
-};
-
-/**
- * Fetches junior lawyers list for selection dropdown (lightweight)
- */
-export const getJuniorsForSelection = async () => {
-  return await authenticatedFetch('/api/team/juniors/select-list');
-};
-
-/**
- * Adds a member to an existing case
- */
-export const addCaseMember = async (caseId, memberData) => {
-  return await authenticatedFetch(`/api/cases/${caseId}/members`, {
-    method: 'POST',
-    body: JSON.stringify(memberData),
   });
 };
 
