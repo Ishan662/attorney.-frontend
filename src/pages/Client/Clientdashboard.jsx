@@ -1,20 +1,26 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../../components/layout/PageLayout";
 import PageHeader from "../../components/layout/PageHeader";
 import Button1 from "../../components/UI/Button1";
-import Button2 from "../../components/UI/Button2";
+import { getDashboardData } from "../../services/clientDashboardService"; // <-- import service
 
 const ClientDashboard = () => {
     const navigate = useNavigate();
-    const [notificationCount, setNotificationCount] = useState(2)
+    const [notificationCount, setNotificationCount] = useState(2);
+    const [upcomingMeetings, setUpcomingMeetings] = useState([]);
+    const [upcomingHearings, setUpcomingHearings] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const handleNotificationClick = () => {
-        console.log('Notifications clicked');
-        // Navigate to notifications page or open notification panel
+    // Example logged-in user (replace with auth context if available)
+    const user = {
+        id: "0d9b1b4e-7a56-4a7f-b71d-9e3512d534c3", // Replace with actual logged-in userId
+        name: "Nethsilu Marasinghe",
+        email: "kasuntharamarasinghe.com",
+        role: "client",
     };
 
-    // Sidebar navigation items for client
     const sidebarItems = [
         { title: "Dashboard", path: "/client/dashboard" },
         { title: "Case Profiles", path: "/client/caseprofiles" },
@@ -23,144 +29,147 @@ const ClientDashboard = () => {
         { title: "Payments", path: "/client/payments" },
     ];
 
-    // Mock data for due payments
-    const duePayments = [
-        { id: 1, caseName: "Case A", amount: "$1,200", dueDate: "2023-07-10" },
-        { id: 2, caseName: "Case B", amount: "$850", dueDate: "2023-07-15" },
-    ];
-
-    // Mock data for upcoming meetings
-    const upcomingMeetings = [
-        { id: 1, lawyerName: "Nishagi Jewantha", date: "2023-07-12", status: "Confirmed" },
-        { id: 2, lawyerName: "John Doe", date: "2023-07-18", status: "Pending" },
-    ];
-
-    // Mock data for upcoming hearings
-    const upcomingHearings = [
-        { id: 1, caseTitle: "Land Case", court: "District Court, Colombo", date: "2023-07-15", time: "10:00 AM", status: "Scheduled" },
-        { id: 2, caseTitle: "House Case", court: "Supreme Court", date: "2023-07-20", time: "2:00 PM", status: "Confirmed" },
-    ];
-
-    // Format date helper
+    // Format date
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);
-        return date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
+        return date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
         });
     };
 
-    const user= {
-        name: 'Nethsilu Marasinghe',
-        email: 'kasuntharamarasinghe.com',
-        role: 'client',
-    };
+    // Fetch upcoming hearings & meetings using service
+    useEffect(() => {
+        const fetchDashboard = async () => {
+            try {
+                setLoading(true);
+                const { hearings, meetings } = await getDashboardData(user.id); // <-- service call
+                setUpcomingHearings(hearings);
+                setUpcomingMeetings(meetings);
+            } catch (err) {
+                console.error(err);
+                setError("Error loading dashboard data");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDashboard();
+    }, [user.id]);
+
+    if (loading) {
+        return (
+            <PageLayout user={user} sidebarItems={sidebarItems}>
+                <div className="text-center mt-20 text-gray-600">Loading dashboard data...</div>
+            </PageLayout>
+        );
+    }
+
+    if (error) {
+        return (
+            <PageLayout user={user} sidebarItems={sidebarItems}>
+                <div className="text-center mt-20 text-red-600">{error}</div>
+            </PageLayout>
+        );
+    }
 
     return (
         <PageLayout user={user} sidebarItems={sidebarItems}>
             {/* Header */}
             <div className="mb-8">
-                <PageHeader 
-                    user={user} 
-                    notificationCount={notificationCount} 
-                    onNotificationClick={handleNotificationClick}
+                <PageHeader
+                    user={user}
+                    notificationCount={notificationCount}
+                    onNotificationClick={() => console.log("Notifications clicked")}
                 />
             </div>
 
-            {/* Dashboard Content */}
             <div className="grid grid-cols-1 gap-6">
-            
-                {/* <div className="bg-white rounded-lg shadow-md p-6">
-                    <h2 className="text-xl font-bold mb-4">Due Payments</h2>
-                    {duePayments.length === 0 ? (
-                        <p className="text-gray-500">No due payments.</p>
-                    ) : (
-                        <ul>
-                            {duePayments.map(payment => (
-                                <li key={payment.id} className="border-b last:border-b-0 py-3 flex justify-between items-center">
-                                    <div>
-                                        <div className="font-medium">{payment.caseName}</div>
-                                        <div className="text-sm text-gray-500">Due: {formatDate(payment.dueDate)}</div>
-                                    </div>
-                                    <div className="text-red-600 font-semibold">{payment.amount}</div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                    <div className="mt-4">
-                        <Button1 
-                            text="View All Payments"
-                            onClick={() => navigate("/client/payments")}
-                        />
-                    </div>
-                </div> */}
-
-                {/* Upcoming Meetings Box */}
-                <div className="bg-white rounded-lg shadow-md p-2">
+                {/* Upcoming Meetings */}
+                <div className="bg-white rounded-lg shadow-md p-4">
                     <h2 className="text-xl font-bold mb-4">Upcoming Meetings</h2>
                     {upcomingMeetings.length === 0 ? (
                         <p className="text-gray-500">No upcoming meetings.</p>
                     ) : (
                         <div className="space-y-4">
-                            {upcomingMeetings.map(meeting => (
-                                <div key={meeting.id} className="bg-gray-50 rounded-lg border border-gray-200 p-4">
+                            {upcomingMeetings.map((meeting) => (
+                                <div
+                                    key={meeting.id}
+                                    className="bg-gray-50 rounded-lg border border-gray-200 p-4"
+                                >
                                     <div className="flex justify-between items-start mb-2">
-                                        <div className="font-medium text-gray-800">Lawyer: {meeting.lawyerName}</div>
-                                        <span className={`
-                                            px-3 py-1 rounded-full text-xs font-medium
-                                            ${meeting.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : ''}
-                                            ${meeting.status === 'Confirmed' ? 'bg-green-100 text-green-800' : ''}
-                                            ${meeting.status === 'Rescheduled' ? 'bg-red-100 text-red-800' : ''}
-                                        `}>
-                                            {meeting.status}
+                                        <div className="font-medium text-gray-800">
+                                            Lawyer: {meeting.lawyerName || "Unknown"}
+                                        </div>
+                                        <span
+                                            className={`px-3 py-1 rounded-full text-xs font-medium
+                                            ${meeting.status === "Pending" ? "bg-yellow-100 text-yellow-800" : ""}
+                                            ${meeting.status === "Confirmed" ? "bg-green-100 text-green-800" : ""}
+                                            ${meeting.status === "Rescheduled" ? "bg-red-100 text-red-800" : ""}
+                                        `}
+                                        >
+                                            {meeting.status || "Unknown"}
                                         </span>
                                     </div>
-                                    <div className="text-sm text-gray-600">{formatDate(meeting.date)}</div>
+                                    <div className="text-sm text-gray-600">
+                                        {formatDate(meeting.meetingDate)}
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     )}
                     <div className="mt-4">
-                        <Button1 
+                        <Button1
                             text="Request Meeting"
-                            onClick={() => navigate("/client/clientcalendar")}
+                            onClick={() => navigate("/client/meetingrequest")}
                         />
                     </div>
                 </div>
 
-                {/* Upcoming Hearings Box */}
-                <div className="bg-white rounded-lg shadow-md p-2">
+                {/* Upcoming Hearings */}
+                <div className="bg-white rounded-lg shadow-md p-4">
                     <h2 className="text-xl font-bold mb-4">Upcoming Hearings</h2>
                     {upcomingHearings.length === 0 ? (
                         <p className="text-gray-500">No upcoming hearings.</p>
                     ) : (
                         <div className="space-y-4">
-                            {upcomingHearings.map(hearing => (
-                                <div key={hearing.id} className="bg-gray-50 rounded-lg border border-gray-200 p-4">
+                            {upcomingHearings.map((hearing) => (
+                                <div
+                                    key={hearing.caseId}
+                                    className="bg-gray-50 rounded-lg border border-gray-200 p-4"
+                                >
                                     <div className="flex justify-between items-start mb-2">
-                                        <div className="font-medium text-gray-800">{hearing.caseTitle}</div>
-                                        <span className={`
-                                            px-3 py-1 rounded-full text-xs font-medium
-                                            ${hearing.status === 'Scheduled' ? 'bg-blue-100 text-blue-800' : ''}
-                                            ${hearing.status === 'Confirmed' ? 'bg-green-100 text-green-800' : ''}
-                                            ${hearing.status === 'Postponed' ? 'bg-red-100 text-red-800' : ''}
-                                        `}>
-                                            {hearing.status}
+                                        <div className="font-medium text-gray-800">
+                                            {hearing.caseTitle || "Untitled Case"}
+                                        </div>
+                                        <span
+                                            className={`px-3 py-1 rounded-full text-xs font-medium
+                                            ${hearing.status === "Scheduled" ? "bg-blue-100 text-blue-800" : ""}
+                                            ${hearing.status === "Confirmed" ? "bg-green-100 text-green-800" : ""}
+                                            ${hearing.status === "Postponed" ? "bg-red-100 text-red-800" : ""}
+                                        `}
+                                        >
+                                            {hearing.status || "Scheduled"}
                                         </span>
                                     </div>
                                     <div className="space-y-1">
-                                        <div className="text-sm text-gray-600">Court: {hearing.court}</div>
-                                        <div className="text-sm text-gray-600">{formatDate(hearing.date)} at {hearing.time}</div>
+                                        <div className="text-sm text-gray-600">
+                                            Court: {hearing.courtName || "Unknown"}
+                                        </div>
+                                        <div className="text-sm text-gray-600">
+                                            {formatDate(hearing.hearingDate)}{" "}
+                                            {hearing.hearingTime && `at ${hearing.hearingTime}`}
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     )}
                     <div className="mt-4">
-                        <Button1 
+                        <Button1
                             text="View Calendar"
-                            onClick={() => navigate("/client/clientcalendar")}
+                            onClick={() => navigate("/client/calendar")}
                         />
                     </div>
                 </div>
