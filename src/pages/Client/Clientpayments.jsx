@@ -1,214 +1,232 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { FaSearch, FaChevronDown } from "react-icons/fa";
-import Sidebar from "../../components/layout/Sidebar";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Input1 from '../../components/UI/Input1';
+import Button1 from '../../components/UI/Button1';
+import PageLayout from '../../components/layout/PageLayout';
+import { getMyCases } from '../../services/caseService';
+import PaymentModal from '../../components/payments/PaymentModal';
+import { initiateStripePayment, getTotalPaidForCase } from '../../services/paymentService';
+
+const user = {
+  name: 'Nishagi Jewantha',
+  email: 'jewanthadheerath@gmail.com',
+  role: 'client',
+};
 
 const Clientpayments = () => {
-    const navigate = useNavigate();
-    const [mainSidebarExpanded, setMainSidebarExpanded] = useState(true);
-    const [paymentStatusFilter, setPaymentStatusFilter] = useState("All");
-    const [caseTypeFilter, setCaseTypeFilter] = useState("All");
-    const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
+  const [cases, setCases] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
 
-    // Mock user data
-    const user = {
-        name: 'Nishagi Jewantha',
-        email: 'nishagijewantha@gmail.com',
-        role: 'client',
-    };
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCase, setSelectedCase] = useState(null);
 
-    // Mock payment data
-    const paymentData = [
-        {
-            id: 1,
-            caseTitle: "Land Case",
-            seniorLawyer: "Nadun Hasalanka",
-            acceptedFee: "Rs 25,000/-",
-            paidAmount: "Rs 10,000/-",
-            remainingPayment: "Rs 15,000/-",
-            status: "Pending",
-            caseType: "Land"
-        },
-        {
-            id: 2,
-            caseTitle: "House Case",
-            seniorLawyer: "Dappula De Livera",
-            acceptedFee: "Rs 35,000/-",
-            paidAmount: "Rs 35,000/-",
-            remainingPayment: "No",
-            status: "Paid",
-            caseType: "Property"
-        }
-    ];
+  useEffect(() => {
+    const fetchCasesAndPaymentDetails = async () => {
+      try {
+        setIsLoading(true);
+        // 1. Fetch the initial list of cases
+        const initialCases = await getMyCases();
 
-    // Filter payment data based on search and filters
-    const filteredPayments = paymentData.filter(payment => {
-        const matchesSearch = payment.caseTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            payment.seniorLawyer.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesStatus = paymentStatusFilter === "All" || payment.status === paymentStatusFilter;
-        const matchesType = caseTypeFilter === "All" || payment.caseType === caseTypeFilter;
-        
-        return matchesSearch && matchesStatus && matchesType;
-    });
-
-    // Get status badge styling
-    const getStatusBadge = (status) => {
-        switch (status) {
-            case "Paid":
-                return "bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium";
-            case "Pending":
-                return "bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium";
-            default:
-                return "bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium";
-        }
-    };
-
-    // Get payment button styling
-    const getPaymentButton = (status, remainingPayment) => {
-        if (status === "Paid" || remainingPayment === "No") {
-            return (
-                <button 
-                    className="bg-gray-400 text-white px-6 py-2 rounded-lg cursor-not-allowed"
-                    disabled
-                >
-                    Paid
-                </button>
-            );
-        }
-        return (
-            <button 
-                className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors"
-                onClick={() => handlePayment()}
-            >
-                Pay
-            </button>
+        // 2. For each case, create a promise to fetch its total paid amount
+        const paymentDetailPromises = initialCases.map(c =>
+          getTotalPaidForCase(c.id)
         );
+
+        // 3. Wait for all payment detail fetches to complete
+        const paymentDetails = await Promise.all(paymentDetailPromises);
+
+        // 4. Merge the payment details back into the case objects
+        const casesWithPaymentDetails = initialCases.map((caseData, index) => ({
+          ...caseData,
+          // The API returns the amount in cents in the `totalPaidAmount` field
+          totalPaidAmountInCents: paymentDetails[index].totalPaidAmount,
+        }));
+        
+        setCases(casesWithPaymentDetails);
+      } catch (err) {
+        setError('Failed to load your cases or payment details. Please try refreshing.');
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCasesAndPaymentDetails();
+  }, []); // The empty array ensures this runs only once on component mount
+
+  const filteredCases = cases.filter(c =>
+    (c.caseTitle?.toLowerCase() || '').includes(search.toLowerCase()) ||
+    (c.caseNumber?.toLowerCase() || '').includes(search.toLowerCase())
+  );
+
+  const getPaymentStatusStyle = (status) => {
+    switch (status) {
+      case 'PAID IN FULL': return 'text-green-600 font-bold';
+      case 'PARTIALLY PAID': return 'text-yellow-600 font-bold';
+      case 'PENDING': return 'text-red-600 font-bold';
+      default: return 'text-gray-600 font-bold';
+    }
+  };
+
+  const needsPayment = (paymentStatus) => paymentStatus !== 'PAID IN FULL';
+
+  const handlePaymentClick = (caseData, remainingAmount) => {
+    setSelectedCase({ ...caseData, remainingAmount });
+    setIsModalOpen(true);
+  };
+
+  const handleModalSubmit = async (amountToPay) => {
+    if (!selectedCase) return;
+
+    const paymentData = {
+      amount: Math.round(amountToPay * 100),
+      currency: 'usd',
+      description: `Payment for case: ${selectedCase.caseTitle}`,
+      customerEmail: selectedCase.clientEmail,
+      caseId: selectedCase.id,
     };
 
-    const handlePayment = () => {
-        // Handle payment logic here
-        console.log("Processing payment...");
-    };
-
-    return (
-        <div className="h-screen bg-gray-100 flex">
-            {/* Main Navigation Sidebar */}
-            <Sidebar 
-                user={user} 
-                defaultExpanded={mainSidebarExpanded}
-                onToggle={setMainSidebarExpanded}
-            />
-            
-            {/* Main Content */}
-            <div className={`flex-1 flex flex-col transition-all duration-300 ${mainSidebarExpanded ? 'ml-64' : 'ml-20'}`}>
-                {/* Header */}
-                <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-6">
-                    <h1 className="text-3xl font-bold text-gray-800">Payments</h1>
-                </div>
-
-                {/* Content Area */}
-                <div className="flex-1 p-6 overflow-y-auto">
-                    {/* Search and Filters */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-                        <div className="flex flex-col md:flex-row gap-4 items-center">
-                            {/* Search Bar */}
-                            <div className="relative flex-1 max-w-md">
-                                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                                <input
-                                    type="text"
-                                    placeholder="Search cases..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                            </div>
-
-                            {/* Payment Status Filter */}
-                            <div className="relative">
-                                <select
-                                    value={paymentStatusFilter}
-                                    onChange={(e) => setPaymentStatusFilter(e.target.value)}
-                                    className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                >
-                                    <option value="All">Payment Status</option>
-                                    <option value="Pending">Pending</option>
-                                    <option value="Paid">Paid</option>
-                                </select>
-                                <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={12} />
-                            </div>
-
-                            {/* Case Type Filter */}
-                            <div className="relative">
-                                <select
-                                    value={caseTypeFilter}
-                                    onChange={(e) => setCaseTypeFilter(e.target.value)}
-                                    className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                >
-                                    <option value="All">Case Type</option>
-                                    <option value="Land">Land</option>
-                                    <option value="Property">Property</option>
-                                    <option value="Contract">Contract</option>
-                                    <option value="Family">Family</option>
-                                </select>
-                                <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={12} />
-                            </div>
+    try {
+      const { checkoutUrl } = await initiateStripePayment(paymentData);
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
+      } else {
+        throw new Error('Checkout URL not received from server.');
+      }
+    } catch (apiError) {
+      alert(apiError.message || 'An unexpected error occurred.');
+      setIsModalOpen(false);
+    }
+  };
+  
+  return (
+    <PageLayout user={user}>
+      {selectedCase && (
+        <PaymentModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          caseDetails={selectedCase}
+          onSubmit={handleModalSubmit}
+        />
+      )}
+      
+      <div className="flex min-h-screen bg-white-50">
+        <div className="flex-grow overflow-y-auto transition-all duration-300">
+          <div className="p-6">
+            <main className="flex-1 p-0">
+              <h1 className="text-2xl font-semibold mb-6">Payments</h1>
+              <div className="mb-6 max-w-md">
+                <Input1
+                  type="text"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Search by case name or case number..."
+                  className="bg-orange-50"
+                  variant="outlined"
+                />
+              </div>
+              <div className="space-y-4">
+                {isLoading ? (
+                  <p>Loading payment details...</p>
+                ) : error ? (
+                  <p className="text-red-500">{error}</p>
+                ) : (
+                  filteredCases.map(c => {
+                    const agreedFee = c.agreedFee || 0;
+                    const paidAmount = (c.totalPaidAmountInCents || 0) / 100;
+                    const remainingAmount = agreedFee - paidAmount;
+                    
+                    return (
+                      <div
+                        key={c.id}
+                        className="bg-white rounded-lg p-5 shadow-md border border-gray-200"
+                      >
+                        <div className="bg-gray-100 font-semibold text-base mb-4 px-4 py-2 rounded-md">
+                          {c.caseTitle}
                         </div>
-                    </div>
 
-                    {/* Payment Cards */}
-                    <div className="space-y-4">
-                        {filteredPayments.map((payment) => (
-                            <div key={payment.id} className="bg-gray-50 rounded-lg border border-gray-200 p-6">
-                                {/* Case Title and Status */}
-                                <div className="flex justify-between items-start mb-4">
-                                    <h2 className="text-xl font-bold text-gray-800">{payment.caseTitle}</h2>
-                                    <span className={getStatusBadge(payment.status)}>
-                                        {payment.status}
-                                    </span>
-                                </div>
-
-                                {/* Payment Details - Vertical List */}
-                                <div className="space-y-3 mb-6">
-                                    <div className="flex left-between items-center py-2  border-gray-200">
-                                        <span className="text-sm font-medium text-gray-600">Senior Lawyer :</span>
-                                        <span className="text-gray-800 font-medium">{payment.seniorLawyer}</span>
-                                    </div>
-                                    <div className="flex left-between items-center py-2 border-gray-200">
-                                        <span className="text-sm font-medium text-gray-600">Accepted Fee :</span>
-                                        <span className="text-gray-800 font-medium">{payment.acceptedFee}</span>
-                                    </div>
-                                    <div className="flex left-between items-center py-2 border-gray-200">
-                                        <span className="text-sm font-medium text-gray-600">Paid :</span>
-                                        <span className="text-gray-800 font-medium">{payment.paidAmount}</span>
-                                    </div>
-                                    <div className="flex left-between items-center py-2">
-                                        <span className="text-sm font-medium text-gray-600">Remaining Payment :</span>
-                                        <span className="text-gray-800 font-medium">{payment.remainingPayment}</span>
-                                    </div>
-                                </div>
-
-                                {/* Payment Button */}
-                                <div className="flex justify-end">
-                                    {getPaymentButton(payment.status, payment.remainingPayment)}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* No Results Message */}
-                    {filteredPayments.length === 0 && (
-                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-                            <div className="text-gray-400 mb-4">
-                                <FaSearch size={48} className="mx-auto" />
-                            </div>
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">No payments found</h3>
-                            <p className="text-gray-500">Try adjusting your search criteria or filters.</p>
+                        <div className="text-sm text-gray-700 space-y-2 mb-4">
+                          <div>
+                            <span className="font-bold">Case Number:</span> {c.caseNumber}
+                          </div>
+                          <div>
+                            <span className="font-bold">Senior Lawyer:</span> {c.ownerLawyerName || 'N/A'}
+                          </div>
+                          <div>
+                            <span className="font-bold">Case Type:</span> {c.caseType || 'N/A'}
+                          </div>
+                          <div>
+                            <span className="font-bold">Junior Associate:</span> {c.junior || 'Not Assigned'}
+                          </div>
                         </div>
-                    )}
-                </div>
-            </div>
+
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                          <h3 className="font-bold text-blue-800 mb-3 text-base">Payment Information</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="text-center">
+                              <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">Total Fee</div>
+                              <div className="text-2xl font-bold text-gray-800">
+                                ${agreedFee.toFixed(2)}
+                              </div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">Paid</div>
+                              <div className="text-2xl font-bold text-green-600">
+                                ${paidAmount.toFixed(2)}
+                              </div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">Remaining</div>
+                              <div className={`text-2xl font-bold ${remainingAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                ${remainingAmount.toFixed(2)}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="text-center mt-4 pt-3 border-t border-blue-200">
+                            <div className="text-xs text-gray-600 uppercase tracking-wide mb-1">Status</div>
+                            <div className={`text-lg ${getPaymentStatusStyle(c.paymentStatus)}`}>
+                              {c.paymentStatus?.replace('_', ' ') || 'PENDING'}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                          <Button1
+                            text={<span>View Details →</span>}
+                            className="flex items-center"
+                            onClick={() => navigate(`/client/case/${c.id}`)}
+                          />
+                          {needsPayment(c.paymentStatus) ? (
+                            <Button1
+                              text={<span>Make Payment</span>}
+                              className="flex items-center bg-green-600 hover:bg-green-700 text-white font-semibold"
+                              onClick={() => handlePaymentClick(c, remainingAmount)}
+                            />
+                          ) : (
+                            <Button1
+                              text={<span>✓ Fully Paid</span>}
+                              className="flex items-center bg-gray-400 cursor-not-allowed"
+                              disabled
+                            />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+                {!isLoading && !error && filteredCases.length === 0 && (
+                  <p>No cases found.</p>
+                )}
+              </div>
+            </main>
+          </div>
         </div>
-    );
+      </div>
+    </PageLayout>
+  );
 };
 
 export default Clientpayments;

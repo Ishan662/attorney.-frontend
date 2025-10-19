@@ -49,3 +49,21 @@ export const updateTaskStatus = async (taskId, updateData) => {
     throw error;
   }
 };
+
+/**
+ * Gets detailed information about a specific task
+ * Since the backend doesn't support GET /api/tasks/{taskId}, we'll get all tasks and find the one we need
+ */
+export const getTaskById = async (taskId) => {
+  try {
+    const allTasks = await getAllFirmTasks();
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task) {
+      throw new Error('Task not found');
+    }
+    return task;
+  } catch (error) {
+    console.error('Error fetching task details:', error);
+    throw error;
+  }
+};
