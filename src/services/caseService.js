@@ -208,9 +208,12 @@ export const createCase = async (caseFormData) => {
   };
 
   const createCaseRequest = {
-    // Use existing client ID if provided, otherwise create new client
+    // Use the case name provided by the user
+    caseTitle: caseFormData.caseName,
+    
+    // Always send client name for title generation, even with existing clients
     existingClientId: caseFormData.existingClientId || null,
-    clientName: caseFormData.existingClientId ? null : caseFormData.clientName,
+    clientName: caseFormData.clientName, // Always send client name
     clientPhone: caseFormData.existingClientId ? null : caseFormData.clientPhone,
     clientEmail: caseFormData.existingClientId ? null : caseFormData.clientEmail,
     
@@ -224,6 +227,9 @@ export const createCase = async (caseFormData) => {
     caseType: caseFormData.caseType,
     agreedFee: parseFloat(caseFormData.agreedFee) || 0,
     paymentStatus: mapPaymentStatus(caseFormData.paymentStatus),
+    
+    // Include specialized case details if provided
+    additionalDetails: caseFormData.additionalDetails || null,
   };
 
   return await authenticatedFetch('/api/cases', {

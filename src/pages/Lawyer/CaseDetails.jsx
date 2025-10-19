@@ -9,6 +9,9 @@ import { getCaseById, getHearingsForCase, createHearing, getJuniorsForSelection,
 import AddClientModal from './AddNewClientModel';
 import EditHearingModal from './EditHearingModal'; // Import the new modal
 import { updateHearing, deleteHearing } from '../../services/caseService'; // Import the new functions
+import DivorceDetails from '../../components/specialized/DivorceDetails';
+import caseDetailsService from '../../services/caseDetailsService';
+import useCaseAdditionalDetails from '../../hooks/useCaseAdditionalDetails';
 import Swal from 'sweetalert2';
 // Placeholder user object. This should come from an Auth Context in a real app.
 
@@ -28,6 +31,7 @@ const CaseDetails = () => {
     const [showJuniorModal, setShowJuniorModal] = useState(false);
     const [showChatModal, setShowChatModal] = useState(false);
     const [selectedHearing, setSelectedHearing] = useState(null);
+    const [activeTab, setActiveTab] = useState('general');
     const [chatMessage, setChatMessage] = useState('');
     const [chatMessages, setChatMessages] = useState([
         {
@@ -93,6 +97,9 @@ const CaseDetails = () => {
     // Dynamic junior lawyers data loaded from backend
     const [availableJuniors, setAvailableJuniors] = useState([]);
     const [isLoadingJuniors, setIsLoadingJuniors] = useState(false);
+
+    // Hook for managing additional details (specialized case details)
+    const { updateAdditionalDetails, isLoading: isUpdatingDetails, error: updateError, clearError } = useCaseAdditionalDetails({ id: caseId });
 
     // --- DATA FETCHING ---
     useEffect(() => {
@@ -279,6 +286,48 @@ const CaseDetails = () => {
         }
     };
 
+    // Handle saving additional details (specialized case details like divorce details)
+    const handleSaveAdditionalDetails = async (newAdditionalDetails) => {
+        try {
+            clearError(); // Clear any previous errors
+            
+            // Update the additional details via the API
+            const updatedCase = await updateAdditionalDetails(newAdditionalDetails);
+            
+            // Update the local case data with the response from the backend
+            setCaseData(updatedCase);
+            
+            // Show success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Details Updated',
+                text: 'The case details have been successfully updated.',
+                confirmButtonColor: '#10B981',
+                background: '#ffffff',
+                width: '500px',
+                customClass: {
+                    popup: 'rounded-lg'
+                }
+            });
+            
+        } catch (err) {
+            console.error("Failed to update additional details:", err);
+            
+            // Show error message
+            Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                text: err.message || 'Failed to update case details. Please try again.',
+                confirmButtonColor: '#EF4444',
+                background: '#ffffff',
+                width: '500px',
+                customClass: {
+                    popup: 'rounded-lg'
+                }
+            });
+        }
+    };
+
     // --- DYNAMIC TIMELINE GENERATION ---
     // This now uses the 'hearings' state variable
     const timelineEvents = hearings
@@ -329,8 +378,62 @@ const CaseDetails = () => {
             </div>
             <h1 className="text-2xl font-bold mb-6">Case No : {caseData.caseNumber}</h1>
 
-            {/* Case Overview */}
-            <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
+            {/* Tab Navigation */}
+            <div className="bg-white rounded-t-lg shadow-sm border border-gray-200 mb-0">
+                <div className="flex border-b border-gray-200">
+                    <button
+                        onClick={() => setActiveTab('general')}
+                        className={`px-6 py-3 text-sm font-medium transition-colors ${
+                            activeTab === 'general'
+                                ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50'
+                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        }`}
+                    >
+                        General Details
+                    </button>
+                    
+                    {/* Show Divorce Details tab only for divorce cases */}
+                    {caseDetailsService.isDivorceCase(caseData.caseType) && (
+                        <button
+                            onClick={() => setActiveTab('divorce')}
+                            className={`px-6 py-3 text-sm font-medium transition-colors ${
+                                activeTab === 'divorce'
+                                    ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50'
+                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                            }`}
+                        >
+                            Divorce Details
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* Divorce Details Tab Content */}
+            {activeTab === 'divorce' && caseDetailsService.isDivorceCase(caseData.caseType) && (
+                <div className="bg-white rounded-b-lg shadow-sm border-x border-b border-gray-200 p-6 mb-6">
+                    <DivorceDetails 
+                        caseData={caseData} 
+                        onSave={handleSaveAdditionalDetails}
+                        isEditable={user.role === 'lawyer' || user.role === 'junior'}
+                    />
+                    {updateError && (
+                        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                            <p className="text-red-600 text-sm">{updateError}</p>
+                        </div>
+                    )}
+                    {isUpdatingDetails && (
+                        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                            <p className="text-blue-600 text-sm">Saving changes...</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* General Tab Content - visible when activeTab is 'general' */}
+            {activeTab === 'general' && (
+                <>
+                    {/* Case Overview */}
+                    <section className="bg-white rounded-b-lg p-8 mb-6 shadow-md border-x border-b border-gray-200">
                 <h2 className="text-xl font-semibold mb-6">Case Overview</h2>
 
 
@@ -471,6 +574,8 @@ const CaseDetails = () => {
                 </ul>
                 <Button1 text="Add Documents" className="mt-2" />
             </section>
+                </>
+            )}
 
             {showClientModal && (
                 <AddClientModal
