@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import classicalStatue from '../../assets/images/angell.png';
 import classicalStatue2 from '../../assets/images/lion.png';
+import { createSubscriptionSession } from '../../services/subscriptionService';
 
 const Pricings = () => {
+    const navigate = useNavigate();
     const [billingPeriod, setBillingPeriod] = useState('monthly');
     const [scrollY, setScrollY] = useState(0);
+    const [loadingPlanId, setLoadingPlanId] = useState(null);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         const handleScroll = () => {
-            // Get the main scrollable container
             const mainContainer = document.querySelector('main');
             if (mainContainer) {
                 setScrollY(mainContainer.scrollTop);
@@ -24,6 +28,7 @@ const Pricings = () => {
 
     const plans = [
         {
+            id: null, // No ID for the free trial
             name: '7 days Free Trail',
             price: 0,
             description: 'Everything in FREE plan',
@@ -37,6 +42,7 @@ const Pricings = () => {
             buttonStyle: 'bg-blue-100 text-gray-800 hover:bg-blue-200'
         },
         {
+            id: 2, // Backend ID for Pro Plan
             name: 'Pro',
             price: billingPeriod === 'monthly' ? 5 : 4,
             description: 'Everything in Pro plan',
@@ -47,11 +53,12 @@ const Pricings = () => {
                 'Top grade security',
                 'Customizable Solutions'
             ],
-            buttonText: 'Get Started',
+            buttonText: 'Subscribe Now',
             buttonStyle: 'bg-gray-900 text-white hover:bg-gray-800',
             popular: true
         },
         {
+            id: 3, // Backend ID for Educator Plan
             name: 'Educator',
             price: billingPeriod === 'monthly' ? 2 : 1.6,
             description: 'Dedicated for Law students/researchers',
@@ -63,10 +70,32 @@ const Pricings = () => {
                 'Seamless Integration',
                 'Dedicated account manager'
             ],
-            buttonText: 'Get Started',
+            buttonText: 'Subscribe Now',
             buttonStyle: 'bg-blue-100 text-gray-800 hover:bg-blue-200'
         }
     ];
+
+    const handleSubscribeClick = async (plan) => {
+        if (plan.id === null) {
+            navigate('/login');
+            return;
+        }
+
+        setLoadingPlanId(plan.id);
+        setError('');
+
+        try {
+            const response = await createSubscriptionSession(plan.id);
+            if (response.checkoutUrl) {
+                window.location.href = response.checkoutUrl;
+            } else {
+                throw new Error('Checkout URL not found in response.');
+            }
+        } catch (err) {
+            setError(err.message || 'An unexpected error occurred.');
+            setLoadingPlanId(null);
+        }
+    };
 
     return (
         <div className="bg-gray-50 py-16 px-4 relative bg-gradient-to-br from-white via-gray-200 to-gray-400">
@@ -111,46 +140,33 @@ const Pricings = () => {
                         </button>
                     </div>
                 </div>
+                
+                {error && (
+                    <div className="text-center mb-8 bg-red-100 text-red-700 p-3 rounded-lg max-w-md mx-auto">
+                        <p>{error}</p>
+                    </div>
+                )}
 
                 {/* Pricing Cards */}
                 <div className="grid md:grid-cols-3 gap-8 mb-12 relative group">
-                    {/* Corner Image */}
                     <div
-                        className="absolute -top-96 -right-44 z-10 w-[450px] h-[450px] md:w-[450px] md:h-[450px] pointer-events-none select-none transition-all duration-700 hover:scale-110"
-                        style={{
-                            transform: `translateY(${scrollY * 0.1}px)`,
-                            transition: 'transform 0.1s ease-out'
-                        }}
+                        className="absolute -top-96 -right-44 z-10 w-[450px] h-[450px] md:w-[450px] md:h-[450px] pointer-events-none select-none"
+                        style={{ transform: `translateY(${scrollY * 0.1}px)`, transition: 'transform 0.1s ease-out' }}
                     >
-                        <img
-                            src={classicalStatue}
-                            alt="Legal Corner Decoration"
-                            className="w-full h-full object-contain filter brightness-100 contrast-110 drop-shadow-3xl transition-transform duration-500 group-hover:scale-110"
-                        />
+                        <img src={classicalStatue} alt="Decoration" className="w-full h-full object-contain filter brightness-100 contrast-110 drop-shadow-3xl transition-transform duration-500 group-hover:scale-110" />
                     </div>
-
-                    {/* Bottom-Left Corner Image */}
                     <div
-                        className="absolute -left-32 bottom-6 pb-12  z-10 w-[300px] h-[300px] md:w-[300px] md:h-[300px] pointer-events-none select-none transition-all duration-700 hover:scale-110 mt-8"
-                        style={{
-                            transform: `translateY(${scrollY * 0.1}px)`,
-                            transition: 'transform 0.1s ease-out'
-                        }}
+                        className="absolute -left-32 bottom-6 pb-12 z-10 w-[300px] h-[300px] md:w-[300px] md:h-[300px] pointer-events-none select-none mt-8"
+                        style={{ transform: `translateY(${scrollY * 0.1}px)`, transition: 'transform 0.1s ease-out' }}
                     >
-                        <img
-                            src={classicalStatue2}
-                            alt="Legal Corner Decoration"
-                            className="w-full h-full object-contain filter -brightness-100 -contrast-110 drop-shadow-3xl transition-transform duration-500 group-hover:scale-110"
-                        />
+                        <img src={classicalStatue2} alt="Decoration" className="w-full h-full object-contain filter -brightness-100 -contrast-110 drop-shadow-3xl transition-transform duration-500 group-hover:scale-110" />
                     </div>
 
                     {plans.map((plan, index) => (
                         <div
                             key={index}
-                            className={`bg-white rounded-xl shadow-lg p-8 relative ${plan.popular ? 'border-2 border-gray-900' : 'border border-gray-200'
-                                }`}
+                            className={`bg-white rounded-xl shadow-lg p-8 relative ${plan.popular ? 'border-2 border-gray-900' : 'border border-gray-200'}`}
                         >
-
                             <div className="mb-6">
                                 <h3 className="text-lg font-medium text-gray-900 mb-2">{plan.name}</h3>
                                 <div className="flex items-baseline mb-2">
@@ -159,14 +175,16 @@ const Pricings = () => {
                                 </div>
                             </div>
 
-                            <button className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 mb-6 ${plan.buttonStyle}`}>
-                                {plan.buttonText}
+                            <button
+                                className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 mb-6 ${plan.buttonStyle}`}
+                                onClick={() => handleSubscribeClick(plan)}
+                                disabled={loadingPlanId === plan.id}
+                            >
+                                {loadingPlanId === plan.id ? 'Processing...' : plan.buttonText}
                             </button>
 
                             <div className="space-y-4">
-                                <h4 className="font-medium text-gray-900 mb-4">
-                                    {plan.description}
-                                </h4>
+                                <h4 className="font-medium text-gray-900 mb-4">{plan.description}</h4>
                                 <ul className="space-y-3">
                                     {plan.features.map((feature, featureIndex) => (
                                         <li key={featureIndex} className="flex items-center text-gray-600">
@@ -182,7 +200,6 @@ const Pricings = () => {
                     ))}
                 </div>
 
-                {/* Bottom Message */}
                 <div className="text-center">
                     <div className="flex items-center justify-center text-gray-600">
                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
