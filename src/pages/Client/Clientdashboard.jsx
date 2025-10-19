@@ -74,60 +74,62 @@ const ClientDashboard = () => {
     // Format date helper
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);
-        return date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
+        return date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
         });
     };
 
-    const user= {
-        name: 'Nethsilu Marasinghe',
-        email: 'kasuntharamarasinghe.com',
-        role: 'client',
-    };
+    // Fetch upcoming hearings & meetings using service
+    useEffect(() => {
+        const fetchDashboard = async () => {
+            try {
+                setLoading(true);
+                const { hearings, meetings } = await getDashboardData(user.id); // <-- service call
+                setUpcomingHearings(hearings);
+                setUpcomingMeetings(meetings);
+            } catch (err) {
+                console.error(err);
+                setError("Error loading dashboard data");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDashboard();
+    }, [user.id]);
+
+    if (loading) {
+        return (
+            <PageLayout user={user} sidebarItems={sidebarItems}>
+                <div className="text-center mt-20 text-gray-600">Loading dashboard data...</div>
+            </PageLayout>
+        );
+    }
+
+    if (error) {
+        return (
+            <PageLayout user={user} sidebarItems={sidebarItems}>
+                <div className="text-center mt-20 text-red-600">{error}</div>
+            </PageLayout>
+        );
+    }
 
     return (
         <PageLayout user={user} sidebarItems={sidebarItems}>
             {/* Header */}
             <div className="mb-8">
-                <PageHeader 
-                    user={user} 
-                    notificationCount={notificationCount} 
-                    onNotificationClick={handleNotificationClick}
+                <PageHeader
+                    user={user}
+                    notificationCount={notificationCount}
+                    onNotificationClick={() => console.log("Notifications clicked")}
                 />
             </div>
 
-            {/* Dashboard Content */}
             <div className="grid grid-cols-1 gap-6">
-            
-                {/* <div className="bg-white rounded-lg shadow-md p-6">
-                    <h2 className="text-xl font-bold mb-4">Due Payments</h2>
-                    {duePayments.length === 0 ? (
-                        <p className="text-gray-500">No due payments.</p>
-                    ) : (
-                        <ul>
-                            {duePayments.map(payment => (
-                                <li key={payment.id} className="border-b last:border-b-0 py-3 flex justify-between items-center">
-                                    <div>
-                                        <div className="font-medium">{payment.caseName}</div>
-                                        <div className="text-sm text-gray-500">Due: {formatDate(payment.dueDate)}</div>
-                                    </div>
-                                    <div className="text-red-600 font-semibold">{payment.amount}</div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                    <div className="mt-4">
-                        <Button1 
-                            text="View All Payments"
-                            onClick={() => navigate("/client/payments")}
-                        />
-                    </div>
-                </div> */}
-
-                {/* Upcoming Meetings Box */}
-                <div className="bg-white rounded-lg shadow-md p-2">
+                {/* Upcoming Meetings */}
+                <div className="bg-white rounded-lg shadow-md p-4">
                     <h2 className="text-xl font-bold mb-4">Upcoming Meetings</h2>
                     {/* TODO: Remove this when meetings endpoint is implemented */}
                     <div className="p-6 text-center">
@@ -162,8 +164,11 @@ const ClientDashboard = () => {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {upcomingMeetings.map(meeting => (
-                                <div key={meeting.id} className="bg-gray-50 rounded-lg border border-gray-200 p-4">
+                            {upcomingMeetings.map((meeting) => (
+                                <div
+                                    key={meeting.id}
+                                    className="bg-gray-50 rounded-lg border border-gray-200 p-4"
+                                >
                                     <div className="flex justify-between items-start mb-2">
                                         <div className="font-medium text-gray-800">Lawyer: {meeting.lawyerName}</div>
                                         <span className={`
@@ -189,15 +194,15 @@ const ClientDashboard = () => {
                     */}
                     
                     <div className="mt-4">
-                        <Button1 
+                        <Button1
                             text="Request Meeting"
-                            onClick={() => navigate("/client/clientcalendar")}
+                            onClick={() => navigate("/client/meetingrequest")}
                         />
                     </div>
                 </div>
 
-                {/* Upcoming Hearings Box */}
-                <div className="bg-white rounded-lg shadow-md p-2">
+                {/* Upcoming Hearings */}
+                <div className="bg-white rounded-lg shadow-md p-4">
                     <h2 className="text-xl font-bold mb-4">Upcoming Hearings</h2>
                     {loading ? (
                         <div className="p-6 text-center">
@@ -224,8 +229,11 @@ const ClientDashboard = () => {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {upcomingHearings.map(hearing => (
-                                <div key={hearing.id} className="bg-gray-50 rounded-lg border border-gray-200 p-4">
+                            {upcomingHearings.map((hearing) => (
+                                <div
+                                    key={hearing.caseId}
+                                    className="bg-gray-50 rounded-lg border border-gray-200 p-4"
+                                >
                                     <div className="flex justify-between items-start mb-2">
                                         <div className="font-medium text-gray-800">{hearing.caseTitle}</div>
                                         <span className={`
