@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Swal from 'sweetalert2';
 import PageLayout from "../../components/layout/PageLayout";
 import Button1 from "../../components/UI/Button1";
 import Button2 from "../../components/UI/Button2";
@@ -25,18 +24,16 @@ const AccountUsers = () => {
     const [activeTab, setActiveTab] = useState("junior-lawyers");
     const [showAddModal, setShowAddModal] = useState(false);
     const [showSalaryModal, setShowSalaryModal] = useState(false);
-    const [showSalaryUpdateModal, setShowSalaryUpdateModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [filter, setFilter] = useState("all");
     const [selectedLawyer, setSelectedLawyer] = useState(null);
     const [selectedUser, setSelectedUser] = useState(null);
     const [salaryAmount, setSalaryAmount] = useState("");
     const [juniorLawyers, setJuniorLawyers] = useState([]);
     const [clients, setClients] = useState([]);
     const [isDataLoading, setIsDataLoading] = useState(true);
-    const [showViewModal, setShowViewModal] = useState(false);
-    const [selectedUserDetails, setSelectedUserDetails] = useState(null);
 
     // User data for the current lawyer
     const user = {
@@ -106,15 +103,12 @@ const AccountUsers = () => {
         const usersToFilter = activeTab === "junior-lawyers" ? juniorLawyers : clients;
         
         return usersToFilter.filter(user => {
-            // Safely handle potentially undefined values - prioritize firstName + lastName
-            const constructedName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-            const userName = constructedName || user.name || user.fullName || '';
-            const userEmail = user.email || '';
+            const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                user.email.toLowerCase().includes(searchTerm.toLowerCase());
             
-            const matchesSearch = userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                userEmail.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesFilter = filter === "all" || user.status === filter;
             
-            return matchesSearch;
+            return matchesSearch && matchesFilter;
         });
     };
 
@@ -138,104 +132,34 @@ const AccountUsers = () => {
     const validateForm = () => {
         if (activeTab === "junior-lawyers") {
             if (!newLawyer.name.trim()) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Name Required',
-                    text: 'Please enter the junior lawyer\'s name',
-                    confirmButtonColor: '#000000',
-                    background: '#ffffff',
-                    width: '500px',
-                    customClass: {
-                        popup: 'rounded-lg'
-                    }
-                });
+                alert("Please enter the junior lawyer's name");
                 return false;
             }
             if (!newLawyer.email.trim()) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Email Required',
-                    text: 'Please enter the junior lawyer\'s email',
-                    confirmButtonColor: '#000000',
-                    background: '#ffffff',
-                    width: '500px',
-                    customClass: {
-                        popup: 'rounded-lg'
-                    }
-                });
+                alert("Please enter the junior lawyer's email");
                 return false;
             }
             if (!newLawyer.phone.trim()) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Phone Required',
-                    text: 'Please enter the junior lawyer\'s phone number',
-                    confirmButtonColor: '#000000',
-                    background: '#ffffff',
-                    width: '500px',
-                    customClass: {
-                        popup: 'rounded-lg'
-                    }
-                });
+                alert("Please enter the junior lawyer's phone number");
                 return false;
             }
         } else {
             // Client validation
             if (!formData.fullName.trim()) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Full Name Required',
-                    text: 'Please enter the client\'s full name',
-                    confirmButtonColor: '#000000',
-                    background: '#ffffff',
-                    width: '500px',
-                    customClass: {
-                        popup: 'rounded-lg'
-                    }
-                });
+                alert("Please enter the client's full name");
                 return false;
             }
             if (!formData.email.trim()) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Email Required',
-                    text: 'Please enter the client\'s email',
-                    confirmButtonColor: '#000000',
-                    background: '#ffffff',
-                    width: '500px',
-                    customClass: {
-                        popup: 'rounded-lg'
-                    }
-                });
+                alert("Please enter the client's email");
                 return false;
             }
             if (!formData.phoneNumber.trim()) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Phone Required',
-                    text: 'Please enter the client\'s phone number',
-                    confirmButtonColor: '#000000',
-                    background: '#ffffff',
-                    width: '500px',
-                    customClass: {
-                        popup: 'rounded-lg'
-                    }
-                });
+                alert("Please enter the client's phone number");
                 return false;
             }
             // Only validate location for clients
             if (activeTab === "clients" && !formData.location.trim()) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Location Required',
-                    text: 'Please select a location',
-                    confirmButtonColor: '#000000',
-                    background: '#ffffff',
-                    width: '500px',
-                    customClass: {
-                        popup: 'rounded-lg'
-                    }
-                });
+                alert("Please select a location");
                 return false;
             }
         }
@@ -279,17 +203,7 @@ const AccountUsers = () => {
                 });
                 
                 // Show success message
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Invitation Sent!',
-                    text: `Junior lawyer invitation sent successfully! An invitation email has been sent to ${newLawyer.email}`,
-                    confirmButtonColor: '#000000',
-                    background: '#ffffff',
-                    width: '500px',
-                    customClass: {
-                        popup: 'rounded-lg'
-                    }
-                });
+                alert(`Junior lawyer invitation sent successfully! An invitation email has been sent to ${newLawyer.email}`);
                 
                 // Reload the junior lawyers list
                 await loadData();
@@ -312,17 +226,7 @@ const AccountUsers = () => {
                     location: ""
                 });
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Invitation Sent!',
-                    text: `Client invitation sent successfully! An invitation email has been sent to ${formData.email}`,
-                    confirmButtonColor: '#000000',
-                    background: '#ffffff',
-                    width: '500px',
-                    customClass: {
-                        popup: 'rounded-lg'
-                    }
-                });
+                alert(`Client invitation sent successfully! An invitation email has been sent to ${formData.email}`);
                 
                 // Reload the clients list
                 await loadData();
@@ -332,90 +236,7 @@ const AccountUsers = () => {
             
         } catch (error) {
             console.error("Error sending invitation:", error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Invitation Failed',
-                text: 'Failed to send invitation. Please try again.',
-                confirmButtonColor: '#000000',
-                background: '#ffffff',
-                width: '500px',
-                customClass: {
-                    popup: 'rounded-lg'
-                }
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    // Handle salary update (change the salary amount)
-    const handleSalaryUpdate = async (e) => {
-        e.preventDefault();
-        
-        if (!salaryAmount || isNaN(salaryAmount) || parseFloat(salaryAmount) <= 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Invalid Amount',
-                text: 'Please enter a valid salary amount',
-                confirmButtonColor: '#000000',
-                background: '#ffffff',
-                width: '500px',
-                customClass: {
-                    popup: 'rounded-lg'
-                }
-            });
-            return;
-        }
-        
-        setIsLoading(true);
-        
-        try {
-            // Update the junior lawyer's salary amount
-            await updateJuniorSalary(selectedLawyer.id, parseFloat(salaryAmount));
-            
-            // Update the local state
-            setJuniorLawyers(prev => 
-                prev.map(lawyer => 
-                    lawyer.id === selectedLawyer.id 
-                        ? { 
-                            ...lawyer, 
-                            salary: {
-                                ...lawyer.salary,
-                                amount: parseFloat(salaryAmount)
-                            }
-                        }
-                        : lawyer
-                )
-            );
-            
-            Swal.fire({
-                icon: 'success',
-                title: 'Salary Updated!',
-                text: `Salary updated to $${salaryAmount} successfully for ${selectedLawyer.name || `${selectedLawyer.firstName || ''} ${selectedLawyer.lastName || ''}`.trim()}!`,
-                confirmButtonColor: '#000000',
-                background: '#ffffff',
-                width: '500px',
-                customClass: {
-                    popup: 'rounded-lg'
-                }
-            });
-            setShowSalaryUpdateModal(false);
-            setSalaryAmount("");
-            setSelectedLawyer(null);
-            
-        } catch (error) {
-            console.error("Error updating salary:", error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Update Failed',
-                text: 'Failed to update salary. Please try again.',
-                confirmButtonColor: '#000000',
-                background: '#ffffff',
-                width: '500px',
-                customClass: {
-                    popup: 'rounded-lg'
-                }
-            });
+            alert("Failed to send invitation. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -426,17 +247,7 @@ const AccountUsers = () => {
         e.preventDefault();
         
         if (!salaryAmount || isNaN(salaryAmount) || parseFloat(salaryAmount) <= 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Invalid Amount',
-                text: 'Please enter a valid salary amount',
-                confirmButtonColor: '#000000',
-                background: '#ffffff',
-                width: '500px',
-                customClass: {
-                    popup: 'rounded-lg'
-                }
-            });
+            alert("Please enter a valid salary amount");
             return;
         }
         
@@ -471,34 +282,14 @@ const AccountUsers = () => {
                 )
             );
             
-            Swal.fire({
-                icon: 'success',
-                title: 'Payment Recorded!',
-                text: `Salary payment of $${salaryAmount} recorded successfully for ${selectedLawyer.name || `${selectedLawyer.firstName || ''} ${selectedLawyer.lastName || ''}`.trim()}!`,
-                confirmButtonColor: '#000000',
-                background: '#ffffff',
-                width: '500px',
-                customClass: {
-                    popup: 'rounded-lg'
-                }
-            });
+            alert(`Salary payment of $${salaryAmount} recorded successfully for ${selectedLawyer.name}!`);
             setShowSalaryModal(false);
             setSalaryAmount("");
             setSelectedLawyer(null);
             
         } catch (error) {
             console.error("Error processing salary payment:", error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Payment Failed',
-                text: 'Failed to process salary payment. Please try again.',
-                confirmButtonColor: '#000000',
-                background: '#ffffff',
-                width: '500px',
-                customClass: {
-                    popup: 'rounded-lg'
-                }
-            });
+            alert("Failed to process salary payment. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -533,58 +324,13 @@ const AccountUsers = () => {
                 );
             }
             
-            Swal.fire({
-                icon: 'success',
-                title: 'User Deactivated',
-                text: `${selectedUser.name} has been deactivated successfully!`,
-                confirmButtonColor: '#000000',
-                background: '#ffffff',
-                width: '500px',
-                customClass: {
-                    popup: 'rounded-lg'
-                }
-            });
+            alert(`${selectedUser.name} has been deactivated successfully!`);
             setShowDeleteModal(false);
             setSelectedUser(null);
             
         } catch (error) {
             console.error("Error deactivating user:", error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Deactivation Failed',
-                text: 'Failed to deactivate user. Please try again.',
-                confirmButtonColor: '#000000',
-                background: '#ffffff',
-                width: '500px',
-                customClass: {
-                    popup: 'rounded-lg'
-                }
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    // Handle viewing user details
-    const handleViewUserDetails = async (user) => {
-        setIsLoading(true);
-        try {
-            const userDetails = await getUserDetails(user.id);
-            setSelectedUserDetails(userDetails);
-            setShowViewModal(true);
-        } catch (error) {
-            console.error("Error fetching user details:", error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Loading Failed',
-                text: 'Failed to load user details. Please try again.',
-                confirmButtonColor: '#000000',
-                background: '#ffffff',
-                width: '500px',
-                customClass: {
-                    popup: 'rounded-lg'
-                }
-            });
+            alert("Failed to deactivate user. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -635,11 +381,18 @@ const AccountUsers = () => {
                         />
                     </div>
                     <div className="flex gap-2">
-                        {activeTab === 'junior-lawyers' && (
-                            <Button1 onClick={() => setShowAddModal(true)}>
-                                Add Junior Lawyer
-                            </Button1>
-                        )}
+                        <select
+                            value={filter}
+                            onChange={(e) => setFilter(e.target.value)}
+                            className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        >
+                            <option value="all">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                        <Button1 onClick={() => setShowAddModal(true)}>
+                            Add {activeTab === 'junior-lawyers' ? 'Junior Lawyer' : 'Client'}
+                        </Button1>
                     </div>
                 </div>
 
@@ -679,68 +432,51 @@ const AccountUsers = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {getFilteredData().map((userItem) => {
-                                        // Safely handle potentially undefined values with proper name construction
-                                        // Prioritize firstName + lastName since that's what API returns
-                                        const constructedName = `${userItem.firstName || ''} ${userItem.lastName || ''}`.trim();
-                                        const displayName = constructedName || 
-                                                          userItem.name || 
-                                                          userItem.fullName || 
-                                                          'N/A';
-                                        const displayEmail = userItem.email || 'N/A';
-                                        const displayPhone = userItem.phone || userItem.phoneNumber || 'N/A';
-                                        const displayStatus = userItem.status || 'ACTIVE';
-                                        const displayCases = (userItem.assignedCasesCount !== undefined && userItem.assignedCasesCount !== null) 
-                                            ? userItem.assignedCasesCount 
-                                            : (userItem.casesAssigned !== undefined && userItem.casesAssigned !== null) 
-                                                ? userItem.casesAssigned 
-                                                : 0;
-                                        
-                                        return (
-                                        <tr key={userItem.id || Math.random()} className="hover:bg-gray-50">
+                                    {getFilteredData().map((userItem) => (
+                                        <tr key={userItem.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center">
                                                     <div className="flex-shrink-0 h-10 w-10">
                                                         <img
                                                             className="h-10 w-10 rounded-full"
-                                                            src={userItem.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=f97316&color=ffffff`}
+                                                            src={userItem.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userItem.name)}&background=f97316&color=ffffff`}
                                                             alt=""
                                                         />
                                                     </div>
                                                     <div className="ml-4">
                                                         <div className="text-sm font-medium text-gray-900">
-                                                            {displayName}
+                                                            {userItem.name}
                                                         </div>
                                                         <div className="text-sm text-gray-500">
-                                                            {activeTab === 'junior-lawyers' ? 'Junior Lawyer' : 'Client'}
+                                                            Added: {userItem.dateAdded}
                                                         </div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-900">{displayEmail}</div>
-                                                <div className="text-sm text-gray-500">{displayPhone}</div>
+                                                <div className="text-sm text-gray-900">{userItem.email}</div>
+                                                <div className="text-sm text-gray-500">{userItem.phone}</div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                                    displayStatus.toUpperCase() === 'ACTIVE' 
+                                                    userItem.status === 'active' 
                                                         ? 'bg-green-100 text-green-800' 
                                                         : 'bg-red-100 text-red-800'
                                                 }`}>
-                                                    {displayStatus.toUpperCase()}
+                                                    {userItem.status}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {displayCases}
+                                                {userItem.casesAssigned}
                                             </td>
                                             {activeTab === 'junior-lawyers' && (
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="text-sm text-gray-900">
-                                                        ${userItem.salary?.amount || userItem.monthlySalary || 0}/month
+                                                        ${userItem.salary?.amount || 0}/month
                                                     </div>
-                                                    {(userItem.salary?.lastPaid || userItem.lastPaymentDate) && (
+                                                    {userItem.salary?.lastPaid && (
                                                         <div className="text-sm text-gray-500">
-                                                            Last paid: {userItem.salary?.lastPaid || userItem.lastPaymentDate}
+                                                            Last paid: {userItem.salary.lastPaid}
                                                         </div>
                                                     )}
                                                 </td>
@@ -748,35 +484,25 @@ const AccountUsers = () => {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                 <div className="flex space-x-2">
                                                     <button
-                                                        onClick={() => handleViewUserDetails(userItem)}
+                                                        onClick={() => {
+                                                            // TODO: Implement view user details modal
+                                                            console.log('View user details:', userItem);
+                                                        }}
                                                         className="text-orange-600 hover:text-orange-900"
-                                                        disabled={isLoading}
                                                     >
                                                         View
                                                     </button>
                                                     {activeTab === 'junior-lawyers' && (
-                                                        <>
-                                                            <button
-                                                                onClick={() => {
-                                                                    setSelectedLawyer(userItem);
-                                                                    setSalaryAmount(userItem.salary?.amount || "");
-                                                                    setShowSalaryModal(true);
-                                                                }}
-                                                                className="text-blue-600 hover:text-blue-900"
-                                                            >
-                                                                Pay Salary
-                                                            </button>
-                                                            <button
-                                                                onClick={() => {
-                                                                    setSelectedLawyer(userItem);
-                                                                    setSalaryAmount(userItem.salary?.amount || "");
-                                                                    setShowSalaryUpdateModal(true);
-                                                                }}
-                                                                className="text-green-600 hover:text-green-900"
-                                                            >
-                                                                Update Salary
-                                                            </button>
-                                                        </>
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedLawyer(userItem);
+                                                                setSalaryAmount(userItem.salary?.amount || "");
+                                                                setShowSalaryModal(true);
+                                                            }}
+                                                            className="text-blue-600 hover:text-blue-900"
+                                                        >
+                                                            Pay Salary
+                                                        </button>
                                                     )}
                                                     <button
                                                         onClick={() => {
@@ -785,13 +511,12 @@ const AccountUsers = () => {
                                                         }}
                                                         className="text-red-600 hover:text-red-900"
                                                     >
-                                                        {displayStatus.toUpperCase() === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                                                        {userItem.status === 'active' ? 'Deactivate' : 'Activate'}
                                                     </button>
                                                 </div>
                                             </td>
                                         </tr>
-                                    );
-                                })}
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
@@ -905,7 +630,7 @@ const AccountUsers = () => {
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                         <div className="bg-white rounded-lg max-w-md w-full p-6">
                             <h3 className="text-lg font-medium text-gray-900 mb-4">
-                                Pay Salary - {selectedLawyer.name || `${selectedLawyer.firstName || ''} ${selectedLawyer.lastName || ''}`.trim()}
+                                Pay Salary - {selectedLawyer.name}
                             </h3>
                             
                             <form onSubmit={handleSalaryPayment}>
@@ -950,65 +675,15 @@ const AccountUsers = () => {
                     </div>
                 )}
 
-                {/* Salary Update Modal */}
-                {showSalaryUpdateModal && selectedLawyer && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                        <div className="bg-white rounded-lg max-w-md w-full p-6">
-                            <h3 className="text-lg font-medium text-gray-900 mb-4">
-                                Update Salary - {selectedLawyer.name || `${selectedLawyer.firstName || ''} ${selectedLawyer.lastName || ''}`.trim()}
-                            </h3>
-                            
-                            <form onSubmit={handleSalaryUpdate}>
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        New Monthly Salary Amount ($)
-                                    </label>
-                                    <Input1
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={salaryAmount}
-                                        onChange={(e) => setSalaryAmount(e.target.value)}
-                                        placeholder="Enter new salary amount"
-                                        required
-                                    />
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        Current monthly salary: ${selectedLawyer.salary?.amount || 0}
-                                    </p>
-                                </div>
-                                
-                                <div className="flex justify-end space-x-3">
-                                    <Button2 
-                                        type="button" 
-                                        onClick={() => {
-                                            setShowSalaryUpdateModal(false);
-                                            setSalaryAmount("");
-                                            setSelectedLawyer(null);
-                                        }}
-                                    >
-                                        Cancel
-                                    </Button2>
-                                    <Button1 
-                                        type="submit" 
-                                        disabled={isLoading}
-                                    >
-                                        {isLoading ? 'Updating...' : 'Update Salary'}
-                                    </Button1>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
-
                 {/* Delete Confirmation Modal */}
                 {showDeleteModal && selectedUser && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                         <div className="bg-white rounded-lg max-w-md w-full p-6">
                             <h3 className="text-lg font-medium text-gray-900 mb-4">
-                                {selectedUser.status?.toUpperCase() === 'ACTIVE' ? 'Deactivate' : 'Activate'} User
+                                {selectedUser.status === 'active' ? 'Deactivate' : 'Activate'} User
                             </h3>
                             <p className="text-gray-600 mb-6">
-                                Are you sure you want to {selectedUser.status?.toUpperCase() === 'ACTIVE' ? 'deactivate' : 'activate'} {selectedUser.name || `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim()}?
+                                Are you sure you want to {selectedUser.status === 'active' ? 'deactivate' : 'activate'} {selectedUser.name}?
                             </p>
                             
                             <div className="flex justify-end space-x-3">
@@ -1025,144 +700,8 @@ const AccountUsers = () => {
                                     disabled={isLoading}
                                     className="bg-red-600 hover:bg-red-700"
                                 >
-                                    {isLoading ? 'Processing...' : `${selectedUser.status?.toUpperCase() === 'ACTIVE' ? 'Deactivate' : 'Activate'}`}
+                                    {isLoading ? 'Processing...' : `${selectedUser.status === 'active' ? 'Deactivate' : 'Activate'}`}
                                 </Button1>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* View User Details Modal */}
-                {showViewModal && selectedUserDetails && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                        <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xl font-medium text-gray-900">
-                                    {activeTab === 'junior-lawyers' ? 'Junior Lawyer' : 'Client'} Details
-                                </h3>
-                                <button
-                                    onClick={() => {
-                                        setShowViewModal(false);
-                                        setSelectedUserDetails(null);
-                                    }}
-                                    className="text-gray-400 hover:text-gray-600"
-                                >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-                            
-                            {/* User Basic Info */}
-                            <div className="mb-6">
-                                <div className="flex items-center mb-4">
-                                    <img
-                                        className="h-16 w-16 rounded-full"
-                                        src={selectedUserDetails.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedUserDetails.fullName || selectedUserDetails.name)}&background=f97316&color=ffffff`}
-                                        alt=""
-                                    />
-                                    <div className="ml-4">
-                                        <h4 className="text-lg font-medium text-gray-900">
-                                            {selectedUserDetails.fullName || selectedUserDetails.name}
-                                        </h4>
-                                        <p className="text-gray-600">{selectedUserDetails.email}</p>
-                                        <p className="text-gray-600">{selectedUserDetails.phoneNumber || selectedUserDetails.phone}</p>
-                                    </div>
-                                </div>
-                                
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                        <span className="font-medium text-gray-700">Status:</span>
-                                        <span className={`ml-2 px-2 py-1 rounded-full text-xs font-semibold ${
-                                            selectedUserDetails.status === 'ACTIVE' 
-                                                ? 'bg-green-100 text-green-800' 
-                                                : 'bg-red-100 text-red-800'
-                                        }`}>
-                                            {selectedUserDetails.status}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-gray-700">Date Added:</span>
-                                        <span className="ml-2 text-gray-600">
-                                            {selectedUserDetails.dateAdded || selectedUserDetails.createdAt}
-                                        </span>
-                                    </div>
-                                    {selectedUserDetails.location && (
-                                        <div>
-                                            <span className="font-medium text-gray-700">Location:</span>
-                                            <span className="ml-2 text-gray-600">{selectedUserDetails.location}</span>
-                                        </div>
-                                    )}
-                                    {activeTab === 'junior-lawyers' && selectedUserDetails.monthlySalary && (
-                                        <div>
-                                            <span className="font-medium text-gray-700">Monthly Salary:</span>
-                                            <span className="ml-2 text-gray-600">${selectedUserDetails.monthlySalary}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            
-                            {/* Assigned Cases */}
-                            <div>
-                                <h5 className="text-lg font-medium text-gray-900 mb-3">
-                                    Assigned Cases ({selectedUserDetails.assignedCases?.length || 0})
-                                </h5>
-                                
-                                {selectedUserDetails.assignedCases && selectedUserDetails.assignedCases.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {selectedUserDetails.assignedCases.map((caseItem, index) => (
-                                            <div key={index} className="border border-gray-200 rounded-lg p-3">
-                                                <div className="flex justify-between items-start">
-                                                    <div>
-                                                        <h6 className="font-medium text-gray-900">
-                                                            {caseItem.title || caseItem.caseName || `Case #${caseItem.caseNumber || index + 1}`}
-                                                        </h6>
-                                                        <p className="text-sm text-gray-600 mt-1">
-                                                            {caseItem.description || 'No description available'}
-                                                        </p>
-                                                        <div className="flex space-x-4 mt-2 text-xs text-gray-500">
-                                                            {caseItem.caseType && (
-                                                                <span>Type: {caseItem.caseType}</span>
-                                                            )}
-                                                            {caseItem.court && (
-                                                                <span>Court: {caseItem.court}</span>
-                                                            )}
-                                                            {caseItem.assignedDate && (
-                                                                <span>Assigned: {caseItem.assignedDate}</span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    {caseItem.status && (
-                                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                                            caseItem.status === 'ACTIVE' || caseItem.status === 'OPEN'
-                                                                ? 'bg-blue-100 text-blue-800'
-                                                                : caseItem.status === 'COMPLETED' || caseItem.status === 'CLOSED'
-                                                                ? 'bg-green-100 text-green-800'
-                                                                : 'bg-gray-100 text-gray-800'
-                                                        }`}>
-                                                            {caseItem.status}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-8 text-gray-500">
-                                        <p>No cases assigned yet.</p>
-                                    </div>
-                                )}
-                            </div>
-                            
-                            <div className="flex justify-end mt-6">
-                                <Button2 
-                                    onClick={() => {
-                                        setShowViewModal(false);
-                                        setSelectedUserDetails(null);
-                                    }}
-                                >
-                                    Close
-                                </Button2>
                             </div>
                         </div>
                     </div>

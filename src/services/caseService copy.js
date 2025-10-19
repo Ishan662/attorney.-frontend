@@ -195,7 +195,7 @@ export const getHearingsForCase = async (caseId) => {
 };
 
 /**
- * Creates a new case in the backend with existing client and junior selection
+ * Creates a new case in the backend
  */
 export const createCase = async (caseFormData) => {
   const mapPaymentStatus = (status) => {
@@ -208,17 +208,11 @@ export const createCase = async (caseFormData) => {
   };
 
   const createCaseRequest = {
-    // Use the case name provided by the user
-    caseTitle: caseFormData.caseName,
-    
-    // Always send client name for title generation, even with existing clients
-    existingClientId: caseFormData.existingClientId || null,
-    clientName: caseFormData.clientName, // Always send client name
-    clientPhone: caseFormData.existingClientId ? null : caseFormData.clientPhone,
-    clientEmail: caseFormData.existingClientId ? null : caseFormData.clientEmail,
-    
+    clientName: caseFormData.clientName,
+    clientPhone: caseFormData.clientPhone,
+    clientEmail: caseFormData.clientEmail,
     opposingPartyName: caseFormData.opposingParty,
-    associatedJuniorId: caseFormData.associatedJuniorId || null,
+    associatedJuniorId: caseFormData.junior || null,
     caseNumber: caseFormData.caseNumber,
     court: caseFormData.court,
     courtType: caseFormData.courtType,
@@ -227,38 +221,11 @@ export const createCase = async (caseFormData) => {
     caseType: caseFormData.caseType,
     agreedFee: parseFloat(caseFormData.agreedFee) || 0,
     paymentStatus: mapPaymentStatus(caseFormData.paymentStatus),
-    
-    // Include specialized case details if provided
-    additionalDetails: caseFormData.additionalDetails || null,
   };
 
   return await authenticatedFetch('/api/cases', {
     method: 'POST',
     body: JSON.stringify(createCaseRequest),
-  });
-};
-
-/**
- * Fetches clients list for selection dropdown (lightweight)
- */
-export const getClientsForSelection = async () => {
-  return await authenticatedFetch('/api/team/clients/select-list');
-};
-
-/**
- * Fetches junior lawyers list for selection dropdown (lightweight)
- */
-export const getJuniorsForSelection = async () => {
-  return await authenticatedFetch('/api/team/juniors/select-list');
-};
-
-/**
- * Adds a member to an existing case
- */
-export const addCaseMember = async (caseId, memberData) => {
-  return await authenticatedFetch(`/api/cases/${caseId}/members`, {
-    method: 'POST',
-    body: JSON.stringify(memberData),
   });
 };
 

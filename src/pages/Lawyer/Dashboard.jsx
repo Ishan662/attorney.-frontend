@@ -16,7 +16,7 @@ const Dashboard = () => {
         email: 'jeewanthadeherath@gmail.com',
         role: 'LAWYER',
         plan: 'FREE_TRIAL', // This could come from your auth context or API
-        trialDaysLeft: 5, // This could come from your backend
+        trialDaysLeft: 28, // This could come from your backend
     };
 
     const handleNotificationClick = () => {
