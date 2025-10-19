@@ -3,19 +3,20 @@ import { useParams, useNavigate } from 'react-router-dom';
 import PageLayout from '../../components/layout/PageLayout';
 import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
-import AddNextHearingModal from './AddNextHearingDate';
+import AddNextHearingModal from './AddNextHearingDate'; // Your modal component import
 import { useAuth } from '../../context/AuthContext';
 import { getCaseById, getHearingsForCase, createHearing, getJuniorsForSelection, addCaseMember } from '../../services/caseService';
 import AddClientModal from './AddNewClientModel';
-import EditHearingModal from './EditHearingModal';
-import { updateHearing, deleteHearing } from '../../services/caseService';
+import EditHearingModal from './EditHearingModal'; // Import the new modal
+import { updateHearing, deleteHearing } from '../../services/caseService'; // Import the new functions
 import DivorceDetails from '../../components/specialized/DivorceDetails';
 import caseDetailsService from '../../services/caseDetailsService';
 import useCaseAdditionalDetails from '../../hooks/useCaseAdditionalDetails';
 import Swal from 'sweetalert2';
-import PrintService from '../../services/printService';
+// Placeholder user object. This should come from an Auth Context in a real app.
 
-// Static data for the documents section
+
+// Static data for the documents section, as you requested.
 const staticDocuments = [
     { name: 'Will of Eleanor Vance.pdf', url: '#' },
     { name: 'Estate Valuation Report.pdf', url: '#' },
@@ -78,12 +79,26 @@ const CaseDetails = () => {
         role:  currentUser.role.toLowerCase()
     };
 
+    // const user = {
+    //     name: "nishagi jewantha",
+    //     email: "jewanthadheerath@gmail.com",
+    //     role:  "lawyer"
+    // }
+
+    // console.log("Current User:", currentUser);
+    // console.log("User Role:", currentUser.role);
+
+    // This state is for managing the modal's visibility
     const [showHearingModal, setShowHearingModal] = useState(false);
+    
+    // This state will now manage the list of hearings, populated from the API
     const [hearings, setHearings] = useState([]);
+
+    // Dynamic junior lawyers data loaded from backend
     const [availableJuniors, setAvailableJuniors] = useState([]);
     const [isLoadingJuniors, setIsLoadingJuniors] = useState(false);
 
-    // Hook for managing additional details
+    // Hook for managing additional details (specialized case details)
     const { updateAdditionalDetails, isLoading: isUpdatingDetails, error: updateError, clearError } = useCaseAdditionalDetails({ id: caseId });
 
     // --- DATA FETCHING ---
@@ -97,6 +112,7 @@ const CaseDetails = () => {
         const fetchAllDetails = async () => {
             setIsLoading(true);
             try {
+                // Use Promise.all to fetch case data, hearings, and junior lawyers in parallel for efficiency.
                 const [caseDetailsData, hearingsData, juniorsData] = await Promise.all([
                     getCaseById(caseId),
                     getHearingsForCase(caseId),
@@ -105,8 +121,9 @@ const CaseDetails = () => {
                 
                 setCaseData(caseDetailsData);
                 console.log("Case Details:", caseDetailsData);
-                setHearings(hearingsData || caseDetailsData.hearings || []);
+                setHearings(hearingsData || caseDetailsData.hearings || []); // Use hearings from API or fallback to case data hearings
                 
+                // Transform junior lawyers data to match expected format
                 const formattedJuniors = juniorsData.map(junior => ({
                     id: junior.id,
                     name: `${junior.firstName} ${junior.lastName}`,
@@ -126,16 +143,22 @@ const CaseDetails = () => {
         fetchAllDetails();
     }, [caseId]);
 
-    // --- EVENT HANDLERS ---
+    // --- MODAL AND HEARING LOGIC (LOCAL STATE ONLY) ---
     const handleAddHearing = async (newHearingData) => {
+        // This function now calls the new createHearing service function.
         try {
             const savedHearing = await createHearing(caseId, newHearingData);
+            
+            // Add the newly saved hearing (returned from the backend) to our local state
+            // for an immediate UI update, then re-sort the list.
             setHearings(prevHearings => 
                 [...prevHearings, savedHearing].sort((a, b) => new Date(a.hearingDate) - new Date(b.hearingDate))
             );
-            setShowHearingModal(false);
+            
+            setShowHearingModal(false); // Close the modal on success
         } catch (err) {
             console.error("Failed to save new hearing:", err);
+            // You can show an error message to the user here inside the modal
             alert("Error: Could not save the new hearing.");
         }
     };
@@ -148,8 +171,9 @@ const CaseDetails = () => {
     const handleUpdateHearing = async (hearingId, formData) => {
         try {
             const updatedHearing = await updateHearing(hearingId, formData);
+            // Update the hearing in our local state for an immediate UI refresh
             setHearings(prev => prev.map(h => (h.id === hearingId ? updatedHearing : h)));
-            setShowEditHearingModal(false);
+            setShowEditHearingModal(false); // Close modal on success
         } catch (err) {
             console.error("Failed to update hearing:", err);
             alert("Error: Could not update the hearing.");
@@ -159,14 +183,16 @@ const CaseDetails = () => {
     const handleDeleteHearing = async (hearingId) => {
         try {
             await deleteHearing(hearingId);
+            // Remove the hearing from our local state for an immediate UI refresh
             setHearings(prev => prev.filter(h => h.id !== hearingId));
-            setShowEditHearingModal(false);
+            setShowEditHearingModal(false); // Close modal on success
         } catch (err) {
             console.error("Failed to delete hearing:", err);
             alert("Error: Could not delete the hearing.");
         }
     };
 
+    // Handle junior lawyer assignment
     const handleAssignJunior = async (juniorId) => {
         if (!juniorId) {
             Swal.fire({
@@ -185,16 +211,19 @@ const CaseDetails = () => {
 
         setIsLoadingJuniors(true);
         try {
+            // Find the selected junior's details for display
             const selectedJunior = availableJuniors.find(junior => junior.id === juniorId);
             if (!selectedJunior) {
                 throw new Error('Selected junior lawyer not found');
             }
 
+            // Call the API to add the junior as a case member
             await addCaseMember(caseId, {
                 userId: juniorId,
                 role: 'JUNIOR_LAWYER'
             });
 
+            // Update the local case data
             setCaseData(prev => ({
                 ...prev,
                 junior: selectedJunior.name
@@ -202,6 +231,7 @@ const CaseDetails = () => {
             
             setShowJuniorModal(false);
             
+            // Show success message with SweetAlert2
             Swal.fire({
                 icon: 'success',
                 title: 'Junior Assigned!',
@@ -216,6 +246,7 @@ const CaseDetails = () => {
         } catch (err) {
             console.error("Failed to assign junior lawyer:", err);
             
+            // Show error message with SweetAlert2
             Swal.fire({
                 icon: 'error',
                 title: 'Assignment Failed',
@@ -232,6 +263,7 @@ const CaseDetails = () => {
         }
     };
 
+    // Handle chat functionality
     const handleSendMessage = () => {
         if (chatMessage.trim()) {
             const newMessage = {
@@ -254,12 +286,18 @@ const CaseDetails = () => {
         }
     };
 
+    // Handle saving additional details (specialized case details like divorce details)
     const handleSaveAdditionalDetails = async (newAdditionalDetails) => {
         try {
-            clearError();
+            clearError(); // Clear any previous errors
+            
+            // Update the additional details via the API
             const updatedCase = await updateAdditionalDetails(newAdditionalDetails);
+            
+            // Update the local case data with the response from the backend
             setCaseData(updatedCase);
             
+            // Show success message
             Swal.fire({
                 icon: 'success',
                 title: 'Details Updated',
@@ -275,6 +313,7 @@ const CaseDetails = () => {
         } catch (err) {
             console.error("Failed to update additional details:", err);
             
+            // Show error message
             Swal.fire({
                 icon: 'error',
                 title: 'Update Failed',
@@ -289,16 +328,13 @@ const CaseDetails = () => {
         }
     };
 
-    // Handle print functionality using PrintService
-    const handlePrint = (tabToPrint = 'all') => {
-        PrintService.printCaseDetails(caseData, hearings, timelineEvents, tabToPrint);
-    };
-
     // --- DYNAMIC TIMELINE GENERATION ---
+    // This now uses the 'hearings' state variable
     const timelineEvents = hearings
         .sort((a, b) => new Date(a.hearingDate) - new Date(b.hearingDate))
         .map(hearing => ({
             date: new Date(hearing.hearingDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            // Use the hearing's title for the timeline label
             label: hearing.title || "Key Date"
         }));
 
@@ -323,71 +359,52 @@ const CaseDetails = () => {
             </div>
 
             <div className="flex items-center justify-between mb-6">
+                {/* Left side: The "Back" button */}
                 <Button1 
                     text="← Back" 
                     onClick={() => navigate('/lawyer/caseprofile')} 
-                    variant="secondary"
+                    // Let's assume Button2 is for secondary actions.
+                    variant="secondary" // Assuming your Button component has variants
                 />
 
-                <div className="flex gap-3">
+                {/* Right side: The "Edit Case" button, conditionally rendered */}
+                {currentUser && currentUser.role === 'LAWYER' && (
                     <Button1
-                        text="🖨️ Print Case Details"
-                        onClick={() => handlePrint('all')}
-                        inverted={false}
+                        text="Edit Case →" // Added the arrow as requested
+                        // className="text-sm py-2 px-4" // Adjusted padding for a better feel
+                        onClick={() => navigate(`/lawyer/case/${caseId}/edit`)}
                     />
-                    
-                    {currentUser && currentUser.role === 'LAWYER' && (
-                        <Button1
-                            text="Edit Case →"
-                            onClick={() => navigate(`/lawyer/case/${caseId}/edit`)}
-                        />
-                    )}
-                </div>
+                )}
             </div>
-
             <h1 className="text-2xl font-bold mb-6">Case No : {caseData.caseNumber}</h1>
 
             {/* Tab Navigation */}
             <div className="bg-white rounded-t-lg shadow-sm border border-gray-200 mb-0">
-                <div className="flex justify-between items-center border-b border-gray-200">
-                    <div className="flex">
+                <div className="flex border-b border-gray-200">
+                    <button
+                        onClick={() => setActiveTab('general')}
+                        className={`px-6 py-3 text-sm font-medium transition-colors ${
+                            activeTab === 'general'
+                                ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50'
+                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        }`}
+                    >
+                        General Details
+                    </button>
+                    
+                    {/* Show Divorce Details tab only for divorce cases */}
+                    {caseDetailsService.isDivorceCase(caseData.caseType) && (
                         <button
-                            onClick={() => setActiveTab('general')}
+                            onClick={() => setActiveTab('divorce')}
                             className={`px-6 py-3 text-sm font-medium transition-colors ${
-                                activeTab === 'general'
+                                activeTab === 'divorce'
                                     ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50'
                                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                             }`}
                         >
-                            General Details
+                            Divorce Details
                         </button>
-                        
-                        {caseDetailsService.isDivorceCase(caseData.caseType) && (
-                            <button
-                                onClick={() => setActiveTab('divorce')}
-                                className={`px-6 py-3 text-sm font-medium transition-colors ${
-                                    activeTab === 'divorce'
-                                        ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50'
-                                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                                }`}
-                            >
-                                Divorce Details
-                            </button>
-                        )}
-                    </div>
-                    
-                    <div className="px-4 py-2">
-                        <button
-                            onClick={() => handlePrint(activeTab)}
-                            className="text-gray-600 hover:text-gray-800 text-sm flex items-center gap-1 transition-colors"
-                            title={`Print ${activeTab === 'general' ? 'General' : 'Divorce'} Details`}
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                            </svg>
-                            Print Tab
-                        </button>
-                    </div>
+                    )}
                 </div>
             </div>
 
@@ -412,155 +429,160 @@ const CaseDetails = () => {
                 </div>
             )}
 
-            {/* General Tab Content */}
+            {/* General Tab Content - visible when activeTab is 'general' */}
             {activeTab === 'general' && (
                 <>
                     {/* Case Overview */}
                     <section className="bg-white rounded-b-lg p-8 mb-6 shadow-md border-x border-b border-gray-200">
-                        <h2 className="text-xl font-semibold mb-6">Case Overview</h2>
-                        <div className="flex flex-col md:flex-row">
-                            <div className="flex-1">
-                                <div className="font-semibold">Case Name:</div>
-                                <p className="mb-2">{caseData.caseTitle}</p>
-                                <div className="font-semibold">Description:</div>
-                                <p className="mb-2">{caseData.description || 'N/A'}</p>
-                                <div className="font-semibold">Court Type:</div>
-                                <p>{caseData.courtType || 'N/A'}</p>
-                            </div>
-                            <div className="flex-1 md:ml-12 mt-8 md:mt-0">
-                                <div className="font-semibold">Case Type:</div>
-                                <p className="mb-2">{caseData.caseType || 'N/A'}</p>
-                                <div className="font-semibold">Court Name:</div>
-                                <p className="mb-2">{caseData.courtName || 'N/A'}</p>
-                                <div className="font-semibold">Status:</div>
-                                <div><span className="inline-block px-4 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-sm">{caseData.status}</span></div>
-                            </div>
-                        </div>
-                    </section>
+                <h2 className="text-xl font-semibold mb-6">Case Overview</h2>
 
-                    {/* Parties Involved */}
-                    <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-semibold">Parties Involved</h2>
-                            <div className="flex gap-2">
-                                <Button1 
-                                    text="Add / Invite Client" 
-                                    className="text-sm py-1 px-4" 
-                                    onClick={() => setShowClientModal(true)} 
-                                />
-                                <Button1 
-                                    text="Associate Junior" 
-                                    className="text-sm py-1 px-4" 
-                                    onClick={() => setShowJuniorModal(true)} 
-                                />
-                            </div>
-                        </div>
-                        <div className="flex flex-col md:flex-row">
-                            <div className="flex-1 mb-6 md:mb-0">
-                                <div className="font-semibold">Client:</div>
-                                <p className="mb-2">{caseData.clientName || 'Not yet assigned'}</p>
-                                <div className="font-semibold ">Client Phone:</div>
-                                <p className='mb-2'>{caseData.clientPhone || 'N/A'}</p>
-                                <div className="font-semibold ">Client Email:</div>
-                                <p>{caseData.clientEmail || 'N/A'}</p>
-                            </div>
-                            <div className="flex-1 md:ml-12">
-                                <div className="font-semibold">Opposing Party:</div>
-                                <p className="mb-2">{caseData.opposingPartyName || 'N/A'}</p>
-                                <div className="font-semibold">Junior Associated:</div>
-                                <p>{caseData.junior || 'Not Assigned'}</p>
-                            </div>
-                        </div>
-                    </section>
-                    
-                    {/* Financials */}
-                    <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
-                        <h2 className="text-xl font-semibold mb-6">Financials</h2>
-                        <div className="flex flex-col md:flex-row md:justify-between">
-                            <div className="flex-1 mb-6 md:mb-0">
-                                <div className="font-semibold">Agreed Fee:</div>
-                                <p className="mb-2">${caseData.agreedFee ? caseData.agreedFee.toFixed(2) : '0.00'}</p>
-                            </div>
-                            <div className="flex-1 md:ml-12">
-                                <div className="font-semibold">Payment Status:</div>
-                                <div className="mb-2">
-                                    <span className="inline-block px-4 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-sm">
-                                        {caseData.paymentStatus ? caseData.paymentStatus.replace('_', ' ') : 'N/A'}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
 
-                    {/* Hearings & Key Dates */}
-                    <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
-                        <h2 className="text-xl font-semibold mb-6">Hearings & Key Dates</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                            {hearings.map(hearing => (
-                                <div 
-                                    key={hearing.id} 
-                                    className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors" 
-                                    onClick={() => handleOpenEditModal(hearing)}
-                                >
-                                    <div className="font-bold text-gray-800 text-base">{hearing.title}</div>
-                                    <div className="text-gray-600 mb-2">{new Date(hearing.hearingDate).toLocaleString('en-US', { 
-                                        year: 'numeric', 
-                                        month: 'short', 
-                                        day: 'numeric', 
-                                        hour: 'numeric', 
-                                        minute: '2-digit', 
-                                        hour12: true 
-                                    })}</div>
-                                    {hearing.location && <p className=""><span className="font-semibold">Location:</span> {hearing.location}</p>}
-                                    {hearing.note && <p className="mt-1"><span className="font-semibold">Note:</span> {hearing.note}</p>}
-                                    <div className="mt-2">
-                                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${hearing.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                                            {hearing.status}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="flex justify-center mt-6 pt-4 border-t">
-                            <Button1 text="Add New Hearing Date" className="mt-2" onClick={() => setShowHearingModal(true)} />
-                        </div>
-                    </section>
 
-                    {/* Case Progress Timeline */}
-                    <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
-                        <h2 className="text-xl font-semibold mb-6 text-center">Case Progress Timeline</h2>
-                        <div className="flex items-center justify-between">
-                            {timelineEvents.map((t, idx) => (
-                                <React.Fragment key={idx}>
-                                    <div className="flex flex-col items-center text-center">
-                                        <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold">{idx + 1}</div>
-                                        <div className="text-xs mt-2 text-gray-700">{t.date}<br />{t.label}</div>
-                                    </div>
-                                    {idx < timelineEvents.length - 1 && <div className="flex-1 h-1 bg-orange-200 mx-2" />}
-                                </React.Fragment>
-                            ))}
-                        </div>
-                    </section>
+                <div className="flex flex-col md:flex-row">
+                    <div className="flex-1">
+                        <div className="font-semibold">Case Name:</div>
+                        <p className="mb-2">{caseData.caseTitle}</p>
+                        <div className="font-semibold">Description:</div>
+                        <p className="mb-2">{caseData.description || 'N/A'}</p>
+                        <div className="font-semibold">Court Type:</div>
+                        <p>{caseData.courtType || 'N/A'}</p>
+                    </div>
+                    <div className="flex-1 md:ml-12 mt-8 md:mt-0">
+                        <div className="font-semibold">Case Type:</div>
+                        <p className="mb-2">{caseData.caseType || 'N/A'}</p>
+                        <div className="font-semibold">Court Name:</div>
+                        <p className="mb-2">{caseData.courtName || 'N/A'}</p>
+                        <div className="font-semibold">Status:</div>
+                        <div><span className="inline-block px-4 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-sm">{caseData.status}</span></div>
+                    </div>
+                </div>
+            </section>
 
-                    {/* Documents */}
-                    <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
-                        <h2 className="text-xl font-semibold mb-6">Documents</h2>
-                        <ul className="list-disc pl-6 mb-4 text-blue-700">
-                            {staticDocuments.map((doc, idx) => (
-                                <li key={idx}><a href={doc.url} className="hover:underline">{doc.name}</a></li>
-                            ))}
-                        </ul>
-                        <Button1 text="Add Documents" className="mt-2" />
-                    </section>
+            {/* Parties Involved */}
+            <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-semibold">Parties Involved</h2>
+                    <div className="flex gap-2">
+                        <Button1 
+                            text="Add / Invite Client" 
+                            className="text-sm py-1 px-4" 
+                            onClick={() => setShowClientModal(true)} 
+                        />
+                        <Button1 
+                            text="Associate Junior" 
+                            className="text-sm py-1 px-4" 
+                            onClick={() => setShowJuniorModal(true)} 
+                        />
+                    </div>
+                </div>
+                <div className="flex flex-col md:flex-row">
+                    <div className="flex-1 mb-6 md:mb-0">
+                        <div className="font-semibold">Client:</div>
+                        <p className="mb-2">{caseData.clientName || 'Not yet assigned'}</p>
+                        <div className="font-semibold ">Client Phone:</div>
+                        <p className='mb-2'>{caseData.clientPhone || 'N/A'}</p>
+                        <div className="font-semibold ">Client Email:</div>
+                        <p>{caseData.clientEmail || 'N/A'}</p>
+                    </div>
+                    <div className="flex-1 md:ml-12">
+                        <div className="font-semibold">Opposing Party:</div>
+                        <p className="mb-2">{caseData.opposingPartyName || 'N/A'}</p>
+                        <div className="font-semibold">Junior Associated:</div>
+                        <p>{caseData.junior || 'Not Assigned'}</p>
+                    </div>
+                </div>
+            </section>
+            
+            {/* Financials - Note: DTO doesn't have totalExpenses or invoice, so they are removed */}
+            <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
+              <h2 className="text-xl font-semibold mb-6">Financials</h2>
+              <div className="flex flex-col md:flex-row md:justify-between">
+                <div className="flex-1 mb-6 md:mb-0">
+                  <div className="font-semibold">Agreed Fee:</div>
+                  <p className="mb-2">${caseData.agreedFee ? caseData.agreedFee.toFixed(2) : '0.00'}</p>
+                </div>
+                <div className="flex-1 md:ml-12">
+                  <div className="font-semibold">Payment Status:</div>
+                  <div className="mb-2">
+                    <span className="inline-block px-4 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-sm">
+                      {caseData.paymentStatus ? caseData.paymentStatus.replace('_', ' ') : 'N/A'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Hearings & Key Dates */}
+            <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
+                <h2 className="text-xl font-semibold mb-6">Hearings & Key Dates</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                    {/* We map over the sorted hearings array */}
+                    {hearings.map(hearing => (
+                        <div 
+                            key={hearing.id} 
+                            className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors" 
+                            onClick={() => handleOpenEditModal(hearing)}
+                        >
+                            <div className="font-bold text-gray-800 text-base">{hearing.title}</div>
+                            <div className="text-gray-600 mb-2">{new Date(hearing.hearingDate).toLocaleString('en-US', { 
+                                year: 'numeric', 
+                                month: 'short', 
+                                day: 'numeric', 
+                                hour: 'numeric', 
+                                minute: '2-digit', 
+                                hour12: true 
+                            })}</div>
+                            {hearing.location && <p className=""><span className="font-semibold">Location:</span> {hearing.location}</p>}
+                            {hearing.note && <p className="mt-1"><span className="font-semibold">Note:</span> {hearing.note}</p>}
+                            <div className="mt-2">
+                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${hearing.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                                    {hearing.status}
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <div className="flex justify-center mt-6 pt-4 border-t">
+                    <Button1 text="Add New Hearing Date" className="mt-2" onClick={() => setShowHearingModal(true)} />
+                </div>
+            </section>
+
+
+            {/* Case Progress Timeline */}
+            <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+                <h2 className="text-xl font-semibold mb-6 text-center">Case Progress Timeline</h2>
+                <div className="flex items-center justify-between">
+                    {timelineEvents.map((t, idx) => (
+                        <React.Fragment key={idx}>
+                            <div className="flex flex-col items-center text-center">
+                                <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold">{idx + 1}</div>
+                                <div className="text-xs mt-2 text-gray-700">{t.date}<br />{t.label}</div>
+                            </div>
+                            {idx < timelineEvents.length - 1 && <div className="flex-1 h-1 bg-orange-200 mx-2" />}
+                        </React.Fragment>
+                    ))}
+                </div>
+            </section>
+
+            {/* Documents */}
+            <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+                <h2 className="text-xl font-semibold mb-6">Documents</h2>
+                <ul className="list-disc pl-6 mb-4 text-blue-700">
+                    {staticDocuments.map((doc, idx) => (
+                        <li key={idx}><a href={doc.url} className="hover:underline">{doc.name}</a></li>
+                    ))}
+                </ul>
+                <Button1 text="Add Documents" className="mt-2" />
+            </section>
                 </>
             )}
 
-            {/* Modals */}
             {showClientModal && (
                 <AddClientModal
                     isOpen={showClientModal}
                     onClose={() => setShowClientModal(false)}
                     caseId={caseId}
+                    // Pass the existing client data from caseData to the modal
                     existingClient={{
                         clientName: caseData.clientName,
                         clientEmail: caseData.clientEmail,
@@ -569,17 +591,17 @@ const CaseDetails = () => {
                 />
             )}
 
+            {/* Add Next Hearing Modal */}
             {showHearingModal && (
                 <AddNextHearingModal 
                     isOpen={showHearingModal}
                     onClose={() => setShowHearingModal(false)}
                     caseNumber={caseData.caseNumber}
-                    courtName={caseData.courtName}
+                    courtName={caseData.courtName} // Pass court name as default location
                     onSave={handleAddHearing}
                 />
             )}
-
-            {showEditHearingModal && (
+                        {showEditHearingModal && (
                 <EditHearingModal
                     isOpen={showEditHearingModal}
                     onClose={() => setShowEditHearingModal(false)}
@@ -589,11 +611,17 @@ const CaseDetails = () => {
                 />
             )}
 
+            {/* Junior Lawyer Selection Modal */}
             {showJuniorModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg mx-4">
-                        <h2 className="text-xl font-bold mb-4">Associate Junior Lawyer</h2>
-                        <p className="text-sm text-gray-600 mb-4">Select a junior lawyer to associate with this case:</p>
+                        <h2 className="text-xl font-bold mb-4">
+                            Associate Junior Lawyer
+                        </h2>
+                        
+                        <p className="text-sm text-gray-600 mb-4">
+                            Select a junior lawyer to associate with this case:
+                        </p>
                         
                         <div className="space-y-3 max-h-96 overflow-y-auto mb-6">
                             {isLoadingJuniors ? (
@@ -629,7 +657,9 @@ const CaseDetails = () => {
                                     </div>
                                 ))
                             ) : (
-                                <div className="text-center py-8 text-gray-500">No junior lawyers available</div>
+                                <div className="text-center py-8 text-gray-500">
+                                    No junior lawyers available
+                                </div>
                             )}
                         </div>
                         
@@ -644,10 +674,12 @@ const CaseDetails = () => {
                 </div>
             )}
 
+            {/* Team Chat Modal */}
             {showChatModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-end z-50" onClick={() => setShowChatModal(false)}>
                     <div className="bg-white rounded-lg shadow-lg w-96 mx-4 mt-4 h-[calc(100vh-2rem)] flex flex-col" onClick={(e) => e.stopPropagation()}>
-                        <div className="border-b px-4 py-3 flex justify-between items-center">
+                        {/* Chat Header */}
+                        <div className="border-b px-4 py-3 flex justify-er45555t6yhb  between items-center">
                             <div>
                                 <h3 className="text-base font-semibold">Chat Box</h3>
                                 <p className="text-xs text-gray-600">Case: {caseData.caseNumber}</p>
@@ -662,6 +694,7 @@ const CaseDetails = () => {
                             </button>
                         </div>
 
+                        {/* Chat Messages Area */}
                         <div className="flex-1 overflow-y-auto p-3 bg-gray-50">
                             <div className="space-y-3">
                                 {chatMessages.map((msg) => (
@@ -692,6 +725,7 @@ const CaseDetails = () => {
                             </div>
                         </div>
 
+                        {/* Chat Input Area */}
                         <div className="border-t p-3 bg-white">
                             <div className="flex space-x-2">
                                 <input
