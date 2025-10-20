@@ -123,7 +123,7 @@ const CaseProfiles = () => {
 
                     {/* Action Buttons */}
                     <div className="flex gap-3">
-                      <Button1 text="Close Case" />
+                      {/* <Button1 text="Close Case" /> */}
                       <Button1
                         text={<span>View Details →</span>}
                         className="flex items-center"
