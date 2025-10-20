@@ -141,27 +141,18 @@ const Dashboard = () => {
 
     const handleNotificationClick = () => {};
     const handleStatCardClick = (title) => {
-        if (title === "Timeline") navigate("/lawyer/timeline");
-        else if (title === "Incomes") navigate("/lawyer/incomes");
+        if (title === "Incomes") navigate("/lawyer/incomes");
         else if (title === "Day Summary") navigate("/lawyer/day-summary");
         else if (title === "Due Payments") navigate("/lawyer/duepayments");
     };
 
-    // Mock data for the dashboard
+    // Dashboard stats (removed Timeline)
     const stats = [
         {
             title: "Due Payments",
             value: "$2,500",
             icon: "💰",
             bgColor: "bg-white",
-            iconBg: "bg-black-200",
-            textColor: "text-black-800"
-        },
-                {
-            title: "Timeline",
-            value: "12 Items",
-            icon: "⏱️",
-            bgColor: "bg-black-100",
             iconBg: "bg-black-200",
             textColor: "text-black-800"
         },
@@ -237,7 +228,7 @@ const Dashboard = () => {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 {stats.map((stat, index) => (
                     <div
                         key={index}
