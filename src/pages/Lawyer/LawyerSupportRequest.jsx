@@ -61,6 +61,21 @@ const LawyerSupportRequest = () => {
     };
 
     const handleCreateNew = () => {
+        // Check if lawyer has 3 or more pending support cases
+        const pendingCases = supportRequests.filter(caseItem => 
+            caseItem.status !== 'CLOSED'
+        );
+        
+        if (pendingCases.length >= 3) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Case Limit Reached',
+                text: 'You can only have a maximum of 3 pending support cases. Please close some existing cases before creating a new one.',
+                confirmButtonColor: '#F59E0B'
+            });
+            return;
+        }
+        
         setModalMode('create');
         setSubject('');
         setMessageContent('');
