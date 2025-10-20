@@ -56,26 +56,23 @@ class LawyerDashboardService {
     }
 
     /**
-     * Get meeting requests for the current lawyer
-     * @returns {Promise<Array>} Array of meeting requests
+     * Get pending meeting requests for the current lawyer
+     * @returns {Promise<Array>} Array of pending meeting requests only
      */
     async getMeetingRequests() {
         try {
-            // Get the user session to get the backend lawyer UUID
-            const userSession = await getFullSession();
-            if (!userSession || !userSession.id) {
-                throw new Error('User session not found or missing lawyer ID');
-            }
+            // Use the same API endpoint as MeetingRequest.jsx
+            const response = await authenticatedFetch('/api/meetings', {
+                method: 'GET',
+            });
 
-            const response = await authenticatedFetch(
-                `/api/lawyers/hearings/meeting-requests?lawyerId=${userSession.id}`,
-                {
-                    method: 'GET',
-                }
+            // Filter to show only pending meeting requests for the dashboard
+            const pendingMeetings = response.filter(meeting => 
+                meeting.status === 'PENDING'
             );
 
-            console.log('Meeting requests fetched successfully:', response);
-            return response;
+            console.log('Pending meeting requests fetched successfully:', pendingMeetings);
+            return pendingMeetings;
         } catch (error) {
             console.error('Error fetching meeting requests:', error);
             throw error;
@@ -252,7 +249,7 @@ class LawyerDashboardService {
 
     /**
      * Format meeting request data for display in the dashboard
-     * @param {Object} meetingRequest - The meeting request object from the API
+     * @param {Object} meetingRequest - The meeting request object from the API (same structure as MeetingRequest.jsx)
      * @returns {Object} Formatted meeting request object
      */
     formatMeetingRequestForDisplay(meetingRequest) {
@@ -260,15 +257,54 @@ class LawyerDashboardService {
             return null;
         }
 
-        // Backend sends: caseId, title, meetingDate (LocalDate), startTime (LocalTime), endTime (LocalTime), note
-        return {
-            id: meetingRequest.caseId || 'N/A',
-            title: meetingRequest.title || 'Meeting Request',
-            date: this.formatDate(meetingRequest.meetingDate),
-            time: this.formatTimeFromStartEnd(meetingRequest.startTime, meetingRequest.endTime),
-            note: meetingRequest.note || '',
-            caseId: meetingRequest.caseId
-        };
+        try {
+            // Based on actual API data structure:
+            // aCase: {id, caseTitle, caseNumber}
+            // client: {id, firstName, lastName}
+            // id, title, meetingDate, startTime, endTime, note, status, etc.
+            
+            const clientName = meetingRequest.client ? 
+                `${meetingRequest.client.firstName || ''} ${meetingRequest.client.lastName || ''}`.trim() : 'Unknown Client';
+            const caseNumber = meetingRequest.aCase ? (meetingRequest.aCase.caseNumber || 'N/A') : 'N/A';
+            const caseTitle = meetingRequest.aCase ? (meetingRequest.aCase.caseTitle || 'Unknown Case') : 'Unknown Case';
+            
+            // Use rescheduled date/time if available, otherwise use original
+            const meetingDate = meetingRequest.rescheduledDate || meetingRequest.meetingDate || new Date().toISOString().split('T')[0];
+            const startTime = meetingRequest.rescheduledStartTime || meetingRequest.startTime || '09:00:00';
+            const endTime = meetingRequest.rescheduledEndTime || meetingRequest.endTime || '10:00:00';
+            
+            // Create a meaningful title if it's empty or just "Case "
+            let displayTitle = meetingRequest.title;
+            if (!displayTitle || displayTitle.trim() === 'Case' || displayTitle.trim() === 'Case ') {
+                displayTitle = `Meeting: ${caseTitle}`;
+            }
+            
+            return {
+                id: meetingRequest.id || 'N/A',
+                title: displayTitle || 'Meeting Request',
+                date: meetingDate, // Keep in YYYY-MM-DD format for formatMeetingDate in Dashboard
+                time: this.formatTimeFromStartEnd(startTime, endTime),
+                note: meetingRequest.note || '',
+                caseId: caseNumber,
+                clientName: clientName,
+                caseTitle: caseTitle,
+                status: meetingRequest.status || 'PENDING'
+            };
+        } catch (error) {
+            console.error('Error formatting meeting request for display:', error);
+            // Return safe fallback
+            return {
+                id: meetingRequest.id || 'ERROR',
+                title: 'Error Loading Meeting',
+                date: new Date().toISOString().split('T')[0],
+                time: 'Time TBD',
+                note: 'Error loading meeting details',
+                caseId: 'ERROR',
+                clientName: 'Error Loading Client',
+                caseTitle: 'Error Loading Case',
+                status: 'PENDING'
+            };
+        }
     }
 
     /**

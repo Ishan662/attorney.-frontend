@@ -636,7 +636,10 @@ const AccountUsers = () => {
                     </div>
                     <div className="flex gap-2">
                         {activeTab === 'junior-lawyers' && (
-                            <Button1 onClick={() => setShowAddModal(true)}>
+                            <Button1 
+                                onClick={() => setShowAddModal(true)}
+                                className="px-3 py-2"
+                            >
                                 Add Junior Lawyer
                             </Button1>
                         )}
@@ -665,9 +668,6 @@ const AccountUsers = () => {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Status
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Cases Assigned
-                                        </th>
                                         {activeTab === 'junior-lawyers' && (
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Salary
@@ -690,11 +690,6 @@ const AccountUsers = () => {
                                         const displayEmail = userItem.email || 'N/A';
                                         const displayPhone = userItem.phone || userItem.phoneNumber || 'N/A';
                                         const displayStatus = userItem.status || 'ACTIVE';
-                                        const displayCases = (userItem.assignedCasesCount !== undefined && userItem.assignedCasesCount !== null) 
-                                            ? userItem.assignedCasesCount 
-                                            : (userItem.casesAssigned !== undefined && userItem.casesAssigned !== null) 
-                                                ? userItem.casesAssigned 
-                                                : 0;
                                         
                                         return (
                                         <tr key={userItem.id || Math.random()} className="hover:bg-gray-50">
@@ -729,9 +724,6 @@ const AccountUsers = () => {
                                                 }`}>
                                                     {displayStatus.toUpperCase()}
                                                 </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {displayCases}
                                             </td>
                                             {activeTab === 'junior-lawyers' && (
                                                 <td className="px-6 py-4 whitespace-nowrap">

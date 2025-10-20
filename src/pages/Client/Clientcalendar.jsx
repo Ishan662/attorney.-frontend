@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../../components/layout/Sidebar";
 import PageLayout from "../../components/layout/PageLayout";
 import Button1 from "../../components/UI/Button1";
 import Input1 from "../../components/UI/Input1";
 import { FaBriefcase, FaClock, FaCog } from "react-icons/fa";
+import { getClientCalendarEvents } from "../../services/calendarIntegrationService";
+import MeetingRequestModal from "../../components/modals/MeetingRequestModal";
+import MeetingDetailsModal from "../../components/modals/MeetingDetailsModal";
 
 const Clientcalender = () => {
   const user = {
@@ -14,6 +17,16 @@ const Clientcalender = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [viewMode, setViewMode] = useState("month");
+
+  // Calendar data state
+  const [calendarEvents, setCalendarEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Meeting request modal state
+  const [showMeetingRequestModal, setShowMeetingRequestModal] = useState(false);
+  const [showMeetingDetailsModal, setShowMeetingDetailsModal] = useState(false);
+  const [selectedMeeting, setSelectedMeeting] = useState(null);
 
   // Popup state
   const [showPopup, setShowPopup] = useState(false);
@@ -93,39 +106,56 @@ const Clientcalender = () => {
     );
   };
 
-  // Mock hearings and free time slots for selected date
-  const meetings = [
-    {
-      time: "1:00 PM - 2.00 PM",
-      location: "Mr Nadun's Meeting",
-      date: new Date(2025, 6, 7) // July 7, 2025
-    },
-    {
-      time: "3:00 PM - 4:00 PM",
-      location: "Mr Nadun's Second Meeting",
-      date: new Date(2025, 6, 24) // July 24, 2025
-    },
-  ];
+  // Load calendar events
+  useEffect(() => {
+    const loadCalendarEvents = async () => {
+      try {
+        setIsLoading(true);
+        const events = await getClientCalendarEvents();
+        setCalendarEvents(events || []);
+        setError(null);
+      } catch (err) {
+        console.error('Error loading calendar events:', err);
+        setError('Failed to load calendar events');
+        setCalendarEvents([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const hearings = [
-    {
-      time: "11:00 AM - 12:00 PM",
-      location: "Land Case Court",
-      date: new Date(2025, 6, 3) // July 3, 2025
-    },
-  ];
+    loadCalendarEvents();
+  }, []);
+
+  // Separate meetings and hearings from calendar events
+  const meetings = calendarEvents.filter(event => event.type === 'meeting' || event.extendedProps?.type === 'meeting');
+  const hearings = calendarEvents.filter(event => event.type === 'hearing' || event.extendedProps?.type === 'hearing');
+
+  // Helper function to get events for a specific date
+  const getEventsForDate = (date) => {
+    return calendarEvents.filter(event => {
+      const eventDate = new Date(event.start);
+      return eventDate.toDateString() === date.toDateString();
+    });
+  };
+
+  // Helper function to check if date has events
+  const hasEventsOnDate = (date) => {
+    return getEventsForDate(date).length > 0;
+  };
 
   // Filter meetings and hearings for selected date
   const getFilteredMeetings = () => {
-    return meetings.filter(meeting => 
-      meeting.date.toDateString() === selectedDate.toDateString()
-    );
+    return meetings.filter(meeting => {
+      const meetingDate = new Date(meeting.start);
+      return meetingDate.toDateString() === selectedDate.toDateString();
+    });
   };
 
   const getFilteredHearings = () => {
-    return hearings.filter(hearing => 
-      hearing.date.toDateString() === selectedDate.toDateString()
-    );
+    return hearings.filter(hearing => {
+      const hearingDate = new Date(hearing.start);
+      return hearingDate.toDateString() === selectedDate.toDateString();
+    });
   };
 
   // Time slots for day summary panel
@@ -497,11 +527,11 @@ const Clientcalender = () => {
   return (
     <PageLayout>
     <div className="flex min-h-screen bg-gray-50">
-
+{/* 
       <Sidebar
         user={user}
         onToggle={(expanded) => setSidebarExpanded(expanded)}
-      />
+      /> */}
       <div
         className="flex-grow p-6 overflow-y-auto transition-all duration-300"
         style={{
@@ -530,11 +560,13 @@ const Clientcalender = () => {
                 <FaCog size={20} />
               </button> */}
             </div>
-<Button1 text="Request Meetings" className="mb-6" onClick={() => { 
-  setSelectedTimeSlot(""); 
-  setSelectedMeetingDate(selectedDate.toISOString().split('T')[0]); 
-  setShowPopup(true); 
-}} />
+            <Button1 
+              text="Request Meeting"
+              onClick={() => { 
+                setShowMeetingRequestModal(true);
+              }}
+              className="mb-6"
+            />
 
             <div className="grid grid-cols-7 text-center text-xs font-medium text-gray-500 mb-2">
               {weekDays.map((day, idx) => (
@@ -547,16 +579,30 @@ const Clientcalender = () => {
 <button
   key={idx}
   onClick={() => setSelectedDate(date)}
-  className={`flex flex-col items-center justify-start text-xs pt-1 rounded ${
+  className={`flex flex-col items-start justify-start text-xs pt-1 rounded relative ${
     date.toDateString() === selectedDate.toDateString()
       ? "bg-gray-400 text-white"
       : "hover:bg-gray-100"
   }`}
-  style={{ height: "3rem" }}
+  style={{ height: "3.5rem" }}
 >
-  <div className="self-start pl-1">
+  <div className="pl-1 font-medium">
     {date.getDate()}
   </div>
+  
+  {/* Show event indicators */}
+  {getEventsForDate(date).slice(0, 1).map((event, eventIdx) => (
+    <div 
+      key={eventIdx}
+      className={`absolute bottom-0.5 left-0.5 right-0.5 text-xs rounded px-1.5 py-1 truncate font-medium ${
+        (event.type === 'meeting' || event.extendedProps?.type === 'meeting')
+          ? 'bg-blue-500 text-white'
+          : 'bg-green-500 text-white'
+      }`}
+    >
+      {event.title.substring(0, 10)}...
+    </div>
+  ))}
 </button>
                 ) : (
                   <div key={idx}></div>
@@ -571,14 +617,25 @@ const Clientcalender = () => {
               getFilteredMeetings().map((meeting, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-3 mb-2 text-gray-700"
+                  className="flex items-center gap-3 mb-2 text-gray-700 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                  onClick={() => {
+                    setSelectedMeeting(meeting);
+                    setShowMeetingDetailsModal(true);
+                  }}
                 >
-                  <div className="p-2 bg-gray-200 rounded">
-                    <FaBriefcase />
+                  <div className="p-2 bg-blue-200 rounded">
+                    <FaClock />
                   </div>
                   <div>
-                    <div className="text-sm font-medium">{meeting.time}</div>
-                    <div className="text-xs text-gray-500">{meeting.location}</div>
+                    <div className="text-sm font-medium">{meeting.title}</div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(meeting.start).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                      {meeting.extendedProps?.caseNumber && ` - Case: ${meeting.extendedProps.caseNumber}`}
+                    </div>
                   </div>
                 </div>
               ))
@@ -596,12 +653,19 @@ const Clientcalender = () => {
                     key={idx}
                     className="flex items-center gap-3 mb-2 text-gray-700"
                   >
-                    <div className="p-2 bg-gray-200 rounded">
+                    <div className="p-2 bg-green-200 rounded">
                       <FaClock />
                     </div>
                     <div>
-                      <div className="text-sm font-medium">{hearing.time}</div>
-                      <div className="text-xs text-gray-500">{hearing.location}</div>
+                      <div className="text-sm font-medium">{hearing.title}</div>
+                      <div className="text-xs text-gray-500">
+                        {new Date(hearing.start).toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true
+                        })}
+                        {hearing.extendedProps?.location && ` - ${hearing.extendedProps.location}`}
+                      </div>
                     </div>
                   </div>
                 ))
@@ -647,23 +711,59 @@ const Clientcalender = () => {
                     <button
                       key={idx}
                       className={`w-full text-left py-3 px-4 ${
-                        slot === "11 AM - 12 PM" && selectedDate.getDate() === 3 && selectedDate.getMonth() === 6
-                          ? "bg-green-100 text-green-800 border border-green-300 hover:bg-green-200"
-                          : slot === "1 PM - 2 PM" && selectedDate.getDate() === 7 && selectedDate.getMonth() === 6
-                          ? "bg-red-100 text-red-800 border border-red-300 hover:bg-red-200"
-                          : slot === "3 PM - 4 PM" && selectedDate.getDate() === 24 && selectedDate.getMonth() === 6
-                          ? "bg-blue-100 text-blue-800 border border-blue-300 hover:bg-blue-200"
-                          : idx % 2 === 0 ? "bg-gray-50" : "bg-white"
+                        (() => {
+                          const eventAtTime = getEventsForDate(selectedDate).find(event => {
+                            const eventTime = new Date(event.start);
+                            const timeString = eventTime.toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                              hour12: true
+                            });
+                            return slot.includes(timeString.split(':')[0]);
+                          });
+                          
+                          if (eventAtTime) {
+                            return (eventAtTime.type === 'meeting' || eventAtTime.extendedProps?.type === 'meeting')
+                              ? "bg-blue-100 text-blue-800 border border-blue-300 hover:bg-blue-200 cursor-pointer"
+                              : "bg-green-100 text-green-800 border border-green-300 hover:bg-green-200 cursor-pointer";
+                          }
+                          
+                          return idx % 2 === 0 ? "bg-gray-50" : "bg-white";
+                        })()
                       } hover:bg-blue-100 rounded transition-colors`}
-                      onClick={(e) => handleTimeSlotClick(slot, e)}
+                      onClick={(e) => {
+                        const eventAtTime = getEventsForDate(selectedDate).find(event => {
+                          const eventTime = new Date(event.start);
+                          const timeString = eventTime.toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                          });
+                          return slot.includes(timeString.split(':')[0]);
+                        });
+                        
+                        if (eventAtTime) {
+                          // Show meeting details modal for events
+                          setSelectedMeeting(eventAtTime);
+                          setShowMeetingDetailsModal(true);
+                        } else {
+                          handleTimeSlotClick(slot, e);
+                        }
+                      }}
                     >
-                      {slot === "11 AM - 12 PM" && selectedDate.getDate() === 3 && selectedDate.getMonth() === 6
-                        ? "11 AM - 12 PM - Land case court meeting"
-                        : slot === "1 PM - 2 PM" && selectedDate.getDate() === 7 && selectedDate.getMonth() === 6
-                        ? "1 PM - 2 PM - Mr Nadun's Meeting"
-                        : slot === "3 PM - 4 PM" && selectedDate.getDate() === 24 && selectedDate.getMonth() === 6
-                        ? "3 PM - 4 PM - Mr Nadun's Second Meeting"
-                        : slot}
+                      {(() => {
+                        const eventAtTime = getEventsForDate(selectedDate).find(event => {
+                          const eventTime = new Date(event.start);
+                          const timeString = eventTime.toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                          });
+                          return slot.includes(timeString.split(':')[0]);
+                        });
+                        
+                        return eventAtTime ? `${slot} - ${eventAtTime.title}` : slot;
+                      })()}
                     </button>
                   ))}
                 </div>
@@ -672,6 +772,17 @@ const Clientcalender = () => {
               <>
                 {/* Month view with weekday headers and calendar days */}
             <div className="flex justify-between items-center text-lg font-semibold mb-4">
+              <button
+                onClick={() => {
+                  const prevMonth = new Date(selectedDate);
+                  prevMonth.setMonth(prevMonth.getMonth() - 1);
+                  setSelectedDate(prevMonth);
+                }}
+                className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm font-medium"
+              >
+                ← Previous
+              </button>
+              
               <div>
                 {selectedDate.toLocaleDateString("en-US", {
                   month: "long",
@@ -679,6 +790,16 @@ const Clientcalender = () => {
                 })}
               </div>
 
+              <button
+                onClick={() => {
+                  const nextMonth = new Date(selectedDate);
+                  nextMonth.setMonth(nextMonth.getMonth() + 1);
+                  setSelectedDate(nextMonth);
+                }}
+                className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm font-medium"
+              >
+                Next →
+              </button>
             </div>
                 <div className="grid grid-cols-7 text-center text-xs font-medium text-gray-500 mb-2">
                   {weekDays.map((day, idx) => (
@@ -691,46 +812,33 @@ const Clientcalender = () => {
                       <button
                         key={idx}
                         onClick={() => {
-                          // Check if this date has a scheduled meeting
-                          const hasScheduledMeeting = (
-                            (date.getDate() === 3 && date.getMonth() === 6) ||
-                            (date.getDate() === 7 && date.getMonth() === 6) ||
-                            (date.getDate() === 24 && date.getMonth() === 6)
-                          );
-                          
-                          // Only show add hearing popup for dates without scheduled meetings
-                          if (!hasScheduledMeeting) {
-                            setSelectedDate(date);
-                            setSelectedTimeSlot("");
-                            //setShowPopup(true);
-                          } else {
-                            // Just select the date for labeled dates, don't show popup
-                            setSelectedDate(date);
-                          }
+                          setSelectedDate(date);
+                          setSelectedTimeSlot("");
                         }}
-                        className={`text-center py-1 rounded relative ${
+                        className={`text-center py-2 rounded relative min-h-[60px] flex flex-col justify-start ${
                           date.toDateString() === selectedDate.toDateString()
                             ? "bg-gray-400 text-white"
                             : "hover:bg-gray-100"
                         }`}
                       >
-                        {date.getDate()}
-                        {date.getDate() === 7 && date.getMonth() === 6 && (
+                        <span className="text-sm font-medium mb-1">{date.getDate()}</span>
+                        {getEventsForDate(date).slice(0, 2).map((event, eventIdx) => (
                           <div 
-                            className="absolute bottom-1 left-1 right-1 bg-red-200 text-red-800 text-xs rounded px-1 truncate cursor-pointer hover:bg-red-300"
-                            onClick={(e) => handleMeetingDetailClick(e, date)}
+                            key={eventIdx}
+                            className={`absolute ${eventIdx === 0 ? 'bottom-1' : 'bottom-8'} left-0.5 right-0.5 text-xs rounded px-2 py-2 truncate cursor-pointer font-semibold shadow-md ${
+                              (event.type === 'meeting' || event.extendedProps?.type === 'meeting')
+                                ? 'bg-blue-600 text-white hover:bg-blue-700 border border-blue-700'
+                                : 'bg-green-600 text-white hover:bg-green-700 border border-green-700'
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedMeeting(event);
+                              setShowMeetingDetailsModal(true);
+                            }}
                           >
-                            Mr Nadun's Meeting
+                            {event.title}
                           </div>
-                        )}
-                        {date.getDate() === 3 && date.getMonth() === 6 && (
-                          <div 
-                            className="absolute bottom-1 left-1 right-1 bg-green-200 text-green-800 text-xs rounded px-1 truncate cursor-pointer hover:bg-green-300"
-                            onClick={(e) => handleMeetingDetailClick(e, date)}
-                          >
-                            Land case court date
-                          </div>
-                        )}
+                        ))}
                         {date.getDate() === 24 && date.getMonth() === 6 && (
                           <div 
                             className="absolute bottom-1 left-1 right-1 bg-blue-200 text-blue-800 text-xs rounded px-1 truncate cursor-pointer hover:bg-blue-300"
@@ -758,6 +866,58 @@ const Clientcalender = () => {
           onClick={() => setShowMeetingDetails(false)}
         />
       )}
+
+      {/* Meeting Request Modal */}
+      <MeetingRequestModal
+        isOpen={showMeetingRequestModal}
+        onClose={() => {
+          setShowMeetingRequestModal(false);
+          // Refresh calendar events after closing modal
+          const loadCalendarEvents = async () => {
+            try {
+              const events = await getClientCalendarEvents();
+              setCalendarEvents(events || []);
+            } catch (err) {
+              console.error('Error refreshing calendar events:', err);
+            }
+          };
+          loadCalendarEvents();
+        }}
+        onMeetingCreated={() => {
+          // Refresh calendar events after meeting creation
+          const loadCalendarEvents = async () => {
+            try {
+              const events = await getClientCalendarEvents();
+              setCalendarEvents(events || []);
+            } catch (err) {
+              console.error('Error refreshing calendar events:', err);
+            }
+          };
+          loadCalendarEvents();
+        }}
+      />
+
+      {/* Meeting Details Modal */}
+      <MeetingDetailsModal
+        isOpen={showMeetingDetailsModal && selectedMeeting !== null}
+        meeting={selectedMeeting}
+        onClose={() => {
+          setShowMeetingDetailsModal(false);
+          setSelectedMeeting(null);
+          // Refresh calendar events after closing modal
+          const loadCalendarEvents = async () => {
+            try {
+              const events = await getClientCalendarEvents();
+              setCalendarEvents(events || []);
+            } catch (err) {
+              console.error('Error refreshing calendar events:', err);
+            }
+          };
+          loadCalendarEvents();
+        }}
+        userRole="client"
+      />
+
     </div>
     </PageLayout>
   );
