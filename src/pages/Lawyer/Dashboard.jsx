@@ -4,6 +4,7 @@ import PageLayout from "../../components/layout/PageLayout";
 import PageHeader from "../../components/layout/PageHeader";
 import Button1 from "../../components/UI/Button1";
 import PricingPopupV2 from "../../components/pricing/PricingPopupV2";
+import { getMySubscription, cancelMySubscription } from "../../services/subscriptionService";
 import IncomeChart from "../../components/charts/IncomeChart";
 import { lawyerDashboardService } from "../../services/lawyerDashboardService";
 
@@ -11,6 +12,12 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const [notificationCount] = useState(3);
     const [isPricingPopupOpen, setIsPricingPopupOpen] = useState(false);
+    const [subscription, setSubscription] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // --- ▼▼▼ ADDED STATE FOR CANCELLATION PROCESS ▼▼▼ ---
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const [isCanceling, setIsCanceling] = useState(false);
     const [hearings, setHearings] = useState([]);
     const [isLoadingHearings, setIsLoadingHearings] = useState(true);
     const [hearingsError, setHearingsError] = useState(null);
@@ -20,17 +27,11 @@ const Dashboard = () => {
     const [isLoadingIncome, setIsLoadingIncome] = useState(true);
     const [incomeError, setIncomeError] = useState(null);
 
-    const user = {
+    const [user, setUser] = useState({
         name: 'Nishagi Jewantha',
         email: 'jeewanthadeherath@gmail.com',
         role: 'LAWYER',
-        plan: 'FREE_TRIAL', // This could come from your auth context or API
-        trialDaysLeft: 28, // This could come from your backend
-    };
-
-    const handleNotificationClick = () => {
-        // Handle notifications - navigate to notifications page or open panel
-    };
+    });
 
     // Load dashboard data from backend
     useEffect(() => {
@@ -73,20 +74,52 @@ const Dashboard = () => {
         loadDashboardData();
     }, []);
 
-    // Handle card click to navigate to specific pages
+
+
+    useEffect(() => {
+        const fetchSubscription = async () => {
+            try {
+                const subData = await getMySubscription();
+                setSubscription(subData);
+            } catch (error) {
+                console.error("Dashboard error:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchSubscription();
+    }, []);
+
+    const calculateDaysLeft = (endDateStr) => {
+        if (!endDateStr) return 0;
+        const endDate = new Date(endDateStr);
+        const now = new Date();
+        const diffTime = endDate.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return 28 > 0 ? 28 : diffDays;
+    };
+    
+    // --- ▼▼▼ ADDED HANDLER FOR SUBSCRIPTION CANCELLATION ▼▼▼ ---
+    const handleCancelSubscription = async () => {
+        setIsCanceling(true);
+        try {
+            await cancelMySubscription();
+            setIsCancelModalOpen(false);
+            // Reload the page to get the updated subscription status
+            window.location.reload();
+        } catch (error) {
+            alert(error.message || "Failed to cancel subscription.");
+        } finally {
+            setIsCanceling(false);
+        }
+    };
+
+    const handleNotificationClick = () => {};
     const handleStatCardClick = (title) => {
-        if (title === "Timeline") {
-            navigate("/lawyer/timeline");
-        }
-        else if (title === "Incomes") {
-            navigate("/lawyer/incomes");
-        }
-        else if (title === "Day Summary") {
-            navigate("/lawyer/day-summary");
-        }
-        else if (title === "Due Payments") {
-            navigate("/lawyer/duepayments");
-        }
+        if (title === "Timeline") navigate("/lawyer/timeline");
+        else if (title === "Incomes") navigate("/lawyer/incomes");
+        else if (title === "Day Summary") navigate("/lawyer/day-summary");
+        else if (title === "Due Payments") navigate("/lawyer/duepayments");
     };
 
     // Mock data for the dashboard
@@ -163,44 +196,36 @@ const Dashboard = () => {
 
     return (
         <PageLayout user={user}>
-            {/* Header */}
             <div className="mb-8">
                 <PageHeader
                     user={user}
                     notificationCount={notificationCount}
                     onNotificationClick={handleNotificationClick}
+                    subscription={subscription}
+                    onCancelSubscription={() => setIsCancelModalOpen(true)}
                 />
             </div>
 
-            {/* Free Trial Banner */}
-            {user.plan === 'FREE_TRIAL' && (
-                <div className="mb-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 
-                              border border-yellow-200 rounded-xl shadow-md">
+            {subscription &&  (subscription.status === 'TRIAL' || subscription.status === 'CANCELLED') && (
+                <div className="mb-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl shadow-md">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center">
                             <div className="w-3 h-3 bg-yellow-500 rounded-full mr-4 animate-pulse"></div>
                             <div>
                                 <div className="flex items-center mb-1">
-                                    <span className="text-yellow-800 font-semibold text-lg">
-                                        Free Trial Active
-                                    </span>
-                                    <span className="ml-2 bg-yellow-200 text-yellow-800 text-xs 
-                                                   px-2 py-1 rounded-full font-medium">
-                                        {user.trialDaysLeft} days left
+                                    <span className="text-yellow-800 font-semibold text-lg">Free Trial Active</span>
+                                    <span className="ml-2 bg-yellow-200 text-yellow-800 text-xs px-2 py-1 rounded-full font-medium">
+                                        {calculateDaysLeft(subscription.endDate)} days left
                                     </span>
                                 </div>
                                 <p className="text-yellow-700 text-sm">
-                                    Upgrade now to unlock premium features and continue your legal practice
-                                    without interruptions
+                                    Upgrade now to unlock premium features and continue your legal practice without interruptions
                                 </p>
                             </div>
                         </div>
                         <button
                             onClick={() => setIsPricingPopupOpen(true)}
-                            className="bg-gradient-to-r from-yellow-500 to-orange-500 
-                                     hover:from-yellow-600 hover:to-orange-600 text-white px-6 py-3 
-                                     rounded-lg font-semibold transition-all duration-200 shadow-md 
-                                     hover:shadow-lg transform hover:scale-105"
+                            className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
                         >
                             Upgrade Now
                         </button>
@@ -208,29 +233,22 @@ const Dashboard = () => {
                 </div>
             )}
 
-            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 {stats.map((stat, index) => (
                     <div
                         key={index}
-                        className="p-6 rounded-lg bg-white border border-gray-300 
-                                  hover:shadow-lg transition-shadow duration-300 cursor-pointer
-                                  transform hover:scale-105"
+                        className="p-6 rounded-lg bg-white border border-gray-300 hover:shadow-lg transition-shadow duration-300 cursor-pointer transform hover:scale-105"
                         onClick={() => handleStatCardClick(stat.title)}
                     >
                         <div className="flex flex-col items-center">
-                            <div className={`w-14 h-14 flex items-center bg-gray-50 justify-center 
-                                           text-2xl mb-3 rounded-full ${stat.iconBg} shadow-sm`}>
-                                {stat.icon}
-                            </div>
+                            <div className="w-14 h-14 flex items-center bg-gray-50 justify-center text-2xl mb-3 rounded-full shadow-sm">{stat.icon}</div>
                             <div className="text-sm text-gray-600 font-medium text-center">{stat.title}</div>
-                            <div className={`text-xl font-bold mt-1 ${stat.textColor}`}>{stat.value}</div>
+                            <div className="text-xl font-bold mt-1 text-black-800">{stat.value}</div>
                         </div>
                     </div>
                 ))}
             </div>
 
-            {/* Hearings Section */}
             <div className="mb-8">
                 <h2 className="text-xl font-bold mb-4">Hearings to attend today</h2>
                 <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -343,6 +361,31 @@ const Dashboard = () => {
                 onClose={() => setIsPricingPopupOpen(false)}
                 showSkipButton={true}
             />
+
+            {isCancelModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+                    <div className="bg-white rounded-lg p-8 shadow-2xl w-full max-w-md text-center">
+                        <h2 className="text-xl font-bold mb-4">Are you sure?</h2>
+                        <p className="text-gray-600 mb-6">
+                            Your subscription will be canceled. You will lose access to premium features at the end of your current billing period.
+                        </p>
+                        <div className="flex justify-center gap-4">
+                            <Button1
+                                text="Never Mind"
+                                onClick={() => setIsCancelModalOpen(false)}
+                                className="bg-gray-200 hover:bg-gray-300"
+                                disabled={isCanceling}
+                            />
+                            <Button1
+                                text={isCanceling ? "Canceling..." : "Yes, Cancel"}
+                                onClick={handleCancelSubscription}
+                                className="bg-red-600 hover:bg-red-700 text-white"
+                                disabled={isCanceling}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </PageLayout>
     );
 }
