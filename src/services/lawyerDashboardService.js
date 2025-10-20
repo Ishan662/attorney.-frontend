@@ -158,7 +158,6 @@ class LawyerDashboardService {
             }
 
             const url = `/api/lawyers/day-summary/todays-payments?firmId=${firmId}`;
-            console.log('Fetching today\'s payments from URL:', url);
             
             const response = await authenticatedFetch(
                 url,
@@ -167,7 +166,6 @@ class LawyerDashboardService {
                 }
             );
 
-            console.log('Today\'s payments fetched successfully:', response);
             return response;
         } catch (error) {
             console.error('Error fetching today\'s payments:', error);
