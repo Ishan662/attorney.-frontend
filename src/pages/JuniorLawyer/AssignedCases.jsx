@@ -19,6 +19,12 @@ const AssignedCases = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [priorityFilter, setPriorityFilter] = useState('');
+    
+    // State for hearings
+    const [allHearings, setAllHearings] = useState([]);
+    const [hearingsLoading, setHearingsLoading] = useState(false);
+    const [hearingsError, setHearingsError] = useState(null);
+    const [caseHearings, setCaseHearings] = useState([]);
 
     // Fetch assigned cases on component mount
     useEffect(() => {
@@ -46,6 +52,31 @@ const AssignedCases = () => {
         fetchAssignedCases();
     }, []);
 
+    // Fetch hearings for assigned cases
+    useEffect(() => {
+        const fetchHearings = async () => {
+            try {
+                setHearingsLoading(true);
+                setHearingsError(null);
+                
+                const hearingsData = await juniorCaseService.getAssignedCaseHearings();
+                const formattedHearings = hearingsData.map(hearing => 
+                    juniorCaseService.formatHearingForDisplay(hearing)
+                );
+                
+                setAllHearings(formattedHearings);
+            } catch (error) {
+                console.error('Failed to fetch assigned case hearings:', error);
+                setHearingsError(error.message);
+                setAllHearings([]);
+            } finally {
+                setHearingsLoading(false);
+            }
+        };
+
+        fetchHearings();
+    }, []);
+
     // Filter cases based on search and filters
     const filteredCases = juniorCaseService.filterCases(cases, searchTerm, statusFilter, priorityFilter);
 
@@ -53,54 +84,19 @@ const AssignedCases = () => {
 
     const handleRowClick = (caseItem) => {
         setSelectedCase(caseItem);
+        
+        // Filter hearings for this specific case
+        const filteredHearings = juniorCaseService.filterHearingsByCase(allHearings, caseItem.id);
+        setCaseHearings(filteredHearings);
+        
+        console.log('Selected case:', caseItem);
+        console.log('Filtered hearings for case:', filteredHearings);
     };
 
     const closeModal = () => {
         setSelectedCase(null);
+        setCaseHearings([]);
     };
-
-    // Dummy financials and other data since assignedCases don't have them
-    const dummyFinancials = {
-        agreedFee: "Rs. 50,000.00",
-        totalExpenses: "Rs. 10,000.00",
-        paymentStatus: "Paid",
-        invoicedAmount: "Rs. 60,000.00",
-    };
-
-    const dummyHearings = [
-        {
-            label: "1st Hearing",
-            date: "March 15, 2024",
-            location: "Superior Court",
-            status: "Completed",
-            note: "Decision on estate valuation",
-        },
-        {
-            label: "2nd Hearing",
-            date: "July 20, 2024",
-            location: "Superior Court",
-            status: "Planned",
-            note: "Final distribution approval",
-        },
-        {
-            label: "Document Filing Deadline",
-            date: "June 30, 2024",
-            note: "Required: Final inventory and accounting",
-        },
-    ];
-
-    const dummyTimeline = [
-        { date: "Feb 01, 2024", label: "Client Briefing" },
-        { date: "Mar 15, 2024", label: "Initial Hearing" },
-        { date: "Apr 20, 2024", label: "Discovery Phase" },
-        { date: "Jul 20, 2024", label: "Next Hearing" },
-    ];
-
-    const dummyDocuments = [
-        { name: "Will Document.pdf", url: "#" },
-        { name: "Estate Valuation.pdf", url: "#" },
-        { name: "Correspondence Log.pdf", url: "#" },
-    ];
 
     return (
         <PageLayout user={user}>
@@ -167,7 +163,7 @@ const AssignedCases = () => {
                                 setStatusFilter('');
                                 setPriorityFilter('');
                             }}
-                            className="w-full px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                            className="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
                         >
                             Clear Filters
                         </button>
@@ -327,43 +323,12 @@ const AssignedCases = () => {
                         {/* Parties Involved */}
                         <section className="mb-6 border-t pt-6">
                             <h3 className="text-xl font-semibold mb-4">Parties Involved</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700 text-sm">
+                            <div className="grid grid-cols-1 md:grid-cols-1 gap-6 text-gray-700 text-sm">
                                 <div>
                                     <p>
                                         <strong>Client:</strong> {selectedCase.client}
                                     </p>
                                     {/* Add client phone or more if you have */}
-                                </div>
-                                <div>
-                                    <p>
-                                        <strong>Assigned Lawyer:</strong> {selectedCase.lawyer}
-                                    </p>
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* Financials */}
-                        <section className="mb-6 border-t pt-6">
-                            <h3 className="text-xl font-semibold mb-4">Financials</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700 text-sm">
-                                <div>
-                                    <p>
-                                        <strong>Agreed Fee:</strong> {dummyFinancials.agreedFee}
-                                    </p>
-                                    <p>
-                                        <strong>Total Expenses:</strong> {dummyFinancials.totalExpenses}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p>
-                                        <strong>Payment Status:</strong>{" "}
-                                        <span className="inline-block px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
-                                            {dummyFinancials.paymentStatus}
-                                        </span>
-                                    </p>
-                                    <p>
-                                        <strong>Invoiced Amount:</strong> {dummyFinancials.invoicedAmount}
-                                    </p>
                                 </div>
                             </div>
                         </section>
@@ -372,137 +337,112 @@ const AssignedCases = () => {
                         <section className="mb-6 border-t pt-6">
                             <h3 className="text-xl font-semibold mb-4">Hearings & Key Dates</h3>
 
-                            {/* First two items in two columns */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                {dummyHearings.length > 0 && (
-                                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                        <div>
-                                            <strong>{dummyHearings[0].label}:</strong> {dummyHearings[0].date}
-                                        </div>
-                                        {dummyHearings[0].location && (
-                                            <div className="text-gray-600 text-sm">Location: {dummyHearings[0].location}</div>
-                                        )}
-                                        {dummyHearings[0].status && (
-                                            <span
-                                                className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${dummyHearings[0].status === 'Completed'
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : dummyHearings[0].status === 'Planned'
-                                                        ? 'bg-blue-100 text-blue-700'
-                                                        : 'bg-gray-100 text-gray-700'
-                                                    }`}
-                                            >
-                                                {dummyHearings[0].status}
-                                            </span>
-                                        )}
-                                        {dummyHearings[0].note && (
-                                            <div className="mt-1 text-gray-600 text-xs">
-                                                <strong>Note:</strong> {dummyHearings[0].note}
-                                            </div>
-                                        )}
+                            {hearingsLoading ? (
+                                <div className="flex items-center justify-center h-32 text-gray-500">
+                                    <div className="text-center">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+                                        <p className="text-sm">Loading hearings...</p>
                                     </div>
-                                )}
-
-                                {dummyHearings.length > 1 && (
-                                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                        <div>
-                                            <strong>{dummyHearings[1].label}:</strong> {dummyHearings[1].date}
-                                        </div>
-                                        {dummyHearings[1].location && (
-                                            <div className="text-gray-600 text-sm">Location: {dummyHearings[1].location}</div>
-                                        )}
-                                        {dummyHearings[1].status && (
-                                            <span
-                                                className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${dummyHearings[1].status === 'Completed'
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : dummyHearings[1].status === 'Planned'
-                                                        ? 'bg-blue-100 text-blue-700'
-                                                        : 'bg-gray-100 text-gray-700'
-                                                    }`}
-                                            >
-                                                {dummyHearings[1].status}
-                                            </span>
-                                        )}
-                                        {dummyHearings[1].note && (
-                                            <div className="mt-1 text-gray-600 text-xs">
-                                                <strong>Note:</strong> {dummyHearings[1].note}
-                                            </div>
-                                        )}
+                                </div>
+                            ) : hearingsError ? (
+                                <div className="flex items-center justify-center h-32 text-red-500">
+                                    <div className="text-center">
+                                        <div className="text-3xl mb-2">⚠️</div>
+                                        <p className="text-sm">{hearingsError}</p>
                                     </div>
-                                )}
-                            </div>
-
-                            {/* Remaining items in list */}
-                            {dummyHearings.length > 2 && (
-                                <ul className="list-disc list-inside text-sm text-gray-700 space-y-2 max-h-40 overflow-y-auto">
-                                    {dummyHearings.slice(2).map((h, i) => (
-                                        <li key={i + 2}>
-                                            <strong>{h.label}:</strong> {h.date}
-                                            {h.location && <> at <span className="text-gray-900">{h.location}</span></>}
-
-                                            {h.status && (
-                                                <span
-                                                    className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ml-2 ${h.status === "Completed"
-                                                        ? "bg-green-100 text-green-700"
-                                                        : h.status === "Planned"
-                                                            ? "bg-blue-100 text-blue-700"
-                                                            : "bg-gray-100 text-gray-700"
-                                                        }`}
-                                                >
-                                                    {h.status}
-                                                </span>
-                                            )}
-
-                                            {h.note && (
-                                                <div className="ml-4 mt-1 text-gray-600 text-xs">
-                                                    <strong>Note:</strong> {h.note}
+                                </div>
+                            ) : caseHearings.length === 0 ? (
+                                <div className="flex items-center justify-center h-32 text-gray-500">
+                                    <div className="text-center">
+                                        <div className="text-3xl mb-2">📅</div>
+                                        <p className="text-sm">No hearings scheduled for this case</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    {/* First two items in two columns */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                        {caseHearings.length > 0 && (
+                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                                <div>
+                                                    <strong>{caseHearings[0].label}:</strong> {caseHearings[0].date}
                                                 </div>
-                                            )}
-                                        </li>
-                                    ))}
-                                </ul>
+                                                {caseHearings[0].displayTime && (
+                                                    <div className="text-gray-600 text-sm">Time: {caseHearings[0].displayTime}</div>
+                                                )}
+                                                {caseHearings[0].location && (
+                                                    <div className="text-gray-600 text-sm">Location: {caseHearings[0].location}</div>
+                                                )}
+                                                {caseHearings[0].status && (
+                                                    <span
+                                                        className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${juniorCaseService.getHearingStatusColorClass(caseHearings[0].status)}`}
+                                                    >
+                                                        {caseHearings[0].status}
+                                                    </span>
+                                                )}
+                                                {caseHearings[0].note && (
+                                                    <div className="mt-1 text-gray-600 text-xs">
+                                                        <strong>Note:</strong> {caseHearings[0].note}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {caseHearings.length > 1 && (
+                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                                <div>
+                                                    <strong>{caseHearings[1].label}:</strong> {caseHearings[1].date}
+                                                </div>
+                                                {caseHearings[1].displayTime && (
+                                                    <div className="text-gray-600 text-sm">Time: {caseHearings[1].displayTime}</div>
+                                                )}
+                                                {caseHearings[1].location && (
+                                                    <div className="text-gray-600 text-sm">Location: {caseHearings[1].location}</div>
+                                                )}
+                                                {caseHearings[1].status && (
+                                                    <span
+                                                        className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${juniorCaseService.getHearingStatusColorClass(caseHearings[1].status)}`}
+                                                    >
+                                                        {caseHearings[1].status}
+                                                    </span>
+                                                )}
+                                                {caseHearings[1].note && (
+                                                    <div className="mt-1 text-gray-600 text-xs">
+                                                        <strong>Note:</strong> {caseHearings[1].note}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Remaining items in list */}
+                                    {caseHearings.length > 2 && (
+                                        <ul className="list-disc list-inside text-sm text-gray-700 space-y-2 max-h-40 overflow-y-auto">
+                                            {caseHearings.slice(2).map((hearing, i) => (
+                                                <li key={hearing.id || (i + 2)}>
+                                                    <strong>{hearing.label}:</strong> {hearing.date}
+                                                    {hearing.displayTime && <> at <span className="text-gray-900">{hearing.displayTime}</span></>}
+                                                    {hearing.location && <> in <span className="text-gray-900">{hearing.location}</span></>}
+
+                                                    {hearing.status && (
+                                                        <span
+                                                            className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ml-2 ${juniorCaseService.getHearingStatusColorClass(hearing.status)}`}
+                                                        >
+                                                            {hearing.status}
+                                                        </span>
+                                                    )}
+
+                                                    {hearing.note && (
+                                                        <div className="ml-4 mt-1 text-gray-600 text-xs">
+                                                            <strong>Note:</strong> {hearing.note}
+                                                        </div>
+                                                    )}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </>
                             )}
-                        </section>
-
-                        {/* Timeline */}
-                        <section className="mb-6 border-t pt-6">
-                            <h3 className="text-xl font-semibold mb-4 text-center">Case Progress Timeline</h3>
-                            <div className="flex items-center justify-between space-x-2 overflow-x-auto px-4">
-                                {dummyTimeline.map((t, idx) => (
-                                    <React.Fragment key={idx}>
-                                        <div className="flex flex-col items-center min-w-[80px]">
-                                            <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold">
-                                                {idx + 1}
-                                            </div>
-                                            <div className="text-xs mt-2 text-gray-700 text-center whitespace-normal">
-                                                {t.date}
-                                                <br />
-                                                {t.label}
-                                            </div>
-                                        </div>
-                                        {idx < dummyTimeline.length - 1 && <div className="flex-1 h-1 bg-orange-200 mx-2 my-auto" />}
-                                    </React.Fragment>
-                                ))}
-                            </div>
-                        </section>
-
-                        {/* Documents */}
-                        <section className="border-t pt-6">
-                            <h3 className="text-xl font-semibold mb-4">Documents</h3>
-                            <ul className="list-disc pl-6 mb-4 text-blue-700 max-h-32 overflow-y-auto">
-                                {dummyDocuments.map((doc, idx) => (
-                                    <li key={idx}>
-                                        <a href={doc.url} className="hover:underline" target="_blank" rel="noopener noreferrer">
-                                            {doc.name}
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
-
-                            <Button1
-                                className="mt-4"
-                            >
-                                Add Documents
-                            </Button1>
                         </section>
 
                         {/* Close button */}

@@ -140,6 +140,40 @@ class LawyerDashboardService {
     }
 
     /**
+     * Get today's payments for the current firm
+     * @returns {Promise<Array>} Array of today's payments
+     */
+    async getTodaysPayments() {
+        try {
+            // Get the user session to get the firm ID
+            const userSession = await getFullSession();
+            if (!userSession) {
+                throw new Error('User session not found');
+            }
+
+            // Use firmId from session, fallback to id if firmId not available
+            const firmId = userSession.firmId || userSession.firm || userSession.id;
+            if (!firmId) {
+                throw new Error('Firm ID not found in user session');
+            }
+
+            const url = `/api/lawyers/day-summary/todays-payments?firmId=${firmId}`;
+            
+            const response = await authenticatedFetch(
+                url,
+                {
+                    method: 'GET',
+                }
+            );
+
+            return response;
+        } catch (error) {
+            console.error('Error fetching today\'s payments:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Get today's closed cases for the current lawyer
      * @returns {Promise<Array>} Array of closed cases for today
      */
@@ -338,6 +372,28 @@ class LawyerDashboardService {
             // Format status for display
             statusDisplay: this.formatCaseStatus(caseData.status),
             paymentStatusDisplay: this.formatPaymentStatus(caseData.paymentStatus)
+        };
+    }
+
+    /**
+     * Format payment DTO for display
+     * @param {Object} payment - Payment DTO from backend (id, amount, createdAt, caseNumber, clientName)
+     * @returns {Object} Formatted payment object
+     */
+    formatPaymentForDisplay(payment) {
+        if (!payment) {
+            return null;
+        }
+
+        return {
+            id: payment.id || 'N/A',
+            amount: payment.amount ? Number(payment.amount) : 0,
+            createdAt: this.formatDateTime(payment.createdAt),
+            caseNumber: payment.caseNumber || 'N/A',
+            clientName: payment.clientName || 'Unknown Client',
+            // Formatted display values
+            amountDisplay: payment.amount ? `$${Number(payment.amount).toLocaleString()}` : '$0',
+            timeDisplay: payment.createdAt ? this.formatTime(payment.createdAt) : 'Unknown time'
         };
     }
 

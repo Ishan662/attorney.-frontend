@@ -24,7 +24,6 @@ import Cases from './pages/Lawyer/Cases';
 import DuePayments from './pages/Lawyer/DuePayments';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import AddJunior from './pages/Lawyer/AddNewJunior';
-import SystemSettings from './pages/Admin/SystemSettings';
 import PackageManagement from './pages/Admin/PackageManagement';
 import NotFoundPage from './pages/Common/404';
 import JuniorDashboard from './pages/JuniorLawyer/JuniorDashboard';
@@ -35,7 +34,6 @@ import JuniorHearings from './pages/JuniorLawyer/JuniorHearing';
 import AccountUsers from './pages/Lawyer/AccountUsers';
 import UserManagement from './pages/Admin/UserManagement';
 import ViewMessages from './pages/Admin/ViewMessages';
-import AdminAnalytics from './pages/Admin/ViewAnalytics';
 import ClientDashboard from './pages/Client/Clientdashboard';
 
 import Clientcaseprofiles from './pages/Client/Clientcaseprofiles';
@@ -68,7 +66,12 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           {/* <Route path="signup" element={<SignUp />} />  */}
-          <Route path="admin/dashboard" element={<AdminDashboard />} />
+
+          <Route path="admin/dashboard" element={<ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminDashboard />
+         </ProtectedRoute>} />
+
+          {/* <Route path="admin/dashboard" element={<AdminDashboard />} /> */}
           <Route path="junior/dashboard" element={<JuniorDashboard/>} />
           <Route path="client/dashboard" element={<ClientDashboard />} />
           <Route path="admin/timeline" element={<Timeline />}/>
@@ -93,7 +96,6 @@ export default function App() {
           <Route path="lawyer/cases" element={<Cases />} />
           <Route path="lawyer/duepayments" element={<DuePayments />} />
           <Route path="lawyer/addnewjunior" element={<AddJunior />} />
-          <Route path="admin/systemsettings" element={<SystemSettings />} />
           <Route path="admin/packagemanagement" element={<PackageManagement />} />
           <Route path="junior/cases" element={<AssignedCases/>} />
           <Route path="junior/tasks" element={<Tasks/>} />
@@ -105,7 +107,6 @@ export default function App() {
           <Route path="*" element={<NotFoundPage />} />
           <Route path="admin/usermanagement" element={<UserManagement />} />
           <Route path="admin/viewmessages" element={<ViewMessages />} />
-          <Route path="admin/viewanalytics" element={<AdminAnalytics />} />
           <Route path='lawyer/assigntasks' element={<AssignTasks />} />
           {/* client case profiles  */}
           {/* <Route path="client/caseprofiles" element={<Clientcaseprofiles />} /> */}

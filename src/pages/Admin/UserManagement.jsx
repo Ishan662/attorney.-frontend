@@ -14,8 +14,6 @@ const UserManagement = () => {
     const { currentUser } = useAuth();
     const [activeTab, setActiveTab] = useState("lawyers");
     const [searchTerm, setSearchTerm] = useState("");
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [selectedUser, setSelectedUser] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -142,46 +140,6 @@ const UserManagement = () => {
         }
     };
 
-    // Delete user confirmation
-    const handleDeleteClick = (user) => {
-        setSelectedUser(user);
-        setShowDeleteModal(true);
-    };
-
-    // Confirm delete user
-    const confirmDelete = async () => {
-        if (!selectedUser) return;
-        
-        setIsLoading(true);
-        
-        // Optimistic update: remove user from UI first
-        const removedUser = selectedUser;
-        setUsers(prevUsers => ({
-            ...prevUsers,
-            [activeTab]: prevUsers[activeTab].filter(user => user.id !== selectedUser.id)
-        }));
-        
-        try {
-            // Call backend API
-            await adminUserService.deleteUser(selectedUser.id);
-            setIsLoading(false);
-            setShowDeleteModal(false);
-            setSelectedUser(null);
-            alert(`User ${removedUser.name} has been deleted successfully.`);
-        } catch (err) {
-            console.error('Failed to delete user:', err);
-            // Revert optimistic update on error
-            setUsers(prevUsers => ({
-                ...prevUsers,
-                [activeTab]: [removedUser, ...prevUsers[activeTab]]
-            }));
-            setIsLoading(false);
-            setShowDeleteModal(false);
-            setSelectedUser(null);
-            alert(`Failed to delete user: ${err.message}`);
-        }
-    };
-
     // Format date for display
     const formatDate = (dateStr) => {
         if (!dateStr) return "N/A";
@@ -266,7 +224,7 @@ const UserManagement = () => {
                     <div className="w-full md:w-1/3">
                         <Input1
                             type="text"
-                            placeholder="Search by name, email, location..."
+                            placeholder="Search by name, email, firm name..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             variant="outlined"
@@ -322,34 +280,28 @@ const UserManagement = () => {
                                 <tr className="bg-gray-50 text-left">
                                     <th className="px-6 py-4 text-sm font-medium text-gray-600">Name</th>
                                     <th className="px-6 py-4 text-sm font-medium text-gray-600">Contact Information</th>
-                                    <th className="px-6 py-4 text-sm font-medium text-gray-600">Location</th>
+                                    {(activeTab === 'lawyers' || activeTab === 'juniors' || activeTab === 'clients') && (
+                                        <th className="px-6 py-4 text-sm font-medium text-gray-600">Firm Name</th>
+                                    )}
                                     {activeTab === 'lawyers' && (
                                         <>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Clients</th>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Junior Lawyers</th>
                                         </>
                                     )}
                                     {activeTab === 'juniors' && (
                                         <>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Senior Lawyer</th>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Cases</th>
                                         </>
                                     )}
                                     {activeTab === 'clients' && (
                                         <>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Lawyer</th>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Cases</th>
                                         </>
                                     )}
                                     {activeTab === 'researchers' && (
                                         <>
                                             <th className="px-6 py-4 text-sm font-medium text-gray-600">Specialization</th>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Projects</th>
                                         </>
                                     )}
                                     {activeTab === 'admins' && (
                                         <>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Role</th>
                                             <th className="px-6 py-4 text-sm font-medium text-gray-600">Access Level</th>
                                         </>
                                     )}
@@ -376,49 +328,29 @@ const UserManagement = () => {
                                             <div className="text-sm">{user.email}</div>
                                             <div className="text-sm text-gray-500">{user.phone}</div>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className="inline-flex items-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                                                </svg>
-                                                {user.location}
-                                            </span>
-                                        </td>
+                                        {(activeTab === 'lawyers' || activeTab === 'juniors' || activeTab === 'clients') && (
+                                            <td className="px-6 py-4">
+                                                <span className="inline-flex items-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                                    </svg>
+                                                    {user.location}
+                                                </span>
+                                            </td>
+                                        )}
                                         
                                         {activeTab === 'lawyers' && (
                                             <>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className="inline-flex items-center justify-center bg-blue-100 text-blue-800 rounded-full h-6 w-6 text-xs font-medium">
-                                                        {user.clients}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className="inline-flex items-center justify-center bg-purple-100 text-purple-800 rounded-full h-6 w-6 text-xs font-medium">
-                                                        {user.juniorLawyers}
-                                                    </span>
-                                                </td>
                                             </>
                                         )}
                                         
                                         {activeTab === 'juniors' && (
                                             <>
-                                                <td className="px-6 py-4 text-sm">{user.seniorLawyer || 'N/A'}</td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className="inline-flex items-center justify-center bg-blue-100 text-blue-800 rounded-full h-6 w-6 text-xs font-medium">
-                                                        {user.cases}
-                                                    </span>
-                                                </td>
                                             </>
                                         )}
                                         
                                         {activeTab === 'clients' && (
                                             <>
-                                                <td className="px-6 py-4 text-sm">{user.associatedLawyer || 'N/A'}</td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className="inline-flex items-center justify-center bg-blue-100 text-blue-800 rounded-full h-6 w-6 text-xs font-medium">
-                                                        {user.cases}
-                                                    </span>
-                                                </td>
                                             </>
                                         )}
 
@@ -429,21 +361,11 @@ const UserManagement = () => {
                                                         Legal Research
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className="inline-flex items-center justify-center bg-green-100 text-green-800 rounded-full h-6 w-6 text-xs font-medium">
-                                                        {user.cases}
-                                                    </span>
-                                                </td>
                                             </>
                                         )}
                                         
                                         {activeTab === 'admins' && (
                                             <>
-                                                <td className="px-6 py-4 text-sm">
-                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                        Administrator
-                                                    </span>
-                                                </td>
                                                 <td className="px-6 py-4 text-sm">
                                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                                                         Full Access
@@ -462,22 +384,10 @@ const UserManagement = () => {
                                         <td className="px-6 py-4">
                                             <div className="flex space-x-2">
                                                 <button 
-                                                    className="text-xs font-medium text-blue-600 hover:text-blue-800"
-                                                    onClick={() => navigate(`/admin/users/${user.id}`)}
-                                                >
-                                                    View
-                                                </button>
-                                                <button 
                                                     className="text-xs font-medium text-gray-600 hover:text-gray-800"
                                                     onClick={() => toggleUserStatus(user.id)}
                                                 >
                                                     {user.status === 'active' ? 'Deactivate' : 'Activate'}
-                                                </button>
-                                                <button 
-                                                    className="text-xs font-medium text-red-600 hover:text-red-800"
-                                                    onClick={() => handleDeleteClick(user)}
-                                                >
-                                                    Delete
                                                 </button>
                                             </div>
                                         </td>
@@ -535,37 +445,6 @@ const UserManagement = () => {
                     </div>
                 </div>
             </div>
-            )}
-
-            {/* Delete Confirmation Modal */}
-            {showDeleteModal && selectedUser && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-4">
-                        <h2 className="text-xl font-bold mb-2">Confirm Delete</h2>
-                        
-                        <p className="text-gray-600 mb-6">
-                            Are you sure you want to delete the user <strong>{selectedUser.name}</strong>? This action cannot be undone.
-                        </p>
-                        
-                        <div className="flex justify-end space-x-3">
-                            <Button2
-                                text="Cancel"
-                                onClick={() => {
-                                    setShowDeleteModal(false);
-                                    setSelectedUser(null);
-                                }}
-                                className="px-4 py-2"
-                            />
-                            <button
-                                onClick={confirmDelete}
-                                disabled={isLoading}
-                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-md transition-colors"
-                            >
-                                {isLoading ? "Deleting..." : "Delete User"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
             )}
         </PageLayout>
     );
