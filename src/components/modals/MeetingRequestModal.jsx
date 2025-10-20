@@ -258,15 +258,30 @@ const MeetingRequestModal = ({ isOpen, onClose, onMeetingCreated, caseId = null 
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <FaClock className="text-gray-400" />
                                 </div>
-                                <input
-                                    type="time"
+                                <select
                                     name="startTime"
                                     value={formData.startTime}
                                     onChange={handleInputChange}
                                     className="w-full text-md py-3 pl-10 pr-4 rounded-lg bg-white border-2 border-gray-300 text-gray-800 focus:border-blue-500 focus:outline-none transition-all"
                                     required
                                     disabled={isLoading}
-                                />
+                                >
+                                    <option value="">Select start time</option>
+                                    <option value="09:00">9:00 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="13:00">1:00 PM</option>
+                                    <option value="14:00">2:00 PM</option>
+                                    <option value="15:00">3:00 PM</option>
+                                    <option value="16:00">4:00 PM</option>
+                                    <option value="17:00">5:00 PM</option>
+                                    <option value="18:00">6:00 PM</option>
+                                    <option value="19:00">7:00 PM</option>
+                                    <option value="20:00">8:00 PM</option>
+                                    <option value="21:00">9:00 PM</option>
+                                    <option value="22:00">10:00 PM</option>
+                                </select>
                             </div>
                         </div>
                         
@@ -278,15 +293,30 @@ const MeetingRequestModal = ({ isOpen, onClose, onMeetingCreated, caseId = null 
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <FaClock className="text-gray-400" />
                                 </div>
-                                <input
-                                    type="time"
+                                <select
                                     name="endTime"
                                     value={formData.endTime}
                                     onChange={handleInputChange}
                                     className="w-full text-md py-3 pl-10 pr-4 rounded-lg bg-white border-2 border-gray-300 text-gray-800 focus:border-blue-500 focus:outline-none transition-all"
                                     required
                                     disabled={isLoading}
-                                />
+                                >
+                                    <option value="">Select end time</option>
+                                    <option value="09:00">9:00 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="13:00">1:00 PM</option>
+                                    <option value="14:00">2:00 PM</option>
+                                    <option value="15:00">3:00 PM</option>
+                                    <option value="16:00">4:00 PM</option>
+                                    <option value="17:00">5:00 PM</option>
+                                    <option value="18:00">6:00 PM</option>
+                                    <option value="19:00">7:00 PM</option>
+                                    <option value="20:00">8:00 PM</option>
+                                    <option value="21:00">9:00 PM</option>
+                                    <option value="22:00">10:00 PM</option>
+                                </select>
                             </div>
                         </div>
                     </div>
