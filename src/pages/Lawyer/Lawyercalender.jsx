@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import CourtColorSettings from "./CourtColorSettings";
 import { getCasesForCalendar, createHearing, updateHearing, deleteHearing, getAllHearingsForCalendar, createTask, getAllTasksForCalendar, updateTask, deleteTask, validateHearing, validateTask, getCourtColors, updateCourtColors } from '../../services/caseService';
 import EditHearingModal from './EditHearingModal';
+import Swal from 'sweetalert2';
 
 // Import Custom Calendar Styles
 import "../../styles/calendar.css";
@@ -104,6 +105,17 @@ const Lawyercalender = () => {
       setTaskStartTime("");
       setTaskEndTime("");
       setTaskNote("");
+      
+      // Only reset hearing form fields if no case is selected
+      // This preserves the location when a case is already selected
+      if (!selectedCase) {
+        setTitle("");
+        setLocation("");
+        setGuests("");
+        setSpecialNote("");
+        setGoogleMeetEnabled(false);
+        setGoogleMeetLink("");
+      }
       
       // Set hearing date/time if available
       if (selectedTimeSlot) {
@@ -339,8 +351,12 @@ const Lawyercalender = () => {
   const handleCaseSelect = (caseId) => {
     const selectedCaseData = cases.find(c => c.id === caseId);
     if (selectedCaseData) {
+      console.log('Case selected:', selectedCaseData); // Debug log
+      console.log('Setting location to:', selectedCaseData.court); // Debug log
       setSelectedCase(caseId);
       setTitle(`${selectedCaseData.caseName} - Hearing`);
+      // Auto-fill location with court information
+      setLocation(selectedCaseData.court || '');
     }
     setShowCaseDropdown(false);
   };
@@ -368,7 +384,13 @@ const Lawyercalender = () => {
       setCourtColors(newCourtColors);
       
       // Show success message
-      alert('Court colors saved successfully! Calendar events will now reflect the new colors.');
+      await Swal.fire({
+        title: 'Success!',
+        text: 'Court colors saved successfully! Calendar events will now reflect the new colors.',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
     } catch (error) {
       console.error('Failed to save court colors:', error);
       
@@ -381,7 +403,13 @@ const Lawyercalender = () => {
         errorMessage += 'Please try again.';
       }
       
-      alert(errorMessage);
+      await Swal.fire({
+        title: 'Error!',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
     }
   };
 
@@ -494,12 +522,86 @@ const Lawyercalender = () => {
     
     // Validation
     if (!selectedCase) {
-      alert('Please select a case');
+      await Swal.fire({
+        title: 'Validation Error',
+        text: 'Please select a case',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
       return;
     }
     
     if (!title || !hearingDate || !startTime || !endTime) {
-      alert('Please fill in all required fields');
+      await Swal.fire({
+        title: 'Validation Error',
+        text: 'Please fill in all required fields',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
+      return;
+    }
+
+    // Date validation - cannot be in the past
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day
+    const selectedDate = new Date(hearingDate);
+    selectedDate.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < today) {
+      await Swal.fire({
+        title: 'Invalid Date',
+        text: 'Please select a date that is today or in the future. Past dates are not allowed.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
+      return;
+    }
+
+    // Time validation - must be between 9:30 AM and 3:30 PM
+    const timeToMinutes = (timeStr) => {
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      return hours * 60 + minutes;
+    };
+
+    const startTimeMinutes = timeToMinutes(startTime);
+    const endTimeMinutes = timeToMinutes(endTime);
+    const minTimeMinutes = 9 * 60 + 30; // 9:30 AM
+    const maxTimeMinutes = 15 * 60 + 30; // 3:30 PM
+
+    if (startTimeMinutes < minTimeMinutes || startTimeMinutes > maxTimeMinutes) {
+      await Swal.fire({
+        title: 'Invalid Start Time',
+        text: 'Start time must be between 9:30 AM and 3:30 PM.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
+      return;
+    }
+
+    if (endTimeMinutes < minTimeMinutes || endTimeMinutes > maxTimeMinutes) {
+      await Swal.fire({
+        title: 'Invalid End Time',
+        text: 'End time must be between 9:30 AM and 3:30 PM.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
+      return;
+    }
+
+    // Validate that end time is after start time
+    if (endTimeMinutes <= startTimeMinutes) {
+      await Swal.fire({
+        title: 'Invalid Time Range',
+        text: 'End time must be after start time.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
       return;
     }
     
@@ -551,20 +653,36 @@ const Lawyercalender = () => {
         }
       };
       
-      alert(
-        `Hearing created successfully!\nCase: ${selectedCaseData?.caseName || 'N/A'}\n` +
-        `Case ID: ${selectedCase}\n` +
-        `Case Number: ${selectedCaseData?.caseNumber || 'N/A'}\n` +
-        `Date: ${hearingDate}\nTime: ${startTime} - ${endTime}\n` +
-        `Title: ${title}\nLocation: ${location}`
-      );
+      await Swal.fire({
+        title: 'Success!',
+        html: `
+          <div class="text-left">
+            <p><strong>Hearing created successfully!</strong></p>
+            <p><strong>Case:</strong> ${selectedCaseData?.caseName || 'N/A'}</p>
+            <p><strong>Case Number:</strong> ${selectedCaseData?.caseNumber || 'N/A'}</p>
+            <p><strong>Date:</strong> ${hearingDate}</p>
+            <p><strong>Time:</strong> ${startTime} - ${endTime}</p>
+            <p><strong>Title:</strong> ${title}</p>
+            <p><strong>Location:</strong> ${location}</p>
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
       
       // Refresh hearings to show the new hearing on calendar
       await refreshHearings();
       
     } catch (error) {
       console.error('Error creating hearing:', error);
-      alert('Failed to create hearing. Please try again.');
+      await Swal.fire({
+        title: 'Error!',
+        text: 'Failed to create hearing. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
       return;
     }
     
@@ -589,7 +707,75 @@ const Lawyercalender = () => {
     
     // Validation
     if (!taskTitle || !taskDate || !taskStartTime || !taskEndTime) {
-      alert('Please fill in all required fields');
+      await Swal.fire({
+        title: 'Validation Error',
+        text: 'Please fill in all required fields',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
+      return;
+    }
+
+    // Date validation - cannot be in the past
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day
+    const selectedTaskDate = new Date(taskDate);
+    selectedTaskDate.setHours(0, 0, 0, 0);
+    
+    if (selectedTaskDate < today) {
+      await Swal.fire({
+        title: 'Invalid Date',
+        text: 'Please select a date that is today or in the future. Past dates are not allowed.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
+      return;
+    }
+
+    // Time validation - must be between 9:30 AM and 3:30 PM
+    const timeToMinutes = (timeStr) => {
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      return hours * 60 + minutes;
+    };
+
+    const taskStartTimeMinutes = timeToMinutes(taskStartTime);
+    const taskEndTimeMinutes = timeToMinutes(taskEndTime);
+    const minTimeMinutes = 9 * 60 + 30; // 9:30 AM
+    const maxTimeMinutes = 15 * 60 + 30; // 3:30 PM
+
+    if (taskStartTimeMinutes < minTimeMinutes || taskStartTimeMinutes > maxTimeMinutes) {
+      await Swal.fire({
+        title: 'Invalid Start Time',
+        text: 'Start time must be between 9:30 AM and 3:30 PM.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
+      return;
+    }
+
+    if (taskEndTimeMinutes < minTimeMinutes || taskEndTimeMinutes > maxTimeMinutes) {
+      await Swal.fire({
+        title: 'Invalid End Time',
+        text: 'End time must be between 9:30 AM and 3:30 PM.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
+      return;
+    }
+
+    // Validate that end time is after start time
+    if (taskEndTimeMinutes <= taskStartTimeMinutes) {
+      await Swal.fire({
+        title: 'Invalid Time Range',
+        text: 'End time must be after start time.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
       return;
     }
     
@@ -616,19 +802,35 @@ const Lawyercalender = () => {
       // Call backend API to create task
       const response = await createTask(taskFormData);
       
-      alert(
-        `Task created successfully!\n` +
-        `Title: ${taskTitle}\nDate: ${taskDate}\n` +
-        `Time: ${taskStartTime} - ${taskEndTime}\n` +
-        `Location: ${taskLocation}\nNote: ${taskNote}`
-      );
+      await Swal.fire({
+        title: 'Success!',
+        html: `
+          <div class="text-left">
+            <p><strong>Task created successfully!</strong></p>
+            <p><strong>Title:</strong> ${taskTitle}</p>
+            <p><strong>Date:</strong> ${taskDate}</p>
+            <p><strong>Time:</strong> ${taskStartTime} - ${taskEndTime}</p>
+            <p><strong>Location:</strong> ${taskLocation}</p>
+            <p><strong>Note:</strong> ${taskNote}</p>
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
       
       // Refresh tasks to show the new task in calendar
       await refreshTasks();
       
     } catch (error) {
       console.error('Error creating task:', error);
-      alert('Failed to create task. Please try again.');
+      await Swal.fire({
+        title: 'Error!',
+        text: 'Failed to create task. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316'
+      });
       return;
     }
     
@@ -732,6 +934,7 @@ const Lawyercalender = () => {
               type="date"
               value={hearingDate}
               onChange={(e) => setHearingDate(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
               required
             />
           </div>
@@ -747,6 +950,8 @@ const Lawyercalender = () => {
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
+                min="09:30"
+                max="15:30"
                 required
               />
             </div>
@@ -759,6 +964,8 @@ const Lawyercalender = () => {
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
+                min="09:30"
+                max="15:30"
                 required
               />
             </div>
@@ -1223,7 +1430,17 @@ const Lawyercalender = () => {
                       detailsMessage += `Google Meet: ${event.extendedProps.googleMeet}\n`;
                     }
                     
-                    alert(detailsMessage);
+                    // Convert message to HTML format for better display
+                    const htmlMessage = detailsMessage.replace(/\n/g, '<br>');
+                    
+                    Swal.fire({
+                      title: 'Event Details',
+                      html: `<div class="text-left">${htmlMessage}</div>`,
+                      icon: 'info',
+                      confirmButtonText: 'OK',
+                      confirmButtonColor: '#f97316',
+                      width: '500px'
+                    });
                   }}
                   dayHeaderClassNames="google-day-header"
                   dayCellClassNames="google-day-cell"
@@ -1505,6 +1722,7 @@ const Lawyercalender = () => {
                     type="date"
                     value={taskDate}
                     onChange={(e) => setTaskDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
                     required
                   />
                 </div>
@@ -1520,6 +1738,8 @@ const Lawyercalender = () => {
                       type="time"
                       value={taskStartTime}
                       onChange={(e) => setTaskStartTime(e.target.value)}
+                      min="09:30"
+                      max="15:30"
                       required
                     />
                   </div>
@@ -1532,6 +1752,8 @@ const Lawyercalender = () => {
                       type="time"
                       value={taskEndTime}
                       onChange={(e) => setTaskEndTime(e.target.value)}
+                      min="09:30"
+                      max="15:30"
                       required
                     />
                   </div>
@@ -1639,12 +1861,31 @@ const Lawyercalender = () => {
                         try {
                           const response = await createHearing(selectedCase, hearingFormData);
                           await refreshHearings();
-                          alert(`Hearing created successfully with warnings!\nTitle: ${title}\nDate: ${hearingDate}\nTime: ${startTime} - ${endTime}`);
+                          await Swal.fire({
+                            title: 'Success with Warnings!',
+                            html: `
+                              <div class="text-left">
+                                <p><strong>Hearing created successfully with warnings!</strong></p>
+                                <p><strong>Title:</strong> ${title}</p>
+                                <p><strong>Date:</strong> ${hearingDate}</p>
+                                <p><strong>Time:</strong> ${startTime} - ${endTime}</p>
+                              </div>
+                            `,
+                            icon: 'warning',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#f97316'
+                          });
                           // Reset form and close modal
                           setTitle(""); setSelectedCase(""); setLocation(""); setHearingDate(""); setStartTime(""); setEndTime(""); setGuests(""); setSpecialNote(""); setGoogleMeetEnabled(false); setGoogleMeetLink(""); setShowPopup(false); setShowCreateModal(false);
                         } catch (error) {
                           console.error('Error creating hearing:', error);
-                          alert('Failed to create hearing. Please try again.');
+                          await Swal.fire({
+                            title: 'Error!',
+                            text: 'Failed to create hearing. Please try again.',
+                            icon: 'error',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#f97316'
+                          });
                         }
                       } else {
                         // Continue with task creation
@@ -1660,12 +1901,31 @@ const Lawyercalender = () => {
                         try {
                           const response = await createTask(taskFormData);
                           await refreshTasks();
-                          alert(`Task created successfully with warnings!\nTitle: ${taskTitle}\nDate: ${taskDate}\nTime: ${taskStartTime} - ${taskEndTime}`);
+                          await Swal.fire({
+                            title: 'Success with Warnings!',
+                            html: `
+                              <div class="text-left">
+                                <p><strong>Task created successfully with warnings!</strong></p>
+                                <p><strong>Title:</strong> ${taskTitle}</p>
+                                <p><strong>Date:</strong> ${taskDate}</p>
+                                <p><strong>Time:</strong> ${taskStartTime} - ${taskEndTime}</p>
+                              </div>
+                            `,
+                            icon: 'warning',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#f97316'
+                          });
                           // Reset form and close modal
                           setTaskTitle(""); setTaskDate(""); setTaskStartTime(""); setTaskEndTime(""); setTaskLocation(""); setTaskNote(""); setShowTaskPopup(false); setShowCreateModal(false);
                         } catch (error) {
                           console.error('Error creating task:', error);
-                          alert('Failed to create task. Please try again.');
+                          await Swal.fire({
+                            title: 'Error!',
+                            text: 'Failed to create task. Please try again.',
+                            icon: 'error',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#f97316'
+                          });
                         }
                       }
                     }}
