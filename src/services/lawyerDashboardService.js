@@ -83,6 +83,147 @@ class LawyerDashboardService {
     }
 
     /**
+     * Get today's closed cases for the current lawyer (using your new endpoint)
+     * @returns {Promise<Array>} Array of closed cases for today
+     */
+    async getDaySummaryClosedCases() {
+        try {
+            // Get the user session to get the backend lawyer UUID
+            const userSession = await getFullSession();
+            if (!userSession || !userSession.id) {
+                throw new Error('User session not found or missing lawyer ID');
+            }
+
+            const url = `/api/lawyers/day-summary/closed-cases?lawyerId=${userSession.id}`;
+            console.log('Fetching closed cases from URL:', url);
+            
+            const response = await authenticatedFetch(
+                url,
+                {
+                    method: 'GET',
+                }
+            );
+
+            console.log('Day summary closed cases fetched successfully:', response);
+            return response;
+        } catch (error) {
+            console.error('Error fetching day summary closed cases:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get today's open cases for the current lawyer (using your new endpoint)
+     * @returns {Promise<Array>} Array of open cases for today
+     */
+    async getDaySummaryOpenCases() {
+        try {
+            // Get the user session to get the backend lawyer UUID
+            const userSession = await getFullSession();
+            if (!userSession || !userSession.id) {
+                throw new Error('User session not found or missing lawyer ID');
+            }
+
+            const url = `/api/lawyers/day-summary/open-cases?lawyerId=${userSession.id}`;
+            console.log('Fetching open cases from URL:', url);
+            
+            const response = await authenticatedFetch(
+                url,
+                {
+                    method: 'GET',
+                }
+            );
+
+            console.log('Day summary open cases fetched successfully:', response);
+            return response;
+        } catch (error) {
+            console.error('Error fetching day summary open cases:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get today's closed cases for the current lawyer
+     * @returns {Promise<Array>} Array of closed cases for today
+     */
+    async getTodaysClosedCases() {
+        try {
+            // Get the user session to get the backend lawyer UUID
+            const userSession = await getFullSession();
+            if (!userSession || !userSession.id) {
+                throw new Error('User session not found or missing lawyer ID');
+            }
+
+            const response = await authenticatedFetch(
+                `/api/lawyers/cases/closed-today?lawyerId=${userSession.id}`,
+                {
+                    method: 'GET',
+                }
+            );
+
+            console.log('Today\'s closed cases fetched successfully:', response);
+            return response;
+        } catch (error) {
+            console.error('Error fetching today\'s closed cases:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get today's new cases for the current lawyer
+     * @returns {Promise<Array>} Array of new cases for today
+     */
+    async getTodaysNewCases() {
+        try {
+            // Get the user session to get the backend lawyer UUID
+            const userSession = await getFullSession();
+            if (!userSession || !userSession.id) {
+                throw new Error('User session not found or missing lawyer ID');
+            }
+
+            const response = await authenticatedFetch(
+                `/api/lawyers/day-summary/open-cases?lawyerId=${userSession.id}`,
+                {
+                    method: 'GET',
+                }
+            );
+
+            console.log('Today\'s new cases fetched successfully:', response);
+            return response;
+        } catch (error) {
+            console.error('Error fetching today\'s new cases:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get today's income for the current lawyer
+     * @returns {Promise<Object>} Object containing today's income data
+     */
+    // async getTodaysIncome() {
+    //     try {
+    //         // Get the user session to get the backend lawyer UUID
+    //         const userSession = await getFullSession();
+    //         if (!userSession || !userSession.id) {
+    //             throw new Error('User session not found or missing lawyer ID');
+    //         }
+
+    //         const response = await authenticatedFetch(
+    //             `/api/lawyers/income/today?lawyerId=${userSession.id}`,
+    //             {
+    //                 method: 'GET',
+    //             }
+    //         );
+
+    //         console.log('Today\'s income fetched successfully:', response);
+    //         return response;
+    //     } catch (error) {
+    //         console.error('Error fetching today\'s income:', error);
+    //         throw error;
+    //     }
+    // }
+
+    /**
      * Format hearing data for display in the dashboard
      * @param {Object} hearing - The hearing object from the API
      * @returns {Object} Formatted hearing object
@@ -128,6 +269,100 @@ class LawyerDashboardService {
             note: meetingRequest.note || '',
             caseId: meetingRequest.caseId
         };
+    }
+
+    /**
+     * Format case data for display based on the Case entity structure
+     * @param {Object} caseData - The case object from the API
+     * @returns {Object} Formatted case object
+     */
+    formatCaseForDisplay(caseData) {
+        if (!caseData) {
+            return null;
+        }
+
+        return {
+            id: caseData.id || 'N/A',
+            caseTitle: caseData.caseTitle || 'Unknown Case',
+            caseNumber: caseData.caseNumber || 'N/A',
+            caseType: caseData.caseType || 'General',
+            clientName: caseData.clientName || 'Unknown Client',
+            clientPhone: caseData.clientPhone || 'N/A',
+            clientEmail: caseData.clientEmail || 'N/A',
+            status: caseData.status || 'OPEN',
+            description: caseData.description || '',
+            courtName: caseData.courtName || 'Unknown Court',
+            courtType: caseData.courtType || 'N/A',
+            opposingPartyName: caseData.opposingPartyName || 'N/A',
+            agreedFee: caseData.agreedFee || 0,
+            paymentStatus: caseData.paymentStatus || 'NOT_INVOICED',
+            createdAt: this.formatDateTime(caseData.createdAt),
+            updatedAt: this.formatDateTime(caseData.updatedAt),
+            displayName: caseData.caseTitle || caseData.clientName || 'Unknown Case',
+            // Format status for display
+            statusDisplay: this.formatCaseStatus(caseData.status),
+            paymentStatusDisplay: this.formatPaymentStatus(caseData.paymentStatus)
+        };
+    }
+
+    /**
+     * Format case status for display
+     * @param {string} status - Case status from backend
+     * @returns {string} Formatted status
+     */
+    formatCaseStatus(status) {
+        if (!status) return 'Unknown';
+        
+        switch (status.toUpperCase()) {
+            case 'OPEN': return 'Active';
+            case 'CLOSED': return 'Closed';
+            case 'PENDING': return 'Pending';
+            case 'ARCHIVED': return 'Archived';
+            default: return status;
+        }
+    }
+
+    /**
+     * Format payment status for display
+     * @param {string} paymentStatus - Payment status from backend
+     * @returns {string} Formatted payment status
+     */
+    formatPaymentStatus(paymentStatus) {
+        if (!paymentStatus) return 'Unknown';
+        
+        switch (paymentStatus.toUpperCase()) {
+            case 'NOT_INVOICED': return 'Not Invoiced';
+            case 'INVOICED': return 'Invoiced';
+            case 'PARTIALLY_PAID': return 'Partially Paid';
+            case 'FULLY_PAID': return 'Fully Paid';
+            case 'OVERDUE': return 'Overdue';
+            default: return paymentStatus;
+        }
+    }
+
+    /**
+     * Format datetime for display
+     * @param {string} dateTimeString - ISO datetime string
+     * @returns {string} Formatted datetime
+     */
+    formatDateTime(dateTimeString) {
+        if (!dateTimeString) {
+            return 'N/A';
+        }
+
+        try {
+            const date = new Date(dateTimeString);
+            return date.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (error) {
+            console.error('Error formatting datetime:', error);
+            return dateTimeString || 'N/A';
+        }
     }
 
     /**
