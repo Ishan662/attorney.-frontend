@@ -2,7 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-//nadun's config. uncomment this if any issues happen
+// nadun's config. uncomment this if any issues happen
 
 // const firebaseConfig = {
 //   apiKey: "AIzaSyDm1k-O434tJKWm8FbDl_h4Fg2NTsNDYzY",

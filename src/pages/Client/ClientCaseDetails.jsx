@@ -191,6 +191,23 @@ const ClientCaseDetails = () => {
                 </div>
             </section>
 
+            {/* Meeting Requests Section
+            <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-semibold">Meetings & Calendar</h2>
+                    <Button1 
+                        text="Go to Calendar"
+                        onClick={() => navigate('/client/calendar')}
+                        className="flex items-center"
+                    />
+                </div>
+                
+                <div className="text-center py-8 text-gray-500">
+                    <p>Manage your meetings and schedule consultations with your lawyer.</p>
+                    <p className="text-sm mt-2">Click "Go to Calendar" to view your schedule and request new meetings.</p>
+                </div>
+            </section> */}
+
             {/* Case Overview & Parties Involved - Combined Section */}
             <section className="bg-white rounded-lg p-8 mb-6 shadow-md">
                 <h2 className="text-xl font-semibold mb-6">Case Overview & Parties Involved</h2>
@@ -335,6 +352,8 @@ const ClientCaseDetails = () => {
                     </div>
                 </div>
             )}
+
+
 
         </PageLayout>
     );
