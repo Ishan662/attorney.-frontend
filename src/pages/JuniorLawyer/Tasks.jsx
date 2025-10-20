@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { getAllFirmTasks, updateTaskStatus } from '../../services/taskService';
 import { uploadMultipleDocumentsToTask, getTaskDocuments, downloadDocument } from '../../services/documentService';
 import { FaEye } from 'react-icons/fa';
+import Swal from 'sweetalert2';
 
 const Tasks = () => {
     const { user } = useAuth(); // Use real auth context
@@ -49,7 +50,12 @@ const Tasks = () => {
             setTasks(transformedTasks);
         } catch (error) {
             console.error('Error loading tasks:', error);
-            alert('Unable to load tasks. Please check your connection and try again.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Unable to load tasks. Please check your connection and try again.',
+                confirmButtonColor: '#EF4444'
+            });
             setTasks([]);
         } finally {
             setIsLoading(false);
@@ -92,13 +98,13 @@ const Tasks = () => {
     const getStatusIcon = (status) => {
         switch (status) {
             case 'PENDING':
-                return '⏸️';
+                return '';
             case 'IN_PROGRESS':
-                return '▶️';
+                return '';
             case 'COMPLETED':
-                return '✅';
+                return '';
             default:
-                return '⏸️';
+                return '';
         }
     };
 
@@ -118,10 +124,20 @@ const Tasks = () => {
             setTasks(updatedTasks);
             setSelectedTask({ ...selectedTask, status: newStatus });
             
-            alert(`Task status updated to ${newStatus.toLowerCase().replace('_', ' ')}`);
+            Swal.fire({
+                icon: 'success',
+                title: 'Status Updated',
+                text: `Task status updated to ${newStatus.toLowerCase().replace('_', ' ')}`,
+                confirmButtonColor: '#10B981'
+            });
         } catch (error) {
             console.error('Error updating task status:', error);
-            alert('Failed to update task status. Please try again.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                text: 'Failed to update task status. Please try again.',
+                confirmButtonColor: '#EF4444'
+            });
         } finally {
             setIsUpdatingStatus(false);
         }
@@ -140,13 +156,23 @@ const Tasks = () => {
 
     const uploadDocuments = async () => {
         if (uploadFiles.length === 0) {
-            alert('Please select files to upload');
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Files Selected',
+                text: 'Please select files to upload',
+                confirmButtonColor: '#F59E0B'
+            });
             return;
         }
 
         // Check if the user is actually assigned to this task
         if (!selectedTask) {
-            alert('No task selected');
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Task Selected',
+                text: 'No task selected',
+                confirmButtonColor: '#F59E0B'
+            });
             return;
         }
 
@@ -160,7 +186,12 @@ const Tasks = () => {
             const result = await uploadMultipleDocumentsToTask(selectedTask.id, uploadFiles);
             
             if (result.successful.length > 0) {
-                alert(`Successfully uploaded ${result.successful.length} file(s)`);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Upload Successful',
+                    text: `Successfully uploaded ${result.successful.length} file(s)`,
+                    confirmButtonColor: '#10B981'
+                });
                 setUploadFiles([]);
                 // Refresh task documents
                 await loadTaskDocuments(selectedTask.id);
@@ -169,16 +200,36 @@ const Tasks = () => {
             if (result.failed.length > 0) {
                 console.error('Failed uploads:', result.failed);
                 const failedFiles = result.failed.map(f => f.file.name).join(', ');
-                alert(`Failed to upload: ${failedFiles}. Please check your permissions and try again.`);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Upload Failed',
+                    text: `Failed to upload: ${failedFiles}. Please check your permissions and try again.`,
+                    confirmButtonColor: '#EF4444'
+                });
             }
         } catch (error) {
             console.error('Error uploading documents:', error);
             if (error.message.includes('403')) {
-                alert('Access denied. You may not have permission to upload documents to this task, or the task may not be assigned to you. Please contact your supervisor.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Access Denied',
+                    text: 'Access denied. You may not have permission to upload documents to this task, or the task may not be assigned to you. Please contact your supervisor.',
+                    confirmButtonColor: '#EF4444'
+                });
             } else if (error.message.includes('No authenticated user')) {
-                alert('Authentication error. Please refresh the page and log in again.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Authentication Error',
+                    text: 'Authentication error. Please refresh the page and log in again.',
+                    confirmButtonColor: '#EF4444'
+                });
             } else {
-                alert('Failed to upload documents. Please try again.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Upload Failed',
+                    text: 'Failed to upload documents. Please try again.',
+                    confirmButtonColor: '#EF4444'
+                });
             }
         } finally {
             setIsUploadingFiles(false);
@@ -216,11 +267,26 @@ const Tasks = () => {
         } catch (error) {
             console.error('Download failed:', error);
             if (error.message.includes('403')) {
-                alert('Access denied. You may not have permission to download this document.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Access Denied',
+                    text: 'Access denied. You may not have permission to download this document.',
+                    confirmButtonColor: '#EF4444'
+                });
             } else if (error.message.includes('404')) {
-                alert('Document not found. It may have been deleted.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Document Not Found',
+                    text: 'Document not found. It may have been deleted.',
+                    confirmButtonColor: '#EF4444'
+                });
             } else {
-                alert('Failed to download document. Please try again.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Download Failed',
+                    text: 'Failed to download document. Please try again.',
+                    confirmButtonColor: '#EF4444'
+                });
             }
         }
     };
@@ -301,7 +367,7 @@ const Tasks = () => {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Case No.</th>
+                                        {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Case No.</th> */}
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
@@ -309,7 +375,7 @@ const Tasks = () => {
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {tasks.length === 0 ? (
                                         <tr>
-                                            <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                                            <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
                                                 No tasks assigned to you yet.
                                             </td>
                                         </tr>
@@ -334,9 +400,6 @@ const Tasks = () => {
                                                     <div className="text-sm text-gray-900 max-w-xs truncate">
                                                         {task.des}
                                                     </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    {task.case}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(task.status)}`}>
@@ -407,14 +470,6 @@ const Tasks = () => {
                                         <div>
                                             <span className="font-medium text-gray-700">Assigned Date:</span>
                                             <p className="text-gray-900 mt-1">{formatDateTime(selectedTask.createdAt)}</p>
-                                        </div>
-                                        <div>
-                                            <span className="font-medium text-gray-700">Assigned By:</span>
-                                            <p className="text-gray-900 mt-1">{selectedTask.assignedBy}</p>
-                                        </div>
-                                        <div>
-                                            <span className="font-medium text-gray-700">Case ID:</span>
-                                            <p className="text-gray-900 mt-1">{selectedTask.caseId || 'N/A'}</p>
                                         </div>
                                         <div>
                                             <span className="font-medium text-gray-700">Description:</span>
