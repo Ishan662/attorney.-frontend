@@ -75,6 +75,7 @@ const Cases = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filters, setFilters] = useState({
         caseType: '',
+        upcomingHearings: '',
         closedCases: '',
         court: '',
         startDate: '',
@@ -113,7 +114,7 @@ const Cases = () => {
             
             if (filterParams.searchTerm) queryParams.append('searchTerm', filterParams.searchTerm);
             if (filterParams.caseType && filterParams.caseType !== 'All Types') queryParams.append('caseType', filterParams.caseType);
-            if (filterParams.court && filterParams.court !== 'All Courts') queryParams.append('court', filterParams.court);
+            if (filterParams.court && filterParams.court !== 'All Courts') queryParams.append('courtName', filterParams.court);
             if (filterParams.status) queryParams.append('status', filterParams.status);
             if (filterParams.startDate) queryParams.append('startDate', filterParams.startDate);
             if (filterParams.endDate) queryParams.append('endDate', filterParams.endDate);
@@ -230,6 +231,7 @@ const Cases = () => {
         setSearchTerm('');
         setFilters({
             caseType: '',
+            upcomingHearings: '',
             closedCases: '',
             court: '',
             startDate: '',
@@ -367,6 +369,13 @@ const Cases = () => {
                                 />
 
                                 <DropdownFilter
+                                    label="Upcoming Hearings"
+                                    options={['All Hearings', 'This Week', 'This Month', 'Next Month']}
+                                    value={filters.upcomingHearings}
+                                    onChange={(value) => handleFilterChange('upcomingHearings', value)}
+                                />
+
+                                <DropdownFilter
                                     label="Closed Cases"
                                     options={['All Cases', 'Open Only', 'Closed Only']}
                                     value={filters.closedCases}
@@ -384,35 +393,35 @@ const Cases = () => {
 
                         {/* Date Range Filter - Separate Section */}
                         <div className="bg-white rounded-lg p-4 shadow-md mb-6">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-4">
-                                    <span className="py-2 text-black text-sm font-medium">
-                                        Date Range Filter:
-                                    </span>
-                                    <div className="flex items-center space-x-2">
-                                        <Input1
-                                            type="date"
-                                            placeholder="Start Date"
-                                            value={filters.startDate}
-                                            variant="outlined"
-                                            onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                                            className="w-32 text-sm"
-                                        />
-                                        <span className="text-gray-400 text-sm">to</span>
-                                        <Input1
-                                            type="date"
-                                            placeholder="End Date"
-                                            value={filters.endDate}
-                                            variant="outlined"
-                                            onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                                            className="w-32 text-sm"
-                                        />
-                                    </div>
+                            <div className="flex items-center space-x-4">
+                                <span className="py-2 text-black text-sm font-medium">
+                                    Date Range Filter:
+                                </span>
+                                <div className="flex items-center space-x-2">
+                                    <Input1
+                                        type="date"
+                                        placeholder="Start Date"
+                                        value={filters.startDate}
+                                        variant="outlined"
+                                        onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                                        className="w-32 text-sm"
+                                    />
+                                    <span className="text-gray-400 text-sm">to</span>
+                                    <Input1
+                                        type="date"
+                                        placeholder="End Date"
+                                        value={filters.endDate}
+                                        variant="outlined"
+                                        onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                                        className="w-32 text-sm"
+                                    />
                                 </div>
-                                <Button1 
-                                    text="Clear All Filters"
+                                <button 
                                     onClick={clearAllFilters}
-                                />
+                                    className="bg-red-50 text-red-700 px-4 py-2 rounded-lg border border-red-200 hover:bg-red-100 transition-colors text-sm"
+                                >
+                                    Clear All Filters
+                                </button>
                             </div>
                         </div>
 
