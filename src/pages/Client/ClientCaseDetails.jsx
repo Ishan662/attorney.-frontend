@@ -129,7 +129,7 @@ const ClientCaseDetails = () => {
     return (
         <PageLayout user={currentUser}> 
             {/* Chat Button - Fixed position */}
-            <div className="fixed bottom-6 right-6 z-40">
+            {/* <div className="fixed bottom-6 right-6 z-40">
                 <button
                     onClick={() => setShowChatModal(true)}
                     className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 shadow-lg transition-colors duration-200"
@@ -139,7 +139,7 @@ const ClientCaseDetails = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.02-5.874A8.955 8.955 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z" />
                     </svg>
                 </button>
-            </div>
+            </div> */}
 
             <div className="mb-2">
                 {/* The back button for a client might go to their main dashboard where they see all their cases */}
@@ -268,16 +268,14 @@ const ClientCaseDetails = () => {
               </div>
             </section>
 
-            {/* Documents - View Only */}
-            <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+            {/* <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
                 <h2 className="text-xl font-semibold mb-6">Documents</h2>
                 <ul className="list-disc pl-6 mb-4 text-blue-700">
                     {staticDocuments.map((doc, idx) => (
                         <li key={idx}><a href={doc.url} className="hover:underline">{doc.name}</a></li>
                     ))}
                 </ul>
-                {/* --- REMOVED: The "Add Documents" button is gone --- */}
-            </section>
+            </section> */}
 
             {/* Team Chat Modal */}
             {showChatModal && (
