@@ -27,7 +27,12 @@ const Dashboard = () => {
     const [isLoadingIncome, setIsLoadingIncome] = useState(true);
     const [incomeError, setIncomeError] = useState(null);
 
-    const [user, setUser] = useState({
+    // Meeting requests state
+    const [meetingRequests, setMeetingRequests] = useState([]);
+    const [isLoadingMeetings, setIsLoadingMeetings] = useState(true);
+    const [meetingsError, setMeetingsError] = useState(null);
+
+     const [user, setUser] = useState({
         name: 'Nishagi Jewantha',
         email: 'jeewanthadeherath@gmail.com',
         role: 'LAWYER',
@@ -68,6 +73,26 @@ const Dashboard = () => {
                 setIncomeError('Failed to load income data. Please try again later.');
             } finally {
                 setIsLoadingIncome(false);
+            }
+
+            // Load meeting requests
+            try {
+                setIsLoadingMeetings(true);
+                setMeetingsError(null);
+                
+                const meetingRequestsData = await lawyerDashboardService.getMeetingRequests();
+                
+                // Format meeting requests for display
+                const formattedMeetingRequests = meetingRequestsData.map(request => 
+                    lawyerDashboardService.formatMeetingRequestForDisplay(request)
+                );
+                
+                setMeetingRequests(formattedMeetingRequests);
+            } catch (error) {
+                console.error('Error loading meeting requests:', error);
+                setMeetingsError('Failed to load meeting requests. Please try again later.');
+            } finally {
+                setIsLoadingMeetings(false);
             }
         };
 
@@ -172,27 +197,6 @@ const Dashboard = () => {
             day: date.toLocaleDateString('en-US', { weekday: 'long' })
         };
     };
-
-    const meetings = [
-        {
-            name: "H.M.N.J. Deerasinha",
-            date: "2023-06-17",
-            status: "Pending",
-            caseId: null
-        },
-        {
-            name: "Nimal Bandara",
-            date: "2023-06-17",
-            status: "Confirmed",
-            caseId: "332447"
-        },
-        {
-            name: "Priya Fernando",
-            date: "2023-06-10",
-            status: "Rescheduled",
-            caseId: null
-        }
-    ];
 
     return (
         <PageLayout user={user}>
@@ -313,7 +317,21 @@ const Dashboard = () => {
                 <div className="lg:col-span-1">
                     <div className="bg-white rounded-lg shadow-lg p-6 h-full">
                         <h3 className="text-lg font-semibold text-gray-800 mb-4">Meeting Requests</h3>
-                        {meetings.length === 0 ? (
+                        {isLoadingMeetings ? (
+                            <div className="flex items-center justify-center h-32 text-gray-500">
+                                <div className="text-center">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+                                    <p className="text-sm">Loading meeting requests...</p>
+                                </div>
+                            </div>
+                        ) : meetingsError ? (
+                            <div className="flex items-center justify-center h-32 text-red-500">
+                                <div className="text-center">
+                                    <div className="text-3xl mb-2">⚠️</div>
+                                    <p className="text-sm">{meetingsError}</p>
+                                </div>
+                            </div>
+                        ) : meetingRequests.length === 0 ? (
                             <div className="flex items-center justify-center h-32 text-gray-500">
                                 <div className="text-center">
                                     <div className="text-3xl mb-2">📅</div>
@@ -322,25 +340,26 @@ const Dashboard = () => {
                             </div>
                         ) : (
                             <div className="space-y-3 max-h-80 overflow-y-auto">
-                                {meetings.map((meeting, index) => {
+                                {meetingRequests.map((meeting, index) => {
                                     const { formattedDate, day } = formatMeetingDate(meeting.date);
                                     return (
                                         <div key={index} className="border border-gray-200 rounded-lg p-3 
                                                                    hover:bg-gray-50 transition-colors duration-200">
                                             <div className="flex flex-col space-y-2">
-                                                <div className="font-medium text-gray-900 text-sm">{meeting.name}</div>
+                                                <div className="font-medium text-gray-900 text-sm">{meeting.title}</div>
                                                 <div className="text-xs text-gray-500">
                                                     {formattedDate} • {day}
+                                                    <div className="mt-1">{meeting.time}</div>
                                                     {meeting.caseId && (
                                                         <div className="mt-1">Case # {meeting.caseId}</div>
                                                     )}
+                                                    {meeting.note && (
+                                                        <div className="mt-1 text-gray-600">{meeting.note}</div>
+                                                    )}
                                                 </div>
                                                 <div className="flex justify-end">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${meeting.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                            meeting.status === 'Confirmed' ? 'bg-green-100 text-green-800' :
-                                                                'bg-red-100 text-red-800'
-                                                        }`}>
-                                                        {meeting.status}
+                                                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                        Pending
                                                     </span>
                                                 </div>
                                             </div>

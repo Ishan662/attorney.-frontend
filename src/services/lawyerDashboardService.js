@@ -56,6 +56,33 @@ class LawyerDashboardService {
     }
 
     /**
+     * Get meeting requests for the current lawyer
+     * @returns {Promise<Array>} Array of meeting requests
+     */
+    async getMeetingRequests() {
+        try {
+            // Get the user session to get the backend lawyer UUID
+            const userSession = await getFullSession();
+            if (!userSession || !userSession.id) {
+                throw new Error('User session not found or missing lawyer ID');
+            }
+
+            const response = await authenticatedFetch(
+                `/api/lawyers/hearings/meeting-requests?lawyerId=${userSession.id}`,
+                {
+                    method: 'GET',
+                }
+            );
+
+            console.log('Meeting requests fetched successfully:', response);
+            return response;
+        } catch (error) {
+            console.error('Error fetching meeting requests:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Format hearing data for display in the dashboard
      * @param {Object} hearing - The hearing object from the API
      * @returns {Object} Formatted hearing object
@@ -79,6 +106,27 @@ class LawyerDashboardService {
             
             // Format display text - prioritize case name over client name
             displayName: hearing.caseTitle || hearing.title || hearing.clientName || 'Unknown Case'
+        };
+    }
+
+    /**
+     * Format meeting request data for display in the dashboard
+     * @param {Object} meetingRequest - The meeting request object from the API
+     * @returns {Object} Formatted meeting request object
+     */
+    formatMeetingRequestForDisplay(meetingRequest) {
+        if (!meetingRequest) {
+            return null;
+        }
+
+        // Backend sends: caseId, title, meetingDate (LocalDate), startTime (LocalTime), endTime (LocalTime), note
+        return {
+            id: meetingRequest.caseId || 'N/A',
+            title: meetingRequest.title || 'Meeting Request',
+            date: this.formatDate(meetingRequest.meetingDate),
+            time: this.formatTimeFromStartEnd(meetingRequest.startTime, meetingRequest.endTime),
+            note: meetingRequest.note || '',
+            caseId: meetingRequest.caseId
         };
     }
 
