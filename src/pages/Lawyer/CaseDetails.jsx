@@ -311,7 +311,7 @@ const CaseDetails = () => {
         <PageLayout user={user}>
             {/* Chat Button - Fixed position */}
             <div className="fixed bottom-6 right-6 z-40">
-                <button
+                {/* <button
                     onClick={() => setShowChatModal(true)}
                     className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 shadow-lg transition-colors duration-200"
                     title="Team Chat"
@@ -319,7 +319,7 @@ const CaseDetails = () => {
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 20l1.02-5.874A8.955 8.955 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z" />
                     </svg>
-                </button>
+                </button> */}
             </div>
 
             <div className="flex items-center justify-between mb-6">
@@ -543,7 +543,7 @@ const CaseDetails = () => {
                     </section>
 
                     {/* Documents */}
-                    <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
+                    {/* <section className="bg-white rounded-lg p-8 mb-6 shadow-sm">
                         <h2 className="text-xl font-semibold mb-6">Documents</h2>
                         <ul className="list-disc pl-6 mb-4 text-blue-700">
                             {staticDocuments.map((doc, idx) => (
@@ -551,7 +551,7 @@ const CaseDetails = () => {
                             ))}
                         </ul>
                         <Button1 text="Add Documents" className="mt-2" />
-                    </section>
+                    </section> */}
                 </>
             )}
 
@@ -644,7 +644,7 @@ const CaseDetails = () => {
                 </div>
             )}
 
-            {showChatModal && (
+            {/* {showChatModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-end z-50" onClick={() => setShowChatModal(false)}>
                     <div className="bg-white rounded-lg shadow-lg w-96 mx-4 mt-4 h-[calc(100vh-2rem)] flex flex-col" onClick={(e) => e.stopPropagation()}>
                         <div className="border-b px-4 py-3 flex justify-between items-center">
@@ -712,7 +712,7 @@ const CaseDetails = () => {
                         </div>
                     </div>
                 </div>
-            )}
+            )} */}
         </PageLayout>
     );
 };

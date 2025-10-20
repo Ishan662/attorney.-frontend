@@ -271,6 +271,25 @@ const Cases = () => {
         return `${baseClasses} bg-gray-100 text-gray-700`;
     };
 
+    // Helper function to format hearing date
+    const formatHearingDate = (dateString) => {
+        if (!dateString || dateString === 'Not scheduled') {
+            return 'Not scheduled';
+        }
+        
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        } catch (error) {
+            console.error('Error formatting date:', error);
+            return dateString;
+        }
+    };
+
     // Event handlers for user input
     const handleFilterChange = (filterType, value) => {
         setFilters(prev => ({
@@ -455,7 +474,7 @@ const Cases = () => {
                                                         <div className="text-sm text-gray-600">{caseItem.courtName}</div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <div className="text-sm text-gray-600">{caseItem.nextHearing || 'Not scheduled'}</div>
+                                                        <div className="text-sm text-gray-600">{formatHearingDate(caseItem.nextHearing)}</div>
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <div className="flex justify-center">
@@ -565,7 +584,7 @@ const Cases = () => {
                                             <div className="flex justify-between">
                                                 <span className="text-gray-500">Next Hearing:</span>
                                                 <span className="font-medium text-gray-700">
-                                                    {caseItem.nextHearing || 'Not scheduled'}
+                                                    {formatHearingDate(caseItem.nextHearing)}
                                                 </span>
                                             </div>
                                             {caseItem.opposingPartyName && (
