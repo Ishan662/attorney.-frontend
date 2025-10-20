@@ -312,41 +312,6 @@ const Lawyercalender = () => {
     });
   };
 
-  // Get free slots and scheduled events for selected date
-  const getFreeSlotsForDate = (date) => {
-    const dateStr = date.toDateString();
-    const today = new Date().toDateString();
-    const tomorrow = new Date(Date.now() + 86400000).toDateString();
-    const dayAfterTomorrow = new Date(Date.now() + 172800000).toDateString();
-
-    // Mock free slots based on selected date
-    const freeSlotsByDate = {
-      [today]: [
-        { time: "11:00 AM - 12:00 PM", available: true },
-        { time: "2:00 PM - 3:00 PM", available: true },
-        { time: "4:00 PM - 5:00 PM", available: true },
-      ],
-      [tomorrow]: [
-        { time: "9:00 AM - 10:00 AM", available: true },
-        { time: "1:00 PM - 2:00 PM", available: true },
-        { time: "3:00 PM - 4:00 PM", available: true },
-        { time: "5:00 PM - 6:00 PM", available: true },
-      ],
-      [dayAfterTomorrow]: [
-        { time: "10:00 AM - 11:00 AM", available: true },
-        { time: "2:00 PM - 3:00 PM", available: true },
-        { time: "4:30 PM - 5:30 PM", available: true },
-      ],
-    };
-
-    return freeSlotsByDate[dateStr] || [
-      { time: "9:00 AM - 10:00 AM", available: true },
-      { time: "11:00 AM - 12:00 PM", available: true },
-      { time: "2:00 PM - 3:00 PM", available: true },
-      { time: "4:00 PM - 5:00 PM", available: true },
-    ];
-  };
-
   const getScheduledEventsForDate = (date) => {
     const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
     return events.filter(event => {
@@ -1065,35 +1030,6 @@ const Lawyercalender = () => {
                     <div key={idx} className="mini-day-empty"></div>
                   )
                 )}
-              </div>
-            </div>
-
-            {/* Free Slots */}
-            <div className="free-slots">
-              <h3 className="sidebar-title">
-                Free Slots - {selectedDate.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric"
-                })}
-              </h3>
-              <div className="slots-list">
-                {getFreeSlotsForDate(selectedDate).map((slot, idx) => (
-                  <div key={idx} className="slot-item">
-                    <div className="slot-time-icon">
-                      <FaClock className="slot-icon" />
-                    </div>
-                    <div className="slot-details">
-                      <div className="slot-time">{slot.time}</div>
-                      <div className="slot-status available">Available</div>
-                    </div>
-                    <button
-                      className="book-slot-btn"
-                      onClick={() => handleTimeSlotClick(slot.time)}
-                    >
-                      Book
-                    </button>
-                  </div>
-                ))}
               </div>
             </div>
 

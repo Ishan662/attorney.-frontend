@@ -18,3 +18,32 @@ export const createSubscriptionSession = async planId => {
     throw new Error('Could not initiate the subscription process. Please try again.');
   }
 };
+
+/**
+ * Fetches the subscription details for the currently logged-in user.
+ * @returns {Promise<object>} The user's subscription data.
+ */
+export const getMySubscription = async () => {
+  try {
+    return await authenticatedFetch('/api/subscriptions/my-subscription');
+  } catch (error) {
+    console.error('Failed to fetch user subscription:', error.message);
+    throw new Error('Could not load subscription details.');
+  }
+};
+
+/**
+ * Sends a request to the backend to cancel the current user's active subscription.
+ * @returns {Promise<object>} The confirmation message from the server.
+ */
+export const cancelMySubscription = async () => {
+  try {
+    const response = await authenticatedFetch('/api/subscriptions/my-subscription', {
+      method: 'DELETE',
+    });
+    return response;
+  } catch (error) {
+    console.error('Failed to cancel subscription:', error.message);
+    throw new Error('Could not cancel your subscription. Please try again.');
+  }
+};
