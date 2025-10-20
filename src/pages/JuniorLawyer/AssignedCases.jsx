@@ -1,46 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PageHeader from "../../components/layout/PageHeader";
 import PageLayout from "../../components/layout/PageLayout";
 import Button1 from "../../components/UI/Button1";
-
-const assignedCases = [
-    {
-        id: "C-1001",
-        name: "Estate of Smith",
-        des: "A case regarding estate inheritance for the Smith family.",
-        nextHearing: "2024-07-10",
-        client: "John Smith",
-        status: "Ongoing",
-        court: "Colombo District Court",
-        lawyer: "Nadun Hasalanka",
-        createdAt: "2024-06-01",
-        priority: "High",
-    },
-    {
-        id: "C-1002",
-        name: "Guardianship of Lee",
-        des: "Legal guardianship dispute involving minor Lee.",
-        nextHearing: "2024-07-12",
-        client: "Sarah Lee",
-        status: "Pending",
-        court: "Gampaha Magistrate Court",
-        lawyer: "Sujan Darshana",
-        createdAt: "2024-06-05",
-        priority: "Medium",
-    },
-    {
-        id: "C-1003",
-        name: "Property Dispute",
-        des: "Boundary issue between neighbors.",
-        nextHearing: "-",
-        client: "Nimal Perera",
-        status: "Review",
-        court: "Kandy High Court",
-        lawyer: "Nishagi Jeewantha",
-        createdAt: "2024-06-08",
-        priority: "Low",
-    },
-];
+import { juniorCaseService } from "../../services/juniorCaseService";
 
 const user = {
     name: "Sujan Darshana",
@@ -51,7 +13,41 @@ const user = {
 const AssignedCases = () => {
     const [notificationCount, setNotificationCount] = useState(1);
     const [selectedCase, setSelectedCase] = useState(null);
-    const [cases] = useState(assignedCases);
+    const [cases, setCases] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [priorityFilter, setPriorityFilter] = useState('');
+
+    // Fetch assigned cases on component mount
+    useEffect(() => {
+        const fetchAssignedCases = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                
+                const casesData = await juniorCaseService.getAssignedCases();
+                const formattedCases = casesData.map(caseItem => 
+                    juniorCaseService.formatCaseForDisplay(caseItem)
+                );
+                
+                setCases(formattedCases);
+            } catch (error) {
+                console.error('Failed to fetch assigned cases:', error);
+                setError(error.message);
+                // Fallback to empty array if fetch fails
+                setCases([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAssignedCases();
+    }, []);
+
+    // Filter cases based on search and filters
+    const filteredCases = juniorCaseService.filterCases(cases, searchTerm, statusFilter, priorityFilter);
 
     const handleNotificationClick = () => { };
 
@@ -120,43 +116,156 @@ const AssignedCases = () => {
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Assigned Cases</h1>
-                    <p className="text-gray-600 mt-1">Manage your Cases</p>
+                    <p className="text-gray-600 mt-1">Manage your assigned cases and track progress</p>
                 </div>
-
             </div>
-            <div className="bg-white rounded-lg shadow-md overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Case ID
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Case Name
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Case Description
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Next Hearing
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {cases.map((caseItem) => (
-                            <tr
-                                key={caseItem.id}
-                                onClick={() => handleRowClick(caseItem)}
-                                className="cursor-pointer hover:bg-gray-100"
-                            >
-                                <td className="px-6 py-4 whitespace-nowrap">{caseItem.id}</td>
-                                <td className="px-6 py-4 whitespace-nowrap">{caseItem.name}</td>
-                                <td className="px-6 py-4 whitespace-nowrap">{caseItem.des}</td>
-                                <td className="px-6 py-4 whitespace-nowrap">{caseItem.nextHearing}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+
+            {/* Search and Filters */}
+            <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Search Cases</label>
+                        <input
+                            type="text"
+                            placeholder="Search by case name, client, or ID..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="">All Statuses</option>
+                            <option value="ongoing">Ongoing</option>
+                            <option value="pending">Pending</option>
+                            <option value="review">Review</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                        <select
+                            value={priorityFilter}
+                            onChange={(e) => setPriorityFilter(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="">All Priorities</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <div className="flex items-end">
+                        <button
+                            onClick={() => {
+                                setSearchTerm('');
+                                setStatusFilter('');
+                                setPriorityFilter('');
+                            }}
+                            className="w-full px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                        >
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Cases Table */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                {loading ? (
+                    <div className="p-8 text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                        <p className="mt-4 text-gray-500">Loading assigned cases...</p>
+                    </div>
+                ) : error ? (
+                    <div className="p-8 text-center">
+                        <div className="text-red-500 mb-4">⚠️</div>
+                        <p className="text-red-600 font-medium mb-2">Failed to load assigned cases</p>
+                        <p className="text-gray-500 text-sm mb-4">{error}</p>
+                        <button 
+                            onClick={() => window.location.reload()}
+                            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                ) : filteredCases.length === 0 ? (
+                    <div className="p-8 text-center">
+                        <div className="text-gray-400 text-4xl mb-4">📂</div>
+                        <p className="text-gray-500 font-medium">
+                            {cases.length === 0 ? 'No cases assigned yet' : 'No cases match your filters'}
+                        </p>
+                        <p className="text-gray-400 text-sm mt-1">
+                            {cases.length === 0 ? 'Wait for your supervising lawyer to assign cases' : 'Try adjusting your search or filters'}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Case Info
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Client & Court
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Next Hearing
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status & Priority
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {filteredCases.map((caseItem) => (
+                                    <tr
+                                        key={caseItem.id}
+                                        onClick={() => handleRowClick(caseItem)}
+                                        className="cursor-pointer hover:bg-gray-50 transition-colors"
+                                    >
+                                        <td className="px-6 py-4">
+                                            <div>
+                                                <div className="font-medium text-gray-900">{caseItem.name}</div>
+                                                <div className="text-sm text-gray-500">ID: {caseItem.caseId}</div>
+                                                <div className="text-sm text-gray-600 mt-1 max-w-xs truncate">
+                                                    {caseItem.description}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div>
+                                                <div className="font-medium text-gray-900">{caseItem.client}</div>
+                                                <div className="text-sm text-gray-500">{caseItem.court}</div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="text-sm text-gray-900">
+                                                {caseItem.displayNextHearing}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col space-y-2">
+                                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${juniorCaseService.getStatusColorClass(caseItem.status)}`}>
+                                                    {caseItem.status}
+                                                </span>
+                                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${juniorCaseService.getPriorityColorClass(caseItem.priority)}`}>
+                                                    {caseItem.priority}
+                                                </span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
 
             {/* Modal for Case Details */}
@@ -168,48 +277,48 @@ const AssignedCases = () => {
                         onClick={(e) => e.stopPropagation()} >
                             
                         <h2 className="text-3xl font-semibold mb-6 border-b pb-4 text-gray-800">
-                            Case Details - {selectedCase.id}
+                            {selectedCase.name} - {selectedCase.caseId}
                         </h2>
 
                         {/* Case Overview */}
                         <section className="mb-6">
                             <h3 className="text-xl font-semibold mb-4">Case Overview</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700 text-sm">
-                                <div>
+                                <div className="space-y-3">
                                     <p>
-                                        <strong>Case Name:</strong> {selectedCase.name}
+                                        <strong className="text-gray-900">Case Name:</strong> {selectedCase.name}
                                     </p>
                                     <p>
-                                        <strong>Description:</strong> {selectedCase.des}
+                                        <strong className="text-gray-900">Description:</strong> {selectedCase.description}
                                     </p>
                                     <p>
-                                        <strong>Next Hearing:</strong> {selectedCase.nextHearing}
+                                        <strong className="text-gray-900">Next Hearing:</strong> {selectedCase.displayNextHearing}
+                                    </p>
+                                    <p>
+                                        <strong className="text-gray-900">Client:</strong> {selectedCase.client}
                                     </p>
                                 </div>
-                                <div>
-                                    <p>
-                                        <strong>Status:</strong>{" "}
-                                        <span
-                                            className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${selectedCase.status === "Ongoing"
-                                                ? "bg-green-100 text-green-700"
-                                                : selectedCase.status === "Pending"
-                                                    ? "bg-yellow-100 text-yellow-700"
-                                                    : selectedCase.status === "Review"
-                                                        ? "bg-gray-100 text-gray-700"
-                                                        : "bg-gray-200 text-gray-600"
-                                                }`}
-                                        >
+                                <div className="space-y-3">
+                                    <p className="flex items-center">
+                                        <strong className="text-gray-900 mr-2">Status:</strong>
+                                        <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${juniorCaseService.getStatusColorClass(selectedCase.status)}`}>
                                             {selectedCase.status}
                                         </span>
                                     </p>
-                                    <p>
-                                        <strong>Court:</strong> {selectedCase.court}
+                                    <p className="flex items-center">
+                                        <strong className="text-gray-900 mr-2">Priority:</strong>
+                                        <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${juniorCaseService.getPriorityColorClass(selectedCase.priority)}`}>
+                                            {selectedCase.priority}
+                                        </span>
                                     </p>
                                     <p>
-                                        <strong>Priority:</strong> {selectedCase.priority}
+                                        <strong className="text-gray-900">Court:</strong> {selectedCase.court}
                                     </p>
                                     <p>
-                                        <strong>Created At:</strong> {selectedCase.createdAt}
+                                        <strong className="text-gray-900">Supervising Lawyer:</strong> {selectedCase.lawyer}
+                                    </p>
+                                    <p>
+                                        <strong className="text-gray-900">Created:</strong> {selectedCase.displayCreatedAt}
                                     </p>
                                 </div>
                             </div>
