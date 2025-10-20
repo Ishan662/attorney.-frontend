@@ -1,15 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../../components/layout/PageLayout";
 import PageHeader from "../../components/layout/PageHeader";
 import Button1 from "../../components/UI/Button1";
-import Button2 from "../../components/UI/Button2";
 import PricingPopupV2 from "../../components/pricing/PricingPopupV2";
+import IncomeChart from "../../components/charts/IncomeChart";
+import { lawyerDashboardService } from "../../services/lawyerDashboardService";
 
 const Dashboard = () => {
     const navigate = useNavigate();
     const [notificationCount] = useState(3);
     const [isPricingPopupOpen, setIsPricingPopupOpen] = useState(false);
+    const [hearings, setHearings] = useState([]);
+    const [isLoadingHearings, setIsLoadingHearings] = useState(true);
+    const [hearingsError, setHearingsError] = useState(null);
+    
+    // Income chart state
+    const [incomeData, setIncomeData] = useState([]);
+    const [isLoadingIncome, setIsLoadingIncome] = useState(true);
+    const [incomeError, setIncomeError] = useState(null);
 
     const user = {
         name: 'Nishagi Jewantha',
@@ -22,6 +31,47 @@ const Dashboard = () => {
     const handleNotificationClick = () => {
         // Handle notifications - navigate to notifications page or open panel
     };
+
+    // Load dashboard data from backend
+    useEffect(() => {
+        const loadDashboardData = async () => {
+            // Load today's hearings
+            try {
+                setIsLoadingHearings(true);
+                setHearingsError(null);
+                
+                const hearingsData = await lawyerDashboardService.getTodaysHearings();
+                
+                // Format hearings for display
+                const formattedHearings = hearingsData.map(hearing => 
+                    lawyerDashboardService.formatHearingForDisplay(hearing)
+                );
+                
+                setHearings(formattedHearings);
+            } catch (error) {
+                console.error('Error loading today\'s hearings:', error);
+                setHearingsError('Failed to load today\'s hearings. Please try again later.');
+            } finally {
+                setIsLoadingHearings(false);
+            }
+
+            // Load income chart data
+            try {
+                setIsLoadingIncome(true);
+                setIncomeError(null);
+                
+                const incomeChartData = await lawyerDashboardService.getIncomeChart();
+                setIncomeData(incomeChartData);
+            } catch (error) {
+                console.error('Error loading income chart data:', error);
+                setIncomeError('Failed to load income data. Please try again later.');
+            } finally {
+                setIsLoadingIncome(false);
+            }
+        };
+
+        loadDashboardData();
+    }, []);
 
     // Handle card click to navigate to specific pages
     const handleStatCardClick = (title) => {
@@ -75,11 +125,7 @@ const Dashboard = () => {
         }
     ];
 
-    const hearings = [
-        { id: "332844", name: "H.M.N.J. Deerasinha", action: "Magistrate" },
-        { id: "332445", name: "Jaman Perera", action: "Videos" },
-        { id: "332446", name: "Kumala Silva", action: "Details" }
-    ];
+    // Remove the static hearings array - now using state from backend
 
     // Dynamic date for meetings
     const formatMeetingDate = (dateStr) => {
@@ -114,8 +160,6 @@ const Dashboard = () => {
             caseId: null
         }
     ];
-
-    const monthlyIncome = "$7,500";
 
     return (
         <PageLayout user={user}>
@@ -190,95 +234,108 @@ const Dashboard = () => {
             <div className="mb-8">
                 <h2 className="text-xl font-bold mb-4">Hearings to attend today</h2>
                 <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    {hearings.map((hearing, index) => (
-                        <div key={index} className="flex justify-between items-center p-4 
-                                                   border-b last:border-b-0 hover:bg-gray-50 
-                                                   transition-colors duration-200">
-                            <div>
-                                <div className="text-sm text-gray-500">Case # {hearing.id}</div>
-                                <div className="font-medium">{hearing.name}</div>
-                            </div>
-                            <Button2
-                                text={hearing.action}
-                                className="text-sm py-1 px-4"
-                            />
+                    {isLoadingHearings ? (
+                        <div className="p-8 text-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                            <p className="text-gray-600">Loading today's hearings...</p>
                         </div>
-                    ))}
-                    <div className="p-4">
-                        <Button1
-                            text="Add a case"
-                            onClick={() => navigate("/lawyer/newcaseprofile")}
-                        />
-                    </div>
+                    ) : hearingsError ? (
+                        <div className="p-8 text-center">
+                            <div className="text-red-500 mb-4">⚠️</div>
+                            <p className="text-red-600 mb-4">{hearingsError}</p>
+                            <button 
+                                onClick={() => window.location.reload()}
+                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm"
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    ) : hearings.length === 0 ? (
+                        <div className="p-8 text-center">
+                            <div className="text-gray-400 text-4xl mb-4">📅</div>
+                            <p className="text-gray-600 mb-2">No hearings scheduled for today</p>
+                            <p className="text-gray-500 text-sm">Enjoy a lighter day!</p>
+                        </div>
+                    ) : (
+                        hearings.map((hearing, index) => (
+                            <div key={hearing.id || index} className="flex justify-between items-center p-4 
+                                                           border-b last:border-b-0 hover:bg-gray-50 
+                                                           transition-colors duration-200">
+                                <div>
+                                    <div className="font-medium">{hearing.displayName}</div>
+                                    {hearing.hearingTime && (
+                                        <div className="text-sm text-gray-500 mt-1">
+                                            🕐 {hearing.hearingTime}
+                                        </div>
+                                    )}
+                                    {hearing.court && (
+                                        <div className="text-xs text-gray-400 mt-1">
+                                            📍 {hearing.court}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
 
-            {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                {/* Monthly Income Section */}
-                <div>
-                    <h2 className="text-xl font-bold mb-4">Monthly Income</h2>
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg h-64 
-                                      flex items-center justify-center text-gray-500">
-                            <div className="text-center">
-                                <div className="text-4xl mb-2">📊</div>
-                                <div>Monthly Income Chart</div>
-                            </div>
-                        </div>
-                        <div className="text-3xl font-bold mt-6 text-green-600">{monthlyIncome}</div>
-                        <div className="text-sm text-gray-500 mt-1">Total earnings this month</div>
-                    </div>
+            {/* Income Chart and Meeting Requests - Side by Side */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                {/* Income Chart - Takes 2/3 of the width */}
+                <div className="lg:col-span-2">
+                    <IncomeChart 
+                        data={incomeData} 
+                        loading={isLoadingIncome} 
+                        error={incomeError} 
+                    />
                 </div>
 
-                {/* Meeting Requests Section */}
-                <div>
-                    <h2 className="text-xl font-bold mb-4">Meeting Requests</h2>
-                    <div className="bg-white rounded-lg shadow-md">
-                        {meetings.map((meeting, index) => {
-                            const { formattedDate, day } = formatMeetingDate(meeting.date);
-                            return (
-                                <div key={index} className="border-b last:border-b-0 p-4 
-                                                           hover:bg-gray-50 transition-colors duration-200">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <div className="font-medium text-gray-900">{meeting.name}</div>
-                                            <div className="text-sm text-gray-500 mt-1">
-                                                {formattedDate} • {day}
-                                                {meeting.caseId && (
-                                                    <div className="mt-1">Case # {meeting.caseId}</div>
-                                                )}
+                {/* Meeting Requests - Takes 1/3 of the width */}
+                <div className="lg:col-span-1">
+                    <div className="bg-white rounded-lg shadow-lg p-6 h-full">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Meeting Requests</h3>
+                        {meetings.length === 0 ? (
+                            <div className="flex items-center justify-center h-32 text-gray-500">
+                                <div className="text-center">
+                                    <div className="text-3xl mb-2">📅</div>
+                                    <p className="text-sm">No meeting requests</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-3 max-h-80 overflow-y-auto">
+                                {meetings.map((meeting, index) => {
+                                    const { formattedDate, day } = formatMeetingDate(meeting.date);
+                                    return (
+                                        <div key={index} className="border border-gray-200 rounded-lg p-3 
+                                                                   hover:bg-gray-50 transition-colors duration-200">
+                                            <div className="flex flex-col space-y-2">
+                                                <div className="font-medium text-gray-900 text-sm">{meeting.name}</div>
+                                                <div className="text-xs text-gray-500">
+                                                    {formattedDate} • {day}
+                                                    {meeting.caseId && (
+                                                        <div className="mt-1">Case # {meeting.caseId}</div>
+                                                    )}
+                                                </div>
+                                                <div className="flex justify-end">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${meeting.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                            meeting.status === 'Confirmed' ? 'bg-green-100 text-green-800' :
+                                                                'bg-red-100 text-red-800'
+                                                        }`}>
+                                                        {meeting.status}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${meeting.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                    meeting.status === 'Confirmed' ? 'bg-green-100 text-green-800' :
-                                                        'bg-red-100 text-red-800'
-                                                }`}>
-                                                {meeting.status}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Overall Analytics Section */}
-            <div>
-                <h2 className="text-xl font-bold mb-4">Overall Analytics</h2>
-                <div className="bg-white rounded-lg shadow-md p-6">
-                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg h-64 
-                                  flex items-center justify-center text-gray-500">
-                        <div className="text-center">
-                            <div className="text-4xl mb-2">📈</div>
-                            <div>Overall Analytics Chart</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
 
             {/* Pricing Popup */}
             <PricingPopupV2
