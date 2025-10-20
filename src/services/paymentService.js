@@ -54,7 +54,12 @@ export const getReceivedPayments = async () => {
  * @returns {Promise<Array<object>>} A list of overdue case detail objects.
  */
 export const getOverduePayments = async () => {
- 
+  try {
+    return await authenticatedFetch('/api/payments/my-overdue-payments');
+  } catch (error) {
+    console.error('Failed to fetch overdue payments:', error.message);
+    throw new Error('Could not load overdue payment records.');
+  }
 };
 
 
