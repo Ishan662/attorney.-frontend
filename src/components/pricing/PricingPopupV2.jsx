@@ -63,7 +63,7 @@ const PricingPopup = ({ isOpen, onClose, showSkipButton = false }) => {
 
     const plans = [
         {
-            id: 0,
+            id: 1,
             name: '7 days Free Trial',
             price: 0,
             description: 'Everything in FREE plan',
@@ -95,7 +95,7 @@ const PricingPopup = ({ isOpen, onClose, showSkipButton = false }) => {
     ];
 
     const handlePlanSelection = async (plan) => {
-        if (plan.id === 0) {
+        if (plan.id === 1) {
             setError(''); // Clear any previous errors
             setInfoMessage('You are already on the Free Trial plan.');
             // Automatically close the modal after 2 seconds
