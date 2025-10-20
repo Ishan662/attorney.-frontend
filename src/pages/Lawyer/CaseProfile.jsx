@@ -103,8 +103,15 @@ const CaseProfiles = () => {
                         <span className="font-bold">Next Hearing:</span>{' '}
                         {c.nextHearing ? new Date(c.nextHearing).toLocaleDateString() : 'Not Scheduled'}
                       </div>
+                      
+                      {/* Junior Associate Section - Display Only */}
                       <div>
-                        <span className="font-bold">Junior Associate:</span> {c.junior || 'Not Assigned'}
+                        <span className="font-bold">Junior Associate:</span>{' '}
+                        {c.junior && c.junior !== 'Not Assigned' ? (
+                          <span className="text-green-600">{c.junior}</span>
+                        ) : (
+                          <span className="text-gray-500">Not Assigned</span>
+                        )}
                       </div>
                       <div>
                         <span className="font-bold">Fee:</span> ${c.agreedFee ? c.agreedFee.toFixed(2) : '0.00'}{' '}

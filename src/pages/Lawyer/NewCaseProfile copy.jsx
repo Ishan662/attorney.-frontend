@@ -6,7 +6,6 @@ import Button2 from '../../components/UI/Button2';
 import { useNavigate } from 'react-router-dom';
 // Add these imports
 import { createCase, getClientsForSelection, getJuniorsForSelection } from '../../services/caseService';
-import caseDetailsService from '../../services/caseDetailsService';
 import Swal from 'sweetalert2';
 
 const user = {
@@ -202,10 +201,19 @@ const NewCaseProfile = () => {
   const [clientOptions, setClientOptions] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  // Divorce-specific state
-  const [divorceDetails, setDivorceDetails] = useState(caseDetailsService.createEmptyDivorceForm());
-  const [showGroundsDropdown, setShowGroundsDropdown] = useState(false);
   const navigate = useNavigate();
+
+  // Predefined client list (no backend needed)
+  const predefinedClients = [
+    { id: 1, name: 'John Doe', phone: '+94712345678', email: 'john.doe@email.com' },
+    { id: 2, name: 'Jane Smith', phone: '+94723456789', email: 'jane.smith@email.com' },
+    { id: 3, name: 'Michael Johnson', phone: '+94734567890', email: 'michael.johnson@email.com' },
+    { id: 4, name: 'Sarah Williams', phone: '+94745678901', email: 'sarah.williams@email.com' },
+    { id: 5, name: 'David Brown', phone: '+94756789012', email: 'david.brown@email.com' },
+    { id: 6, name: 'Emily Davis', phone: '+94767890123', email: 'emily.davis@email.com' },
+    { id: 7, name: 'Robert Wilson', phone: '+94778901234', email: 'robert.wilson@email.com' },
+    { id: 8, name: 'Lisa Anderson', phone: '+94789012345', email: 'lisa.anderson@email.com' },
+  ];
 
   // Load junior lawyers and clients when component mounts
   useEffect(() => {
@@ -263,61 +271,22 @@ const NewCaseProfile = () => {
 
   // Handle dropdown selection for junior lawyer
   const handleJuniorSelect = (option) => {
-    setForm({ ...form, associatedJuniorId: option.value });
+    setForm({ ...form, junior: option.value });
     setShowJuniorDropdown(false);
   };
 
-  // Handle client selection from existing clients
-  const handleExistingClientSelect = (client) => {
+  // Handle client selection from predefined list
+  const handleClientSelect = (client) => {
     setForm({ 
       ...form, 
-      existingClientId: client.id,
       clientName: client.name,
-      clientEmail: client.email,
-      clientPhone: '' // Will be populated from backend if available
+      clientPhone: client.phone,
+      clientEmail: client.email
     });
     setShowClientDropdown(false);
   };
 
-  // Divorce-specific handlers
-  const handleDivorceDetailChange = (field, value) => {
-    setDivorceDetails(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleGroundsSelect = (grounds) => {
-    setDivorceDetails(prev => ({
-      ...prev,
-      grounds: grounds
-    }));
-    setShowGroundsDropdown(false);
-  };
-
-  const addChild = () => {
-    setDivorceDetails(prev => ({
-      ...prev,
-      children: [...prev.children, caseDetailsService.createEmptyChild()]
-    }));
-  };
-
-  const removeChild = (index) => {
-    setDivorceDetails(prev => ({
-      ...prev,
-      children: prev.children.filter((_, i) => i !== index)
-    }));
-  };
-
-  const handleChildChange = (index, field, value) => {
-    setDivorceDetails(prev => ({
-      ...prev,
-      children: prev.children.map((child, i) => 
-        i === index ? { ...child, [field]: value } : child
-      )
-    }));
-  };
-
+  // For simplicity, hearings/timeline/documents are not dynamic in this starter
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -336,39 +305,9 @@ const NewCaseProfile = () => {
       return;
     }
 
-    // Validate client information based on mode
-    if (useExistingClient && !form.existingClientId) {
-      setError('Please select an existing client');
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!useExistingClient && (!form.clientName || !form.clientEmail)) {
-      setError('Please fill in all required client information');
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
-      // Prepare case data
-      let caseData = { ...form };
-      
-      // Add divorce details if this is a divorce case
-      if (caseDetailsService.isDivorceCase(form.caseType)) {
-        // Validate divorce details
-        const divorceValidationErrors = caseDetailsService.validateDivorceDetails(divorceDetails);
-        if (divorceValidationErrors.length > 0) {
-          setError(divorceValidationErrors.join(', '));
-          setIsSubmitting(false);
-          return;
-        }
-        
-        // Transform and add additional details
-        caseData.additionalDetails = caseDetailsService.transformDivorceDataForAPI(divorceDetails);
-      }
-      
       // Call the backend API
-      const newCaseId = await createCase(caseData);
+      const newCaseId = await createCase(form);
       
       // Show success message with SweetAlert2
       await Swal.fire({
@@ -426,7 +365,7 @@ const NewCaseProfile = () => {
 
   // Get the selected junior lawyer label
   const getSelectedJuniorLabel = () => {
-    const selected = juniorLawyerOptions.find(option => option.value === form.associatedJuniorId);
+    const selected = juniorLawyerOptions.find(option => option.value === form.junior);
     return selected ? selected.label : "Select Junior Lawyer";
   };
 
@@ -440,13 +379,6 @@ const NewCaseProfile = () => {
     const availableCourts = getAvailableCourts();
     const selected = availableCourts.find(option => option.value === form.court);
     return selected ? selected.label : "Select Court";
-  };
-
-  // Get the selected divorce grounds label
-  const getSelectedGroundsLabel = () => {
-    return divorceDetails.grounds 
-      ? caseDetailsService.DIVORCE_GROUNDS[divorceDetails.grounds] 
-      : "Select Grounds for Divorce";
   };
 
   return (
@@ -702,125 +634,85 @@ const NewCaseProfile = () => {
                 {/* Client Information - Required */}
                 <div className="mb-8">
                   <h3 className="text-lg font-medium mb-4 text-gray-800">Client Information <span className="text-red-500">*</span></h3>
-                  
-                  {/* Client Selection Mode Toggle */}
-                  <div className="mb-6">
-                    <div className="flex items-center space-x-4">
-                      <button
-                        type="button"
-                        onClick={() => setUseExistingClient(true)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                          useExistingClient
-                            ? 'bg-black text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        Select Existing Client
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUseExistingClient(false);
-                          setForm({ ...form, existingClientId: '', clientName: '', clientPhone: '', clientEmail: '' });
-                        }}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                          !useExistingClient
-                            ? 'bg-black text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        Add New Client
-                      </button>
-                    </div>
-                  </div>
-
                   <div className="grid md:grid-cols-2 gap-6">
-                    {useExistingClient ? (
-                      <>
-                        {/* Existing Client Dropdown */}
-                        <div className="relative md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Select Existing Client <span className="text-red-500">*</span>
-                          </label>
-                          <div 
-                            className="w-full mt-2 text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 flex justify-between items-center cursor-pointer"
-                            onClick={() => setShowClientDropdown(!showClientDropdown)}
-                          >
-                            <span className={form.existingClientId ? "" : "text-gray-500"}>
-                              {form.existingClientId ? form.clientName : "Select from existing clients"}
-                            </span>
-                            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${showClientDropdown ? 'transform rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                          
-                          {/* Client Dropdown Menu */}
-                          {showClientDropdown && (
-                            <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-64 rounded-md border border-gray-200 overflow-auto">
-                              <div className="py-1">
-                                <div className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border-b">
-                                  Select Client
-                                </div>
-                                {clientOptions.map((client) => (
-                                  <div
-                                    key={client.id}
-                                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                                    onClick={() => handleExistingClientSelect(client)}
-                                  >
-                                    <div className="font-medium text-gray-900">{client.name}</div>
-                                    <div className="text-sm text-gray-500">{client.email}</div>
-                                  </div>
-                                ))}
-                                {clientOptions.length === 0 && (
-                                  <div className="px-4 py-3 text-gray-500 text-sm">
-                                    No clients found. Add a new client instead.
-                                  </div>
-                                )}
-                              </div>
+                    {/* Choose from Existing Clients Dropdown */}
+                    <div className="relative">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Choose from Existing Clients
+                      </label>
+                      <div 
+                        className="w-full mt-2 text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 flex justify-between items-center cursor-pointer"
+                        onClick={() => setShowClientDropdown(!showClientDropdown)}
+                      >
+                        <span className="text-gray-500">
+                          Select from existing clients
+                        </span>
+                        <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${showClientDropdown ? 'transform rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      
+                      {/* Client Dropdown Menu */}
+                      {showClientDropdown && (
+                        <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-64 rounded-md border border-gray-200 overflow-auto">
+                          <div className="py-1">
+                            <div className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border-b">
+                              Select Client
                             </div>
-                          )}
+                            {predefinedClients.map((client) => (
+                              <div
+                                key={client.id}
+                                className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                onClick={() => handleClientSelect(client)}
+                              >
+                                <div className="font-medium text-gray-900">{client.name}</div>
+                                <div className="text-sm text-gray-500">{client.phone}</div>
+                                <div className="text-sm text-gray-500">{client.email}</div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </>
-                    ) : (
-                      <>
-                        {/* New Client Fields */}
-                        <Input1
-                          label="Client Name"
-                          name="clientName"
-                          value={form.clientName}
-                          onChange={handleChange}
-                          placeholder="Client Name"
-                          className="mt-2"
-                          variant="outlined"
-                          required
-                        />
-                        
-                        <Input1
-                          label="Client Phone"
-                          name="clientPhone"
-                          value={form.clientPhone}
-                          onChange={handleChange}
-                          placeholder="Client Phone Number"
-                          className="mt-2"
-                          variant="outlined"
-                          required
-                        />
-                        
-                        <Input1
-                          label="Client Email"
-                          name="clientEmail"
-                          value={form.clientEmail}
-                          onChange={handleChange}
-                          placeholder="Client Email"
-                          className="mt-2"
-                          variant="outlined"
-                          required
-                        />
-                        
-                        {/* Empty space for alignment */}
-                        <div></div>
-                      </>
-                    )}
+                      )}
+                    </div>
+
+                    {/* Empty space for alignment */}
+                    <div></div>
+                    
+                    <Input1
+                      label="Client Name"
+                      name="clientName"
+                      value={form.clientName}
+                      onChange={handleChange}
+                      placeholder="Client Name"
+                      className="mt-2"
+                      variant="outlined"
+                      required
+                    />
+                    
+                    <Input1
+                      label="Client Phone"
+                      name="clientPhone"
+                      value={form.clientPhone}
+                      onChange={handleChange}
+                      placeholder="Client Phone Number"
+                      className="mt-2"
+                      variant="outlined"
+                      required
+                    />
+                    
+                    <Input1
+                      label="Client Email"
+                      name="clientEmail"
+                      value={form.clientEmail}
+                      onChange={handleChange}
+                      placeholder="Client Email"
+                      className="mt-2"
+                      variant="outlined"
+                      required
+                    />
+                    
+                    {/* Empty space for alignment */}
+                    <div></div>
                   </div>
                 </div>
 
@@ -908,160 +800,7 @@ const NewCaseProfile = () => {
                 </div>
               </section>
 
-              {/* Divorce-specific Details - Only show for divorce cases */}
-              {caseDetailsService.isDivorceCase(form.caseType) && (
-                <section className="bg-white rounded-lg p-8 shadow-md">
-                  <h2 className="text-xl font-semibold mb-4">Divorce Case Details</h2>
-                  
-                  <div className="space-y-6">
-                    {/* Grounds for Divorce */}
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div className="relative">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Grounds for Divorce <span className="text-red-500">*</span>
-                        </label>
-                        <div 
-                          className="w-full mt-2 text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 flex justify-between items-center cursor-pointer"
-                          onClick={() => setShowGroundsDropdown(!showGroundsDropdown)}
-                        >
-                          <span className={divorceDetails.grounds ? "" : "text-gray-500"}>
-                            {getSelectedGroundsLabel()}
-                          </span>
-                          <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${showGroundsDropdown ? 'transform rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                        
-                        {/* Grounds Dropdown Menu */}
-                        {showGroundsDropdown && (
-                          <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 overflow-auto border border-gray-200">
-                            {Object.entries(caseDetailsService.DIVORCE_GROUNDS).map(([key, label]) => (
-                              <div
-                                key={key}
-                                className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                                onClick={() => handleGroundsSelect(key)}
-                              >
-                                <div className="font-medium">{label}</div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Marriage Date */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Marriage Date <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="date"
-                          value={divorceDetails.marriageDate}
-                          onChange={(e) => handleDivorceDetailChange('marriageDate', e.target.value)}
-                          className="w-full text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 placeholder-gray-500 focus:border-black transition-all duration-200 focus:outline-none"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    {/* Co-Respondent Name (Only for Adultery) */}
-                    {divorceDetails.grounds === 'ADULTERY' && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Co-Respondent Name
-                        </label>
-                        <input
-                          type="text"
-                          value={divorceDetails.coRespondentName}
-                          onChange={(e) => handleDivorceDetailChange('coRespondentName', e.target.value)}
-                          placeholder="Name of the co-respondent"
-                          className="w-full text-md py-3 px-4 rounded-full bg-white border-2 border-gray-300 text-gray-800 placeholder-gray-500 focus:border-black transition-all duration-200 focus:outline-none"
-                        />
-                      </div>
-                    )}
-
-                    {/* Children Involved */}
-                    <div>
-                      <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-medium text-gray-800">Children Involved</h3>
-                        <button
-                          type="button"
-                          onClick={addChild}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm transition-colors duration-200"
-                        >
-                          + Add Child
-                        </button>
-                      </div>
-
-                      {divorceDetails.children.length === 0 ? (
-                        <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                          <p className="mb-2">No children added yet</p>
-                          <p className="text-sm">Click "Add Child" to include children involved in this divorce case</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          {divorceDetails.children.map((child, index) => (
-                            <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                              <div className="flex justify-between items-start mb-4">
-                                <h4 className="font-medium text-gray-800">Child {index + 1}</h4>
-                                <button
-                                  type="button"
-                                  onClick={() => removeChild(index)}
-                                  className="text-red-600 hover:text-red-700 text-sm"
-                                >
-                                  Remove
-                                </button>
-                              </div>
-                              <div className="grid md:grid-cols-2 gap-4">
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Full Name <span className="text-red-500">*</span>
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={child.fullName}
-                                    onChange={(e) => handleChildChange(index, 'fullName', e.target.value)}
-                                    placeholder="Child's full name"
-                                    className="w-full text-sm py-2 px-3 rounded-lg bg-white border border-gray-300 text-gray-800 placeholder-gray-500 focus:border-black transition-all duration-200 focus:outline-none"
-                                    required
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Date of Birth <span className="text-red-500">*</span>
-                                  </label>
-                                  <input
-                                    type="date"
-                                    value={child.dateOfBirth}
-                                    onChange={(e) => handleChildChange(index, 'dateOfBirth', e.target.value)}
-                                    className="w-full text-sm py-2 px-3 rounded-lg bg-white border border-gray-300 text-gray-800 placeholder-gray-500 focus:border-black transition-all duration-200 focus:outline-none"
-                                    required
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Information Note */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <div className="flex items-start">
-                        <svg className="h-5 w-5 text-blue-400 mt-1 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                        </svg>
-                        <div>
-                          <h4 className="text-sm font-medium text-blue-800">Document Checklist</h4>
-                          <p className="text-sm text-blue-700 mt-1">
-                            A standard document checklist for divorce cases will be automatically generated. 
-                            You can view and manage required documents after creating the case.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              )}
+              {/* Submit Button */}
 
               {/* Submit Button */}
               <div className="flex justify-center mt-6">
