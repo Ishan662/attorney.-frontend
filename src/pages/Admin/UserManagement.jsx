@@ -14,8 +14,6 @@ const UserManagement = () => {
     const { currentUser } = useAuth();
     const [activeTab, setActiveTab] = useState("lawyers");
     const [searchTerm, setSearchTerm] = useState("");
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [selectedUser, setSelectedUser] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -139,46 +137,6 @@ const UserManagement = () => {
                 )
             }));
             alert(`Failed to update user status: ${err.message}`);
-        }
-    };
-
-    // Delete user confirmation
-    const handleDeleteClick = (user) => {
-        setSelectedUser(user);
-        setShowDeleteModal(true);
-    };
-
-    // Confirm delete user
-    const confirmDelete = async () => {
-        if (!selectedUser) return;
-        
-        setIsLoading(true);
-        
-        // Optimistic update: remove user from UI first
-        const removedUser = selectedUser;
-        setUsers(prevUsers => ({
-            ...prevUsers,
-            [activeTab]: prevUsers[activeTab].filter(user => user.id !== selectedUser.id)
-        }));
-        
-        try {
-            // Call backend API
-            await adminUserService.deleteUser(selectedUser.id);
-            setIsLoading(false);
-            setShowDeleteModal(false);
-            setSelectedUser(null);
-            alert(`User ${removedUser.name} has been deleted successfully.`);
-        } catch (err) {
-            console.error('Failed to delete user:', err);
-            // Revert optimistic update on error
-            setUsers(prevUsers => ({
-                ...prevUsers,
-                [activeTab]: [removedUser, ...prevUsers[activeTab]]
-            }));
-            setIsLoading(false);
-            setShowDeleteModal(false);
-            setSelectedUser(null);
-            alert(`Failed to delete user: ${err.message}`);
         }
     };
 
@@ -426,22 +384,10 @@ const UserManagement = () => {
                                         <td className="px-6 py-4">
                                             <div className="flex space-x-2">
                                                 <button 
-                                                    className="text-xs font-medium text-blue-600 hover:text-blue-800"
-                                                    onClick={() => navigate(`/admin/users/${user.id}`)}
-                                                >
-                                                    View
-                                                </button>
-                                                <button 
                                                     className="text-xs font-medium text-gray-600 hover:text-gray-800"
                                                     onClick={() => toggleUserStatus(user.id)}
                                                 >
                                                     {user.status === 'active' ? 'Deactivate' : 'Activate'}
-                                                </button>
-                                                <button 
-                                                    className="text-xs font-medium text-red-600 hover:text-red-800"
-                                                    onClick={() => handleDeleteClick(user)}
-                                                >
-                                                    Delete
                                                 </button>
                                             </div>
                                         </td>
@@ -499,37 +445,6 @@ const UserManagement = () => {
                     </div>
                 </div>
             </div>
-            )}
-
-            {/* Delete Confirmation Modal */}
-            {showDeleteModal && selectedUser && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-4">
-                        <h2 className="text-xl font-bold mb-2">Confirm Delete</h2>
-                        
-                        <p className="text-gray-600 mb-6">
-                            Are you sure you want to delete the user <strong>{selectedUser.name}</strong>? This action cannot be undone.
-                        </p>
-                        
-                        <div className="flex justify-end space-x-3">
-                            <Button2
-                                text="Cancel"
-                                onClick={() => {
-                                    setShowDeleteModal(false);
-                                    setSelectedUser(null);
-                                }}
-                                className="px-4 py-2"
-                            />
-                            <button
-                                onClick={confirmDelete}
-                                disabled={isLoading}
-                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-md transition-colors"
-                            >
-                                {isLoading ? "Deleting..." : "Delete User"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
             )}
         </PageLayout>
     );
