@@ -68,7 +68,12 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           {/* <Route path="signup" element={<SignUp />} />  */}
-          <Route path="admin/dashboard" element={<AdminDashboard />} />
+
+          <Route path="admin/dashboard" element={<ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminDashboard />
+         </ProtectedRoute>} />
+
+          {/* <Route path="admin/dashboard" element={<AdminDashboard />} /> */}
           <Route path="junior/dashboard" element={<JuniorDashboard/>} />
           <Route path="client/dashboard" element={<ClientDashboard />} />
           <Route path="admin/timeline" element={<Timeline />}/>
