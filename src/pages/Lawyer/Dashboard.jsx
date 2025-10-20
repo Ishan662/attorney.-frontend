@@ -33,6 +33,49 @@ const Dashboard = () => {
         role: 'LAWYER',
     });
 
+    // Load dashboard data from backend
+    useEffect(() => {
+        const loadDashboardData = async () => {
+            // Load today's hearings
+            try {
+                setIsLoadingHearings(true);
+                setHearingsError(null);
+                
+                const hearingsData = await lawyerDashboardService.getTodaysHearings();
+                
+                // Format hearings for display
+                const formattedHearings = hearingsData.map(hearing => 
+                    lawyerDashboardService.formatHearingForDisplay(hearing)
+                );
+                
+                setHearings(formattedHearings);
+            } catch (error) {
+                console.error('Error loading today\'s hearings:', error);
+                setHearingsError('Failed to load today\'s hearings. Please try again later.');
+            } finally {
+                setIsLoadingHearings(false);
+            }
+
+            // Load income chart data
+            try {
+                setIsLoadingIncome(true);
+                setIncomeError(null);
+                
+                const incomeChartData = await lawyerDashboardService.getIncomeChart();
+                setIncomeData(incomeChartData);
+            } catch (error) {
+                console.error('Error loading income chart data:', error);
+                setIncomeError('Failed to load income data. Please try again later.');
+            } finally {
+                setIsLoadingIncome(false);
+            }
+        };
+
+        loadDashboardData();
+    }, []);
+
+
+
     useEffect(() => {
         const fetchSubscription = async () => {
             try {
