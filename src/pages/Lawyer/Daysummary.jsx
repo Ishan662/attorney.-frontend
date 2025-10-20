@@ -12,6 +12,9 @@ const DaySummary = () => {
     const [openCases, setOpenCases] = useState([]);
     const [dayIncome, setDayIncome] = useState({ amount: 0, currency: 'USD' });
     
+    // Payments state
+    const [paymentsData, setPaymentsData] = useState([]);
+    
     // Loading states
     const [isLoadingClosedCases, setIsLoadingClosedCases] = useState(true);
     const [isLoadingOpenCases, setIsLoadingOpenCases] = useState(true);
@@ -72,16 +75,23 @@ const DaySummary = () => {
                 setIsLoadingOpenCases(false);
             }
 
-            // Load today's income
+            // Load today's income from payments
             try {
                 setIsLoadingIncome(true);
                 setIncomeError(null);
                 
-                const incomeData = await lawyerDashboardService.getTodaysIncome();
-                setDayIncome(incomeData || { amount: 0, currency: 'USD' });
+                const paymentsResponse = await lawyerDashboardService.getTodaysPayments();
+                const formattedPayments = paymentsResponse.map(payment => 
+                    lawyerDashboardService.formatPaymentForDisplay(payment)
+                );
+                setPaymentsData(formattedPayments);
+                
+                // Calculate total income from payments
+                const totalIncome = formattedPayments.reduce((total, payment) => total + payment.amount, 0);
+                setDayIncome({ amount: totalIncome, currency: 'USD' });
             } catch (error) {
-                console.error('Error loading today\'s income:', error);
-                setIncomeError('Failed to load income data. Please try again later.');
+                console.error('Error loading today\'s payments:', error);
+                setIncomeError('Failed to load payments data. Please try again later.');
             } finally {
                 setIsLoadingIncome(false);
             }
@@ -238,6 +248,66 @@ const DaySummary = () => {
                             </div>
                             <p className="text-gray-500 text-sm">Cases currently open</p>
                         </>
+                    )}
+                </div>
+            </div>
+
+            {/* Today's Payments Section */}
+            <div className="mb-8">
+                <div className="bg-white rounded-lg shadow-md p-6">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                        <span className="text-green-600 mr-3">💰</span>
+                        Today's Payments
+                        <span className="ml-auto text-sm text-gray-500">
+                            {paymentsData?.length || 0} payment{paymentsData?.length !== 1 ? 's' : ''} received
+                        </span>
+                    </h3>
+                    {isLoadingIncome ? (
+                        <div className="space-y-4">
+                            {[...Array(3)].map((_, i) => (
+                                <div key={i} className="animate-pulse border border-gray-200 rounded-lg p-4">
+                                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                                    <div className="h-3 bg-gray-200 rounded mb-1"></div>
+                                    <div className="h-3 bg-gray-200 rounded"></div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : incomeError ? (
+                        <div className="text-center py-8">
+                            <div className="text-red-500 mb-4 text-4xl">⚠️</div>
+                            <p className="text-red-600 mb-4">{incomeError}</p>
+                            <button 
+                                onClick={() => window.location.reload()}
+                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm"
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    ) : paymentsData?.length === 0 ? (
+                        <div className="text-center py-12">
+                            <div className="text-gray-400 text-6xl mb-4">💸</div>
+                            <p className="text-gray-500 text-lg">No payments received today</p>
+                            <p className="text-gray-400 text-sm mt-2">Payments will appear here when received</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4 max-h-96 overflow-y-auto">
+                            {paymentsData.map((payment, index) => (
+                                <div key={payment.id || index} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors duration-200">
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex-1">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <h4 className="font-semibold text-gray-900 text-lg">{payment.clientName}</h4>
+                                                <span className="text-2xl font-bold text-green-600">{payment.amountDisplay}</span>
+                                            </div>
+                                            <div className="flex items-center text-sm text-gray-600 space-x-4">
+                                                <div><strong>Case #:</strong> {payment.caseNumber}</div>
+                                                <div><strong>Time:</strong> {payment.timeDisplay}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </div>
             </div>
