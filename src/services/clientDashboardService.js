@@ -40,7 +40,7 @@ class ClientDashboardService {
             }
 
             const response = await authenticatedFetch(
-                `/api/clients/meetings/upcoming?clientId=${userSession.id}`,
+                `/api/clients/hearings/upcoming-meetings?clientId=${userSession.id}`,
                 {
                     method: 'GET',
                 }
@@ -82,36 +82,70 @@ class ClientDashboardService {
 
     /**
      * Format hearing data for display
-     * @param {Object} hearing - Hearing object from backend
+     * @param {Object} hearing - Hearing object from backend (HearingDTO)
      * @returns {Object} Formatted hearing object
      */
     formatHearingForDisplay(hearing) {
         return {
             id: hearing.id,
-            caseTitle: hearing.title,
-            court: hearing.location,
+            caseId: hearing.caseId,
+            caseTitle: hearing.caseTitle || hearing.title || 'Unknown Case',
+            court: hearing.location || 'Location TBD',
             date: hearing.hearingDate,
-            time: this.formatTime(hearing.startTime),
-            status: hearing.status,
+            startTime: hearing.startTime,
+            endTime: hearing.endTime,
+            time: this.formatTimeRange(hearing.startTime, hearing.endTime),
+            status: hearing.status || 'SCHEDULED',
             displayDate: this.formatDate(hearing.hearingDate),
-            note: hearing.note
+            note: hearing.note || '',
+            title: hearing.title || 'Hearing'
         };
     }
 
     /**
+     * Format time range for display
+     * @param {string} startTime - Start time string
+     * @param {string} endTime - End time string
+     * @returns {string} Formatted time range
+     */
+    formatTimeRange(startTime, endTime) {
+        if (!startTime && !endTime) return 'Time TBD';
+        
+        const start = startTime ? this.formatTime(startTime) : '';
+        const end = endTime ? this.formatTime(endTime) : '';
+        
+        if (start && end) {
+            return `${start} - ${end}`;
+        } else if (start) {
+            return start;
+        } else if (end) {
+            return `Until ${end}`;
+        }
+        
+        return 'Time TBD';
+    }
+
+    /**
      * Format meeting data for display
-     * @param {Object} meeting - Meeting object from backend
+     * @param {Object} meeting - Meeting object from backend (MeetingRequestDTO)
      * @returns {Object} Formatted meeting object
      */
     formatMeetingForDisplay(meeting) {
         return {
             id: meeting.id,
-            lawyerName: meeting.lawyerName || 'Unknown Lawyer',
+            title: meeting.title || 'Meeting',
+            caseTitle: meeting.caseTitle || 'Unknown Case',
+            caseId: meeting.caseId,
+            location: meeting.location || 'Location TBD',
             date: meeting.meetingDate,
-            status: meeting.status,
+            startTime: meeting.startTime,
+            endTime: meeting.endTime,
+            time: this.formatTimeRange(meeting.startTime, meeting.endTime),
+            status: meeting.status || 'SCHEDULED',
             displayDate: this.formatDate(meeting.meetingDate),
-            time: this.formatTime(meeting.startTime),
-            note: meeting.note
+            note: meeting.note || '',
+            googleMeetLink: meeting.googleMeetLink,
+            isVirtual: !!meeting.googleMeetLink
         };
     }
 

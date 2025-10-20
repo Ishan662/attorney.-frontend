@@ -26,7 +26,7 @@ const UserOTP = () => {
             LAWYER: '/lawyer/dashboard',
             JUNIOR: '/junior/cases',
             CLIENT: '/client/caseprofiles',
-            ADMIN: '/admin/systemsettings',
+            ADMIN: '/admin/dashboard',
             RESEARCHER: '/researcher/chatbot',
         };
 
