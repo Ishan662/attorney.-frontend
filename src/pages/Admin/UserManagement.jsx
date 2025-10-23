@@ -224,7 +224,7 @@ const UserManagement = () => {
                     <div className="w-full md:w-1/3">
                         <Input1
                             type="text"
-                            placeholder="Search by name, email, location..."
+                            placeholder="Search by name, email, firm name..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             variant="outlined"
@@ -280,34 +280,28 @@ const UserManagement = () => {
                                 <tr className="bg-gray-50 text-left">
                                     <th className="px-6 py-4 text-sm font-medium text-gray-600">Name</th>
                                     <th className="px-6 py-4 text-sm font-medium text-gray-600">Contact Information</th>
-                                    <th className="px-6 py-4 text-sm font-medium text-gray-600">Location</th>
+                                    {(activeTab === 'lawyers' || activeTab === 'juniors' || activeTab === 'clients') && (
+                                        <th className="px-6 py-4 text-sm font-medium text-gray-600">Firm Name</th>
+                                    )}
                                     {activeTab === 'lawyers' && (
                                         <>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Clients</th>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Junior Lawyers</th>
                                         </>
                                     )}
                                     {activeTab === 'juniors' && (
                                         <>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Senior Lawyer</th>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Cases</th>
                                         </>
                                     )}
                                     {activeTab === 'clients' && (
                                         <>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Lawyer</th>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Cases</th>
                                         </>
                                     )}
                                     {activeTab === 'researchers' && (
                                         <>
                                             <th className="px-6 py-4 text-sm font-medium text-gray-600">Specialization</th>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Projects</th>
                                         </>
                                     )}
                                     {activeTab === 'admins' && (
                                         <>
-                                            <th className="px-6 py-4 text-sm font-medium text-gray-600">Role</th>
                                             <th className="px-6 py-4 text-sm font-medium text-gray-600">Access Level</th>
                                         </>
                                     )}
@@ -334,49 +328,29 @@ const UserManagement = () => {
                                             <div className="text-sm">{user.email}</div>
                                             <div className="text-sm text-gray-500">{user.phone}</div>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className="inline-flex items-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                                                </svg>
-                                                {user.location}
-                                            </span>
-                                        </td>
+                                        {(activeTab === 'lawyers' || activeTab === 'juniors' || activeTab === 'clients') && (
+                                            <td className="px-6 py-4">
+                                                <span className="inline-flex items-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                                    </svg>
+                                                    {user.location}
+                                                </span>
+                                            </td>
+                                        )}
                                         
                                         {activeTab === 'lawyers' && (
                                             <>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className="inline-flex items-center justify-center bg-blue-100 text-blue-800 rounded-full h-6 w-6 text-xs font-medium">
-                                                        {user.clients}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className="inline-flex items-center justify-center bg-purple-100 text-purple-800 rounded-full h-6 w-6 text-xs font-medium">
-                                                        {user.juniorLawyers}
-                                                    </span>
-                                                </td>
                                             </>
                                         )}
                                         
                                         {activeTab === 'juniors' && (
                                             <>
-                                                <td className="px-6 py-4 text-sm">{user.seniorLawyer || 'N/A'}</td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className="inline-flex items-center justify-center bg-blue-100 text-blue-800 rounded-full h-6 w-6 text-xs font-medium">
-                                                        {user.cases}
-                                                    </span>
-                                                </td>
                                             </>
                                         )}
                                         
                                         {activeTab === 'clients' && (
                                             <>
-                                                <td className="px-6 py-4 text-sm">{user.associatedLawyer || 'N/A'}</td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className="inline-flex items-center justify-center bg-blue-100 text-blue-800 rounded-full h-6 w-6 text-xs font-medium">
-                                                        {user.cases}
-                                                    </span>
-                                                </td>
                                             </>
                                         )}
 
@@ -387,21 +361,11 @@ const UserManagement = () => {
                                                         Legal Research
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className="inline-flex items-center justify-center bg-green-100 text-green-800 rounded-full h-6 w-6 text-xs font-medium">
-                                                        {user.cases}
-                                                    </span>
-                                                </td>
                                             </>
                                         )}
                                         
                                         {activeTab === 'admins' && (
                                             <>
-                                                <td className="px-6 py-4 text-sm">
-                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                        Administrator
-                                                    </span>
-                                                </td>
                                                 <td className="px-6 py-4 text-sm">
                                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                                                         Full Access

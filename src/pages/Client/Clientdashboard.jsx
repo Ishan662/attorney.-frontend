@@ -80,24 +80,11 @@ const ClientDashboard = () => {
         });
     };
 
-    // Fetch upcoming hearings & meetings using service
-    useEffect(() => {
-        const fetchDashboard = async () => {
-            try {
-                setLoading(true);
-                const { hearings, meetings } = await getDashboardData(user.id); // <-- service call
-                setUpcomingHearings(hearings);
-                setUpcomingMeetings(meetings);
-            } catch (err) {
-                console.error(err);
-                setError("Error loading dashboard data");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchDashboard();
-    }, [user.id]);
+    const user = {
+        name: "Nethsilu Marasinghe",
+        email: "kasuntharamarasinghe@gmail.com",
+        role: "client",
+    };
 
     if (loading) {
         return (

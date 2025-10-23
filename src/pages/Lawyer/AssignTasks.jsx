@@ -9,6 +9,7 @@ import { FaPlus, FaTasks, FaFilePdf, FaUserTie, FaTimes, FaCalendarAlt, FaSearch
 import { useAuth } from '../../context/AuthContext';
 import { createTask, getAllFirmTasks, getTaskById } from '../../services/taskService';
 import { getJuniorsForFirm } from '../../services/teamService';
+import Swal from 'sweetalert2';
 
 const AssignTasks = () => {
     const { user } = useAuth(); // Use real auth context
@@ -80,7 +81,12 @@ const AssignTasks = () => {
         } catch (error) {
             console.error('Error loading data:', error);
             // Fallback to showing some sample data or empty state with error message
-            alert('Unable to connect to server. Please check your connection and try again.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Connection Error',
+                text: 'Unable to connect to server. Please check your connection and try again.',
+                confirmButtonColor: '#EF4444'
+            });
             setJuniorLawyers([]);
             setTaskHistory([]);
         } finally {
@@ -89,6 +95,16 @@ const AssignTasks = () => {
     };
 
     const handleNewTask = () => {
+        if (juniorLawyers.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Junior Lawyers Available',
+                text: 'No junior lawyers are available to assign tasks to. Please add junior lawyers to your team first.',
+                confirmButtonColor: '#F59E0B'
+            });
+            return;
+        }
+        
         setTaskFormData({
             title: '',
             description: '',
@@ -113,6 +129,46 @@ const AssignTasks = () => {
 
     const handleFileChange = (e) => {
         const selectedFiles = Array.from(e.target.files);
+        const maxFileSize = 10 * 1024 * 1024; // 10MB in bytes
+        const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/jpg', 'image/png'];
+        
+        // Validate each file
+        for (let file of selectedFiles) {
+            // Check file size
+            if (file.size > maxFileSize) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'File Too Large',
+                    text: `File "${file.name}" is too large. Maximum file size is 10MB.`,
+                    confirmButtonColor: '#F59E0B'
+                });
+                return;
+            }
+            
+            // Check file type
+            if (!allowedTypes.includes(file.type)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid File Type',
+                    text: `File "${file.name}" is not supported. Please upload PDF, DOCX, or image files only.`,
+                    confirmButtonColor: '#F59E0B'
+                });
+                return;
+            }
+        }
+        
+        // Check total number of files
+        const totalFiles = taskFormData.files.length + selectedFiles.length;
+        if (totalFiles > 5) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Too Many Files',
+                text: 'You can attach a maximum of 5 files per task.',
+                confirmButtonColor: '#F59E0B'
+            });
+            return;
+        }
+        
         setTaskFormData({
             ...taskFormData,
             files: [...taskFormData.files, ...selectedFiles]
@@ -130,6 +186,107 @@ const AssignTasks = () => {
 
     const handleSubmitTask = async (e) => {
         e.preventDefault();
+        
+        // Comprehensive form validation with SweetAlert2 warnings
+        if (!taskFormData.taskType) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Task Type Required',
+                text: 'Please select a task type before proceeding.',
+                confirmButtonColor: '#F59E0B'
+            });
+            return;
+        }
+
+        if (!taskFormData.assignedToUserId) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Assignment Required',
+                text: 'Please select a junior lawyer to assign this task to.',
+                confirmButtonColor: '#F59E0B'
+            });
+            return;
+        }
+
+        if (!taskFormData.title.trim()) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Task Title Required',
+                text: 'Please enter a title for this task.',
+                confirmButtonColor: '#F59E0B'
+            });
+            return;
+        }
+
+        if (taskFormData.title.trim().length < 5) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Title Too Short',
+                text: 'Task title must be at least 5 characters long.',
+                confirmButtonColor: '#F59E0B'
+            });
+            return;
+        }
+
+        if (!taskFormData.description.trim()) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Task Description Required',
+                text: 'Please provide a detailed description for this task.',
+                confirmButtonColor: '#F59E0B'
+            });
+            return;
+        }
+
+        if (taskFormData.description.trim().length < 20) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Description Too Short',
+                text: 'Task description must be at least 20 characters long to provide adequate detail.',
+                confirmButtonColor: '#F59E0B'
+            });
+            return;
+        }
+
+        if (!taskFormData.dueDate) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Due Date Required',
+                text: 'Please select a due date for this task.',
+                confirmButtonColor: '#F59E0B'
+            });
+            return;
+        }
+
+        // Validate due date is not in the past
+        const selectedDate = new Date(taskFormData.dueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate < today) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Invalid Due Date',
+                text: 'Due date cannot be in the past. Please select a future date.',
+                confirmButtonColor: '#F59E0B'
+            });
+            return;
+        }
+
+        // Validate due date is not more than 1 year in the future
+        const oneYearFromNow = new Date();
+        oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+        
+        if (selectedDate > oneYearFromNow) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Due Date Too Far',
+                text: 'Due date cannot be more than 1 year in the future.',
+                confirmButtonColor: '#F59E0B'
+            });
+            return;
+        }
+
         setIsLoading(true);
         
         try {
@@ -176,11 +333,21 @@ const AssignTasks = () => {
             setTaskHistory([transformedTask, ...taskHistory]);
             
             setShowTaskModal(false);
-            alert('Task assigned successfully!');
+            Swal.fire({
+                icon: 'success',
+                title: 'Task Assigned',
+                text: 'Task assigned successfully!',
+                confirmButtonColor: '#10B981'
+            });
         } catch (error) {
             console.error('Error creating task:', error);
             const errorMessage = error.message || 'Failed to assign task. Please try again.';
-            alert(`Error: ${errorMessage}`);
+            Swal.fire({
+                icon: 'error',
+                title: 'Assignment Failed',
+                text: `Error: ${errorMessage}`,
+                confirmButtonColor: '#EF4444'
+            });
         } finally {
             setIsLoading(false);
         }
@@ -376,6 +543,15 @@ const AssignTasks = () => {
                         <div 
                             className="bg-white rounded-lg shadow-md p-5 hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-blue-500"
                             onClick={() => {
+                                if (juniorLawyers.length === 0) {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'No Junior Lawyers',
+                                        text: 'No junior lawyers are available to assign tasks to.',
+                                        confirmButtonColor: '#F59E0B'
+                                    });
+                                    return;
+                                }
                                 setTaskFormData({
                                     ...taskFormData,
                                     title: "Research case precedents",
@@ -399,6 +575,15 @@ const AssignTasks = () => {
                         <div 
                             className="bg-white rounded-lg shadow-md p-5 hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-red-500"
                             onClick={() => {
+                                if (juniorLawyers.length === 0) {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'No Junior Lawyers',
+                                        text: 'No junior lawyers are available to assign tasks to.',
+                                        confirmButtonColor: '#F59E0B'
+                                    });
+                                    return;
+                                }
                                 setTaskFormData({
                                     ...taskFormData,
                                     title: "Draft legal document",
@@ -420,6 +605,15 @@ const AssignTasks = () => {
                         <div 
                             className="bg-white rounded-lg shadow-md p-5 hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-green-500"
                             onClick={() => {
+                                if (juniorLawyers.length === 0) {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'No Junior Lawyers',
+                                        text: 'No junior lawyers are available to assign tasks to.',
+                                        confirmButtonColor: '#F59E0B'
+                                    });
+                                    return;
+                                }
                                 setTaskFormData({
                                     ...taskFormData,
                                     title: "Court filing preparation",

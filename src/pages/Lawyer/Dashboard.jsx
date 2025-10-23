@@ -141,27 +141,18 @@ const Dashboard = () => {
 
     const handleNotificationClick = () => {};
     const handleStatCardClick = (title) => {
-        if (title === "Timeline") navigate("/lawyer/timeline");
-        else if (title === "Incomes") navigate("/lawyer/incomes");
+        if (title === "Incomes") navigate("/lawyer/incomes");
         else if (title === "Day Summary") navigate("/lawyer/day-summary");
         else if (title === "Due Payments") navigate("/lawyer/duepayments");
     };
 
-    // Mock data for the dashboard
+    // Dashboard stats (removed Timeline)
     const stats = [
         {
             title: "Due Payments",
             value: "",
             icon: "💰",
             bgColor: "bg-white",
-            iconBg: "bg-black-200",
-            textColor: "text-black-800"
-        },
-        {
-            title: "Timeline",
-            value: "12 Items",
-            icon: "⏱️",
-            bgColor: "bg-black-100",
             iconBg: "bg-black-200",
             textColor: "text-black-800"
         },
@@ -237,7 +228,7 @@ const Dashboard = () => {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 {stats.map((stat, index) => (
                     <div
                         key={index}
@@ -316,7 +307,15 @@ const Dashboard = () => {
                 {/* Meeting Requests - Takes 1/3 of the width */}
                 <div className="lg:col-span-1">
                     <div className="bg-white rounded-lg shadow-lg p-6 h-full">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Meeting Requests</h3>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold text-gray-800">Meeting Requests</h3>
+                            <button
+                                onClick={() => navigate('/lawyer/meetingrequest')}
+                                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                            >
+                                View All →
+                            </button>
+                        </div>
                         {isLoadingMeetings ? (
                             <div className="flex items-center justify-center h-32 text-gray-500">
                                 <div className="text-center">
@@ -343,18 +342,21 @@ const Dashboard = () => {
                                 {meetingRequests.map((meeting, index) => {
                                     const { formattedDate, day } = formatMeetingDate(meeting.date);
                                     return (
-                                        <div key={index} className="border border-gray-200 rounded-lg p-3 
+                                        <div key={meeting.id || index} className="border border-gray-200 rounded-lg p-3 
                                                                    hover:bg-gray-50 transition-colors duration-200">
                                             <div className="flex flex-col space-y-2">
                                                 <div className="font-medium text-gray-900 text-sm">{meeting.title}</div>
                                                 <div className="text-xs text-gray-500">
-                                                    {formattedDate} • {day}
-                                                    <div className="mt-1">{meeting.time}</div>
-                                                    {meeting.caseId && (
+                                                    <div className="font-medium text-gray-700">{meeting.clientName}</div>
+                                                    <div className="mt-1">{formattedDate} • {day}</div>
+                                                    {meeting.caseId && meeting.caseId !== 'N/A' && (
                                                         <div className="mt-1">Case # {meeting.caseId}</div>
                                                     )}
+                                                    {meeting.caseTitle && meeting.caseTitle !== 'Unknown Case' && (
+                                                        <div className="mt-1 text-gray-600 font-medium">{meeting.caseTitle}</div>
+                                                    )}
                                                     {meeting.note && (
-                                                        <div className="mt-1 text-gray-600">{meeting.note}</div>
+                                                        <div className="mt-1 text-gray-600 italic">{meeting.note}</div>
                                                     )}
                                                 </div>
                                                 <div className="flex justify-end">

@@ -4,6 +4,7 @@ import Button1 from "../../components/UI/Button1";
 import Button2 from "../../components/UI/Button2";
 import Input1 from "../../components/UI/Input1";
 import PaymentGuideModal from "../../components/UI/PaymentGuideModal";
+import Swal from 'sweetalert2';
 import { 
     getMySupportCases, 
     getSupportCaseDetails, 
@@ -50,11 +51,31 @@ const LawyerSupportRequest = () => {
             setSelectedRequest(details);
         } catch (err) {
             console.error('Failed to load case details:', err);
-            alert('Failed to load case details');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to load case details',
+                confirmButtonColor: '#EF4444'
+            });
         }
     };
 
     const handleCreateNew = () => {
+        // Check if lawyer has 3 or more pending support cases
+        const pendingCases = supportRequests.filter(caseItem => 
+            caseItem.status !== 'CLOSED'
+        );
+        
+        if (pendingCases.length >= 3) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Case Limit Reached',
+                text: 'You can only have a maximum of 3 pending support cases. Please close some existing cases before creating a new one.',
+                confirmButtonColor: '#F59E0B'
+            });
+            return;
+        }
+        
         setModalMode('create');
         setSubject('');
         setMessageContent('');
@@ -76,7 +97,18 @@ const LawyerSupportRequest = () => {
 
     const handleCloseCase = async () => {
         if (!selectedRequest) return;
-        if (!confirm('Are you sure you want to close this case?')) return;
+        
+        const result = await Swal.fire({
+            title: 'Close Case?',
+            text: 'Are you sure you want to close this case?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#F59E0B',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, close it'
+        });
+        
+        if (!result.isConfirmed) return;
         
         try {
             setIsLoading(true);
@@ -86,10 +118,20 @@ const LawyerSupportRequest = () => {
             setSupportRequests(prev => prev.map(r => 
                 r.id === selectedRequest.id ? { ...r, status: 'CLOSED' } : r
             ));
-            alert('Case closed successfully');
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Case closed successfully',
+                confirmButtonColor: '#10B981'
+            });
         } catch (err) {
             console.error('Failed to close case:', err);
-            alert('Failed to close case');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to close case',
+                confirmButtonColor: '#EF4444'
+            });
         } finally {
             setIsLoading(false);
         }
@@ -98,7 +140,12 @@ const LawyerSupportRequest = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!messageContent.trim()) {
-            alert('Please enter a message');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Missing Message',
+                text: 'Please enter a message',
+                confirmButtonColor: '#F59E0B'
+            });
             return;
         }
         
@@ -106,7 +153,12 @@ const LawyerSupportRequest = () => {
         try {
             if (modalMode === 'create') {
                 if (!subject.trim()) {
-                    alert('Please enter a subject');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Missing Subject',
+                        text: 'Please enter a subject',
+                        confirmButtonColor: '#F59E0B'
+                    });
                     setIsLoading(false);
                     return;
                 }
@@ -117,7 +169,12 @@ const LawyerSupportRequest = () => {
                 });
                 // Refresh the list
                 await loadMyCases();
-                alert('Support case created successfully');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Support case created successfully',
+                    confirmButtonColor: '#10B981'
+                });
                 setShowModal(false);
             } else if (modalMode === 'reply' && selectedRequest) {
                 // Add reply to existing case
@@ -127,12 +184,22 @@ const LawyerSupportRequest = () => {
                 // Reload case details to show new message
                 const updatedDetails = await getSupportCaseDetails(selectedRequest.id);
                 setSelectedRequest(updatedDetails);
-                alert('Reply sent successfully');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Reply sent successfully',
+                    confirmButtonColor: '#10B981'
+                });
                 setShowModal(false);
             }
         } catch (err) {
             console.error('Submit error:', err);
-            alert(`Failed to ${modalMode === 'create' ? 'create case' : 'send reply'}`);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: `Failed to ${modalMode === 'create' ? 'create case' : 'send reply'}`,
+                confirmButtonColor: '#EF4444'
+            });
         } finally {
             setIsLoading(false);
         }
