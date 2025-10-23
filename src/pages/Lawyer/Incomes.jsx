@@ -64,38 +64,31 @@ const Incomes = () => {
         { label: "This Week", amount: 5800 }
     ];
 
-    // Generate dummy daily income data for the selected month
+    // Generate dummy daily income data for the selected month - limit to only 2 data points
     const generateDailyIncomeData = () => {
-        const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
         const data = [];
         
-        // Generate random data for each day of the month
-        for (let i = 1; i <= daysInMonth; i++) {
-            // Higher values for weekdays (Mon-Fri), lower for weekends
-            const date = new Date(selectedYear, selectedMonth, i);
-            const day = date.getDay(); // 0 = Sunday, 6 = Saturday
+        // Generate only 2 data points for the chart
+        for (let i = 0; i < 2; i++) {
+            const day = i + 1;
+            const date = new Date(selectedYear, selectedMonth, day);
             
-            let amount;
-            if (day === 0 || day === 6) {
-                // Weekend
-                amount = Math.floor(Math.random() * 800) + 200; // 200-1000
-            } else {
-                // Weekday
-                amount = Math.floor(Math.random() * 1500) + 500; // 500-2000
-            }
+            // Fixed amounts for the 2 data points
+            const amounts = [1200, 1800]; // Two different income amounts
+            const amount = amounts[i];
             
             // Add some additional data points for the chart
             let expenses = Math.floor(amount * 0.4); // 40% of income as expenses
             let profit = amount - expenses;
             
             data.push({
-                day: i,
+                day: day,
                 date: date,
                 income: amount,
                 expenses: expenses,
                 profit: profit,
                 // Format the date for display in the chart
-                name: `${i}/${selectedMonth + 1}` 
+                name: `${day}/${selectedMonth + 1}` 
             });
         }
         return data;
@@ -137,27 +130,13 @@ const Incomes = () => {
         return null;
     };
 
-    // Sample customer data
+    // Sample customer data - limited to only 2 customers each
     const paidCustomers = [
-        { date: "2024-05-03", name: "Mr Kumara" },
-        { date: "2024-05-03", name: "Mr Kumara" },
-        { date: "2024-05-03", name: "Mr Edirimuni" },
-        { date: "2024-05-06", name: "Mr Kumara" },
-        { date: "2024-05-06", name: "Mr Kumara" },
-        { date: "2024-05-06", name: "Mr Edirimuni" },
-        { date: "2024-05-06", name: "Mr Kumara" },
-        { date: "2024-05-06", name: "Mr Kumara" },
+        { date: "2025-10-01", name: "Mr Kumara" },
     ];
 
     const unpaidCustomers = [
-        { date: "2024-05-03", name: "Mr Kumara" },
-        { date: "2024-05-03", name: "Mr Kumara" },
-        { date: "2024-05-03", name: "Mr Edirimuni" },
-        { date: "2024-05-06", name: "Mr Kumara" },
-        { date: "2024-05-06", name: "Mr Kumara" },
-        { date: "2024-05-06", name: "Mr Edirimuni" },
-        { date: "2024-05-08", name: "Mr Kumara" },
-        { date: "2024-05-08", name: "Mr Kumara" },
+        { date: "2025-10-03", name: "Mr Silva" },
     ];
 
     return (
@@ -165,43 +144,6 @@ const Incomes = () => {
             {/* Incomes specific header */}
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-2xl font-bold">Incomes</h1>
-                <div className="flex items-center gap-2">
-                    <Button2 text="Export" className="text-sm py-1 px-4" />
-                    <Button2 text="Print" className="text-sm py-1 px-4" />
-                </div>
-            </div>
-
-            {/* Filters */}
-            <div className="flex flex-wrap gap-4 mb-8">
-                <div className="flex items-center">
-                    <span className="mr-2 text-sm font-medium">Year:</span>
-                    <select 
-                        className="bg-white border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                        value={selectedYear}
-                        onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                    >
-                        {years.map(year => (
-                            <option key={year} value={year}>{year}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="flex items-center">
-                    <span className="mr-2 text-sm font-medium">Month:</span>
-                    <select 
-                        className="bg-white border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                        value={selectedMonth}
-                        onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                    >
-                        {months.map(month => (
-                            <option key={month.value} value={month.value}>{month.label}</option>
-                        ))}
-                    </select>
-                </div>
-                <Button1 
-                    text="Submit" 
-                    className="text-white py-1 px-4 text-sm"
-                    onClick={handleFilterSubmit}
-                />
             </div>
 
             {/* Income Charts */}
@@ -209,7 +151,7 @@ const Incomes = () => {
                 <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">                    
                     {/* Daily income line chart using Recharts */}
                     <div>
-                        <h3 className="text-lg font-black mb-4">Daily Income for {months[selectedMonth].label} {selectedYear}</h3>
+                        <h3 className="text-lg font-black mb-4">Income</h3>
                         
                         {/* Responsive chart container */}
                         <div className="h-60 sm:h-72 md:h-80">
@@ -362,16 +304,6 @@ const Incomes = () => {
                             }
                             return acc;
                         }, [])}
-                    </div>
-                </div>
-            </div>
-
-            {/* Total Income Summary */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-                <div className="flex flex-col md:flex-row md:justify-between md:items-center">
-                    <h2 className="text-xl font-medium mb-2 md:mb-0">Total Income for {months[selectedMonth].label} {selectedYear}</h2>
-                    <div className="text-2xl font-bold text-black-600">
-                        {formatCurrency(dailyIncomeData.reduce((sum, day) => sum + day.income, 0))}
                     </div>
                 </div>
             </div>

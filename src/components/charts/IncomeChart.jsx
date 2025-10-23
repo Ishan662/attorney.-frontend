@@ -35,12 +35,13 @@ const IncomeChart = ({ data, loading, error }) => {
         );
     }
 
-    // Format data for the chart
+    // Format data for the chart - limit to only 2 data points
     const chartData = data.map((item, index) => ({
         name: `Case ${index + 1}`,
         caseId: item.caseId,
         amount: item.amount || 0,
-    })).filter(item => item.amount > 0); // Only show cases with income
+    })).filter(item => item.amount > 0) // Only show cases with income
+      .slice(0, 2); // Limit to only 2 data points
 
     // Colors for the chart
     const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#F97316', '#06B6D4', '#84CC16'];
