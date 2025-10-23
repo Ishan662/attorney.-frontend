@@ -150,7 +150,7 @@ const Dashboard = () => {
     const stats = [
         {
             title: "Due Payments",
-            value: "$2,500",
+            value: "",
             icon: "💰",
             bgColor: "bg-white",
             iconBg: "bg-black-200",
@@ -158,7 +158,7 @@ const Dashboard = () => {
         },
         {
             title: "Incomes",
-            value: "$8,750",
+            value: "",
             icon: "📈",
             bgColor: "bg-black-100",
             iconBg: "bg-black-200",
@@ -166,7 +166,7 @@ const Dashboard = () => {
         },
         {
             title: "Day Summary",
-            value: "5 Activities",
+            value: "",
             icon: "📋",
             bgColor: "bg-black-100",
             iconBg: "bg-black-200",
