@@ -109,12 +109,74 @@ export const getUserTypeDistribution = async () => {
     }
 };
 
+/**
+ * Get lawyer support requests
+ * Endpoint: GET /api/admin/support/lawyer-requests
+ */
+export const getLawyerSupportRequests = async () => {
+    const headers = await getAuthHeader();
+
+    const response = await fetch(`${API_BASE}/api/admin/support/lawyer-requests`, {
+        method: 'GET',
+        headers: headers
+    });
+
+    if (!response.ok) {
+        if (response.status === 401) {
+            throw new Error('Authentication failed. Please log in again.');
+        } else if (response.status === 403) {
+            throw new Error('Access denied. Admin privileges required.');
+        }
+        throw new Error(`Failed to fetch lawyer support requests: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+};
+
+/**
+ * Format support request for display
+ */
+export const formatSupportRequestForDisplay = (request) => {
+    return {
+        id: request.id,
+        subject: request.subject || 'No Subject',
+        lawyerName: request.lawyerName || 'Unknown',
+        lawyerEmail: request.lawyerEmail || '',
+        createdAt: request.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'Unknown',
+        status: request.status || 'pending',
+        statusColor: getStatusColor(request.status)
+    };
+};
+
+/**
+ * Get status color for support requests
+ */
+const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+        case 'open':
+        case 'pending':
+            return 'text-yellow-600 bg-yellow-100';
+        case 'in_progress':
+        case 'in-progress':
+            return 'text-blue-600 bg-blue-100';
+        case 'resolved':
+        case 'closed':
+            return 'text-green-600 bg-green-100';
+        case 'rejected':
+            return 'text-red-600 bg-red-100';
+        default:
+            return 'text-gray-600 bg-gray-100';
+    }
+};
+
 // Default export
 const adminDashboardService = {
     getUserCounts,
     getDashboardStats,
     transformDashboardData,
-    getUserTypeDistribution
+    getUserTypeDistribution,
+    getLawyerSupportRequests,
+    formatSupportRequestForDisplay
 };
 
 export default adminDashboardService;

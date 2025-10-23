@@ -98,11 +98,16 @@ const UserLogin = () => {
             JUNIOR: '/junior/dashboard',
             CLIENT: '/client/dashboard',
             ADMIN: '/admin/dashboard',
-            RESEARCHER: '/researcher/chatbot',
+            RESEARCHER: 'http://localhost:3000/chat',
         };
 
         const path = rolePaths[currentUser.role] || '/';
-        navigate(path);
+
+        if (currentUser.role === 'RESEARCHER') {
+             window.location.href = path;
+        } else {
+            navigate(path);
+        }
     };
 
 
@@ -257,11 +262,11 @@ const UserLogin = () => {
 
                     <div className="flex items-center my-4">
                         <div className="flex-grow h-px bg-gray-300"></div>
-                        <div className="mx-4 text-gray-500">or</div>
+                        <div className="mx-4 text-gray-500"></div>
                         <div className="flex-grow h-px bg-gray-300"></div>
                     </div>
 
-                    <div className="space-y-3">
+                    {/* <div className="space-y-3">
                         <button
                             type="button"
                             onClick={handleGoogleLogin}
@@ -286,7 +291,7 @@ const UserLogin = () => {
                                 />
                             </svg>
                             Continue with Google
-                        </button>
+                        </button> */}
 
                         {/* <button
                             type="button"
@@ -298,7 +303,7 @@ const UserLogin = () => {
                             </svg>
                             Continue with Apple
                         </button> */}
-                    </div>
+                    {/* </div> */}
 
                     {/* <div className="flex items-center my-4">
                         <div className="flex-grow h-px bg-gray-300"></div>

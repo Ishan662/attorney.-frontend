@@ -5,6 +5,7 @@ import Button1 from '../../components/UI/Button1';
 import Button2 from '../../components/UI/Button2';
 import Input1 from '../../components/UI/Input1';
 import { updateHearing, deleteHearing } from '../../services/caseService';
+import Swal from 'sweetalert2';
 
 const EditHearingModal = ({ isOpen, onClose, hearing, caseNumber, onSave, onDelete }) => {
     // `hearing` is the object of the hearing being edited
@@ -157,7 +158,13 @@ const EditHearingModal = ({ isOpen, onClose, hearing, caseNumber, onSave, onDele
                 onClose();
             } catch (error) {
                 console.error("Update failed:", error);
-                alert("Failed to update hearing. Please try again.");
+                await Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to update hearing. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#f97316'
+                });
             } finally {
                 setIsSubmitting(false);
             }
@@ -165,7 +172,18 @@ const EditHearingModal = ({ isOpen, onClose, hearing, caseNumber, onSave, onDele
     };
 
     const handleDelete = async () => {
-        if (window.confirm("Are you sure you want to delete this hearing? This action cannot be undone.")) {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'Are you sure you want to delete this hearing? This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        });
+
+        if (result.isConfirmed) {
             setIsSubmitting(true);
             try {
                 // Call the backend API to delete the hearing
@@ -180,7 +198,13 @@ const EditHearingModal = ({ isOpen, onClose, hearing, caseNumber, onSave, onDele
                 onClose();
             } catch (error) {
                 console.error("Delete failed:", error);
-                alert("Failed to delete hearing. Please try again.");
+                await Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to delete hearing. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#f97316'
+                });
             } finally {
                 setIsSubmitting(false);
             }
